@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import mindsetImage from '../assets/mindset-image.png';
+import mindsetImage from '../assets/founder-mindset-new.jpg';
 
 const MindsetSection: React.FC = () => {
   const containerVariants: Variants = {
@@ -37,7 +37,7 @@ const MindsetSection: React.FC = () => {
           <img 
             src={mindsetImage} 
             alt="The Mindset" 
-            className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+            className="absolute inset-0 w-full h-full object-cover object-top transition-all duration-700"
           />
         </motion.div>
 

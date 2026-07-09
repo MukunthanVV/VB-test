@@ -55,8 +55,7 @@ const DivisionsSection: React.FC = () => {
         
         <div className="flex flex-col gap-16 w-full">
           
-          {/* VB Motors - Image 40%, Solid Text Block 60% */}
-          <div className="flex flex-col md:flex-row overflow-hidden rounded-[2rem] bg-[#988E8B] shadow-xl w-full">
+          <div className="flex flex-col md:flex-row overflow-hidden rounded-[2rem] bg-[#988E8B] dark:bg-neutral-900 shadow-xl w-full">
             
             {/* Image Slider Container (40% Width) */}
             <motion.div 
@@ -97,26 +96,25 @@ const DivisionsSection: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Text Container (60% Width) */}
             <motion.div 
               variants={textVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] flex-shrink-0"
+              className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] dark:text-white flex-shrink-0"
             >
               <div className="flex items-center gap-4 mb-6">
-                <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A]">01. PERFORMANCE</span>
+                <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">01. PERFORMANCE</span>
               </div>
-              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] drop-shadow-sm">VB MOTORS</h3>
+              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm">VB MOTORS</h3>
               
-              <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A]">
+              <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white">
                 Engineering the future of automotive luxury and competitive performance sports. Nothing is built before precision is ensured.
               </p>
               
               <a 
-                href="#motors"
-                className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] text-[#1A1A1A] py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] hover:text-[#988E8B] transition-colors duration-300"
+                href="#/motors"
+                className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#988E8B] dark:hover:text-neutral-900 transition-colors duration-300"
               >
                 ENTER DIVISION
                 <span className="text-xl leading-none transition-transform group-hover:rotate-90">+</span>
@@ -124,17 +122,17 @@ const DivisionsSection: React.FC = () => {
             </motion.div>
           </div>
 
-          {/* VB Real Estate - Placeholder (Alternating Layout) */}
-          <div className="flex flex-col md:flex-row-reverse overflow-hidden rounded-[2rem] bg-[#D7D1C9] shadow-xl w-full">
+          {/* Used Car Sales - Placeholder (Alternating Layout) */}
+          <div className="flex flex-col md:flex-row-reverse overflow-hidden rounded-[2rem] bg-[#D7D1C9] dark:bg-neutral-800 shadow-xl w-full">
             
             <motion.div 
               variants={imageVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="w-full md:w-[40%] relative min-h-[300px] md:min-h-[600px] bg-[#C1BAB2] flex items-center justify-center border-b md:border-b-0 md:border-l border-outline flex-shrink-0"
+              className="w-full md:w-[40%] relative min-h-[300px] md:min-h-[600px] bg-[#C1BAB2] dark:bg-neutral-700 flex items-center justify-center border-b md:border-b-0 md:border-l border-outline flex-shrink-0"
             >
-               <span className="material-symbols-outlined text-5xl text-[#1A1A1A]/40">domain</span>
+               <span className="material-symbols-outlined text-5xl text-[#1A1A1A]/40 dark:text-white/40">directions_car</span>
             </motion.div>
 
             <motion.div 
@@ -142,20 +140,20 @@ const DivisionsSection: React.FC = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] flex-shrink-0"
+              className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] dark:text-white flex-shrink-0"
             >
               <div className="flex items-center gap-4 mb-6">
-                <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A]">02. PORTFOLIO</span>
+                <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">02. AUTO SALES</span>
               </div>
-              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] drop-shadow-sm">VB REAL ESTATE</h3>
+              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm">USED CAR SALES</h3>
               
-              <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A]">
-                Curating a legacy of iconic properties globally. Every development begins by reading the skyline honestly, deciding what the new landmark should add.
+              <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white">
+                Discover a curated selection of premium pre-owned vehicles. Uncompromising quality, rigorous inspection, and unmatched value.
               </p>
               
               <a 
-                href="#real-estate"
-                className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] text-[#1A1A1A] py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] hover:text-[#D7D1C9] transition-colors duration-300"
+                href="#/used-cars"
+                className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#D7D1C9] dark:hover:text-neutral-800 transition-colors duration-300"
               >
                 ENTER DIVISION
                 <span className="text-xl leading-none transition-transform group-hover:rotate-90">+</span>
@@ -163,17 +161,17 @@ const DivisionsSection: React.FC = () => {
             </motion.div>
           </div>
 
-          {/* VB Constructions - Placeholder */}
-          <div className="flex flex-col md:flex-row overflow-hidden rounded-[2rem] bg-[#988E8B] shadow-xl w-full">
+          {/* VB Event Management - Placeholder */}
+          <div className="flex flex-col md:flex-row overflow-hidden rounded-[2rem] bg-[#988E8B] dark:bg-neutral-900 shadow-xl w-full">
             
             <motion.div 
               variants={imageVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="w-full md:w-[40%] relative min-h-[300px] md:min-h-[600px] bg-[#8F8A8B] flex items-center justify-center border-b md:border-b-0 md:border-r border-outline flex-shrink-0"
+              className="w-full md:w-[40%] relative min-h-[300px] md:min-h-[600px] bg-[#8F8A8B] dark:bg-neutral-800 flex items-center justify-center border-b md:border-b-0 md:border-r border-outline flex-shrink-0"
             >
-               <span className="material-symbols-outlined text-5xl text-[#1A1A1A]/40">engineering</span>
+               <span className="material-symbols-outlined text-5xl text-[#1A1A1A]/40 dark:text-white/40">celebration</span>
             </motion.div>
 
             <motion.div 
@@ -181,20 +179,59 @@ const DivisionsSection: React.FC = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] flex-shrink-0"
+              className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] dark:text-white flex-shrink-0"
             >
               <div className="flex items-center gap-4 mb-6">
-                <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A]">03. INFRASTRUCTURE</span>
+                <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">03. EVENTS</span>
               </div>
-              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] drop-shadow-sm">VB CONSTRUCTIONS</h3>
+              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm">VB EVENT MANAGEMENT</h3>
               
-              <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A]">
-                Delivering complex infrastructure and high-specification developments. We execute large-scale engineering with an unwavering commitment to safety.
+              <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white">
+                Orchestrating unforgettable experiences. From corporate gatherings to grand celebrations, we deliver flawless event execution.
               </p>
               
               <a 
-                href="#constructions"
-                className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] text-[#1A1A1A] py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] hover:text-[#988E8B] transition-colors duration-300"
+                href="#/events"
+                className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#988E8B] dark:hover:text-neutral-900 transition-colors duration-300"
+              >
+                ENTER DIVISION
+                <span className="text-xl leading-none transition-transform group-hover:rotate-90">+</span>
+              </a>
+            </motion.div>
+          </div>
+
+          {/* VB Real Estate & Constructions */}
+          <div className="flex flex-col md:flex-row-reverse overflow-hidden rounded-[2rem] bg-[#D7D1C9] dark:bg-neutral-800 shadow-xl w-full">
+            
+            <motion.div 
+              variants={imageVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="w-full md:w-[40%] relative min-h-[300px] md:min-h-[600px] bg-[#C1BAB2] dark:bg-neutral-700 flex items-center justify-center border-b md:border-b-0 md:border-l border-outline flex-shrink-0"
+            >
+               <span className="material-symbols-outlined text-5xl text-[#1A1A1A]/40 dark:text-white/40">domain</span>
+            </motion.div>
+
+            <motion.div 
+              variants={textVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] dark:text-white flex-shrink-0"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">04. PORTFOLIO & INFRASTRUCTURE</span>
+              </div>
+              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm">VB REAL ESTATE & CONSTRUCTIONS</h3>
+              
+              <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white">
+                Curating a legacy of iconic properties globally. Delivering complex infrastructure with an unwavering commitment to safety and innovation.
+              </p>
+              
+              <a 
+                href="#/real-estate-constructions"
+                className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#D7D1C9] dark:hover:text-neutral-800 transition-colors duration-300"
               >
                 ENTER DIVISION
                 <span className="text-xl leading-none transition-transform group-hover:rotate-90">+</span>

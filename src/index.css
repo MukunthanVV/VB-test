@@ -2,8 +2,58 @@
 @config "../tailwind.config.js";
 
 @layer base {
+  :root {
+    --color-on-surface: #1A1A1A;
+    --color-inverse-on-surface: #F5F2ED;
+    --color-background: #F5F2ED;
+    --color-surface: #F5F2ED;
+    --color-surface-variant: #ECE7E0;
+    --color-surface-container-low: #ECE7E0;
+    --color-surface-container-lowest: #FFFFFF;
+    --color-surface-container-high: #D7D1C9;
+    --color-outline: #D7D1C9;
+    --color-outline-variant: #D7D1C9;
+    --color-primary: #1F2A44;
+    --color-on-primary: #FFFFFF;
+    --color-primary-hover: #172033;
+    --color-secondary: #1F2A44;
+    --color-on-secondary: #FFFFFF;
+    --color-tertiary: #1F2A44;
+    --color-on-surface-variant: #1F2A44;
+    --color-gold: #b78727;
+    --hero-stroke-color: transparent;
+  }
+
+  .dark {
+    --color-on-surface: #e5e5e5;
+    --color-inverse-on-surface: #0a0a0a;
+    --color-background: #0a0a0a;
+    --color-surface: #111111;
+    --color-surface-variant: #1a1a1a;
+    --color-surface-container-low: #111111;
+    --color-surface-container-lowest: #0a0a0a;
+    --color-surface-container-high: #1a1a1a;
+    --color-outline: #333333;
+    --color-outline-variant: #333333;
+    --color-primary: #C8A05D;
+    --color-on-primary: #0a0a0a;
+    --color-primary-hover: #D8B06D;
+    --color-secondary: #C8A05D;
+    --color-on-secondary: #0a0a0a;
+    --color-tertiary: #C8A05D;
+    --color-on-surface-variant: #a3a3a3;
+    --color-gold: #C8A05D;
+    --hero-stroke-color: var(--color-gold);
+  }
+
+  html {
+    @apply overscroll-none;
+  }
+  html, body {
+    @apply max-w-[100vw] overflow-x-hidden transition-colors duration-500;
+  }
   body {
-    @apply bg-background text-on-surface overflow-x-hidden selection:bg-primary selection:text-on-primary font-body-md;
+    @apply bg-background text-on-surface selection:bg-primary selection:text-on-primary font-body-md;
   }
 }
 
@@ -18,5 +68,18 @@
   
   .group:hover .vertical-drive-arrow {
     transform: translateX(8px);
+  }
+
+  /* Fix for browser autocomplete background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  textarea:-webkit-autofill:active {
+      transition: background-color 5000s ease-in-out 0s;
+      -webkit-text-fill-color: #1A1A1A !important;
   }
 }

@@ -64,9 +64,6 @@ const JournalSection: React.FC = () => {
                   {entry.title}
                 </h3>
               </div>
-              <div className="hidden md:flex items-center justify-center w-12 h-12 rounded-full border border-on-surface/20 group-hover:bg-primary group-hover:border-primary group-hover:text-white transition-all duration-300 mt-6 md:mt-0">
-                <span className="material-symbols-outlined -rotate-45">arrow_forward</span>
-              </div>
             </motion.a>
           ))}
         </div>

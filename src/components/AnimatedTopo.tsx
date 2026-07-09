@@ -14,6 +14,8 @@ const fragmentShader = `
   varying vec2 vUv;
   uniform float uTime;
   uniform vec2 uResolution;
+  uniform vec3 uLineColor;
+  uniform float uLineOpacity;
   
   // Ashima 3D Simplex Noise
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -94,8 +96,8 @@ const fragmentShader = `
     // Draw lines where fract(val) is near 0 or 1
     float line = smoothstep(lineThickness + fw, lineThickness, c) + smoothstep(1.0 - lineThickness - fw, 1.0 - lineThickness, c);
     
-    // Very subtle light grey color: #000000 with 15% opacity
-    gl_FragColor = vec4(0.0, 0.0, 0.0, line * 0.15);
+    // Use dynamic color and opacity
+    gl_FragColor = vec4(uLineColor, line * uLineOpacity);
   }
 `;
 
@@ -104,13 +106,20 @@ const TopoPlane = () => {
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+    uLineColor: { value: new THREE.Color(0x000000) }, // Default to black
+    uLineOpacity: { value: 0.15 }
   }), []);
 
   useFrame((state) => {
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
       materialRef.current.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      
+      const isDark = document.documentElement.classList.contains('dark');
+      // Light mode: black lines (0x000000), Dark mode: gold lines (0xC8A05D)
+      materialRef.current.uniforms.uLineColor.value.setHex(isDark ? 0xC8A05D : 0x000000);
+      materialRef.current.uniforms.uLineOpacity.value = isDark ? 0.3 : 0.15;
     }
   });
 

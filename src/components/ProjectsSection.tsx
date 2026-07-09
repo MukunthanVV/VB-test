@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 
 import project1 from '../assets/motor-2.png';
@@ -75,8 +75,17 @@ const portfolioDivisions = [
 ];
 
 const ProjectsSection: React.FC = () => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = window.innerWidth * 0.8;
+      scrollContainerRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <section id="projects" className="relative py-section-gap bg-surface-container-high border-t border-outline overflow-hidden">
+    <section id="projects" className="relative py-16 md:py-24 bg-surface-container-high border-t border-outline overflow-hidden">
       
       {/* Background Architectural Watermark */}
       <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none opacity-[0.03] select-none flex flex-col justify-center w-full z-0">
@@ -87,7 +96,7 @@ const ProjectsSection: React.FC = () => {
       <div className="relative z-10 w-full">
         
         {/* Header Container */}
-        <div className="w-full z-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mb-12 lg:mb-20">
+        <div className="w-full z-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mb-8 lg:mb-12">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -99,15 +108,27 @@ const ProjectsSection: React.FC = () => {
               <span className="font-label-caps text-label-caps text-on-surface-variant mb-4 block">04. PORTFOLIO</span>
               <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg uppercase text-on-surface">SELECTED <span className="text-primary block md:inline">PROJECTS</span></h2>
             </div>
-            <button className="group flex items-center gap-4 border-b border-on-surface pb-2 text-sm font-label-caps tracking-widest uppercase hover:text-primary hover:border-primary transition-colors mt-4 md:mt-0">
-              VIEW ALL WORK
-              <span className="material-symbols-outlined transition-transform group-hover:translate-x-2">arrow_right_alt</span>
-            </button>
+            <div className="flex items-center gap-4 mt-4 md:mt-0">
+              <button 
+                onClick={() => scroll('left')}
+                className="w-12 h-12 rounded-full border border-on-surface flex items-center justify-center hover:bg-on-surface hover:text-surface transition-colors"
+                aria-label="Scroll left"
+              >
+                <span className="material-symbols-outlined">arrow_back</span>
+              </button>
+              <button 
+                onClick={() => scroll('right')}
+                className="w-12 h-12 rounded-full border border-on-surface flex items-center justify-center hover:bg-on-surface hover:text-surface transition-colors"
+                aria-label="Scroll right"
+              >
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </button>
+            </div>
           </motion.div>
         </div>
 
         {/* Swipeable Horizontal Gallery */}
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-8 px-margin-mobile md:px-margin-desktop pb-12 pt-4 hide-scrollbar">
+        <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory gap-8 px-margin-mobile md:px-margin-desktop pb-12 pt-4 hide-scrollbar">
           
           {/* Spacer to align first item with container max width */}
           <div className="w-[calc((100vw-min(100vw,1600px))/2)] flex-shrink-0 hidden xl:block"></div>
@@ -119,20 +140,20 @@ const ProjectsSection: React.FC = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="flex-shrink-0 w-[95vw] md:w-[90vw] lg:w-[85vw] xl:w-[1400px] snap-center bg-surface border border-outline rounded-[2.5rem] p-8 md:p-12 shadow-xl"
+              className="flex-shrink-0 w-[85vw] md:w-[75vw] lg:w-[70vw] xl:w-[1200px] snap-center bg-surface border border-outline rounded-[2.5rem] p-6 md:p-8 shadow-xl"
             >
               {/* Division Header */}
-              <div className="flex justify-between items-center mb-10 pb-6 border-b border-outline">
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-outline">
                 <h3 className="font-headline-md text-2xl md:text-3xl uppercase tracking-tighter">{division.title}</h3>
                 <span className="font-label-caps text-on-surface-variant text-sm">0{index + 1}</span>
               </div>
 
               {/* Asymmetrical Grid inside the Boundary Box */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
                 
                 {/* Featured Project */}
                 <div className="md:col-span-7 group cursor-pointer">
-                  <div className="relative overflow-hidden aspect-[4/3] mb-6 rounded-2xl">
+                  <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-2xl">
                     <img src={division.featured.img} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                   </div>
@@ -146,10 +167,10 @@ const ProjectsSection: React.FC = () => {
                   </div>
 
                   {/* Secondary Projects */}
-                  <div className="md:col-span-5 flex flex-col gap-8 justify-end">
+                  <div className="md:col-span-5 flex flex-col gap-4 md:gap-6 justify-end">
                     {division.secondary.map((sec, idx) => (
                       <div key={idx} className="group cursor-pointer">
-                        <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-xl">
+                        <div className="relative overflow-hidden aspect-[2/1] mb-3 rounded-xl">
                           <img src={sec.img} alt={sec.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                         </div>
                         <h4 className="text-lg md:text-xl font-bold uppercase mb-1">{sec.title}</h4>
