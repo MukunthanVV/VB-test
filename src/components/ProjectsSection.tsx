@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, deleteDoc, doc, query } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
@@ -59,11 +59,15 @@ const ProjectsSection: React.FC = () => {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [activeDivision, setActiveDivision] = useState<string>('motors');
   const [isActiveFeatured, setIsActiveFeatured] = useState<boolean>(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'projects'), (snapshot) => {
+    // Sort by title or keep original order
+    const q = query(collection(db, 'projects'));
+    const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProjects(data);
+      setIsLoaded(true);
     });
     return () => unsub();
   }, []);
@@ -108,7 +112,7 @@ const ProjectsSection: React.FC = () => {
   });
 
   return (
-    <section id="projects" className="relative py-16 md:py-24 bg-surface-container-high border-t border-outline overflow-hidden">
+    <section id="projects" className={`relative py-16 md:py-24 bg-surface-container-high border-t border-outline overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       
       {/* Background Architectural Watermark */}
       <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none opacity-[0.03] select-none flex flex-col justify-center w-full z-0">

@@ -50,7 +50,7 @@ export default {
         "display-xl": ["120px", { lineHeight: "110px", letterSpacing: "-0.02em", fontWeight: "400" }]
       },
       spacing: {
-        "container-max": "1440px",
+        "container-max": "100%",
         "margin-desktop": "80px",
         "gutter": "32px",
         "unit": "8px",

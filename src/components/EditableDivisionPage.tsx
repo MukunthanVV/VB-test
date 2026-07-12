@@ -40,12 +40,16 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [activeService, setActiveService] = useState<ServiceData | null>(null);
 
+  const [heroLoaded, setHeroLoaded] = useState(false);
+  const [servicesLoaded, setServicesLoaded] = useState(false);
+
   // Fetch Hero Data
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'division_pages', `${pageId}_hero`), (docSnap) => {
       if (docSnap.exists()) {
         setHeroData(docSnap.data() as HeroData);
       }
+      setHeroLoaded(true);
     });
     return () => unsub();
   }, [pageId]);
@@ -58,6 +62,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
         const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ServiceData));
         setServicesData(services);
       }
+      setServicesLoaded(true);
     });
     return () => unsub();
   }, [pageId]);
@@ -112,7 +117,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
       <TopNavBar />
 
       {/* Video Hero Section */}
-      <div className="w-full h-[60vh] md:h-[80vh] relative overflow-hidden mt-[65px] md:mt-[73px] group/hero">
+      <div className={`w-full h-[60vh] md:h-[80vh] relative overflow-hidden mt-[65px] md:mt-[73px] group/hero transition-opacity duration-500 ${heroLoaded && servicesLoaded ? 'opacity-100' : 'opacity-0'}`}>
         {isAdmin && (
           <div className="absolute top-4 right-4 z-[60]">
             <InlineEditControls onEdit={() => setHeroModalOpen(true)} />
@@ -135,7 +140,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
         </video>
       </div>
 
-      <main className="pt-16 pb-24 px-4 md:px-8 lg:px-12 relative">
+      <main className={`pt-16 pb-24 px-4 md:px-8 lg:px-12 relative transition-opacity duration-500 ${heroLoaded && servicesLoaded ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-container-max mx-auto">
           <div className="mb-16">
             <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-6 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm">

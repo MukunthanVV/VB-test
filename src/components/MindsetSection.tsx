@@ -42,12 +42,14 @@ const MindsetSection: React.FC = () => {
   const { isAdmin } = useAuth();
   const [data, setData] = useState<any>(fallbackData);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'mindset', 'main'), (docSnap) => {
       if (docSnap.exists()) {
         setData({ id: docSnap.id, ...docSnap.data() });
       }
+      setIsLoaded(true);
     });
     return () => unsub();
   }, []);
@@ -72,7 +74,7 @@ const MindsetSection: React.FC = () => {
   };
 
   return (
-    <section className="relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent border-t border-outline overflow-hidden">
+    <section id="about" className={`relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative z-10 max-w-container-max mx-auto flex flex-col lg:flex-row border border-outline rounded-[24px] overflow-hidden shadow-2xl bg-surface/80 backdrop-blur-2xl group">
         
         {isAdmin && (

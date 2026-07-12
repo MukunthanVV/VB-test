@@ -182,6 +182,7 @@ const DivisionsSection: React.FC = () => {
   const [services, setServices] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     // Sort by number field
@@ -189,6 +190,7 @@ const DivisionsSection: React.FC = () => {
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setServices(data);
+      setIsLoaded(true);
     });
     return () => unsub();
   }, []);
@@ -212,7 +214,7 @@ const DivisionsSection: React.FC = () => {
   };
 
   return (
-    <section id="services" className="relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent w-full overflow-hidden">
+    <section id="services" className={`relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent w-full overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative z-10 max-w-container-max mx-auto w-full">
         
         <motion.div 

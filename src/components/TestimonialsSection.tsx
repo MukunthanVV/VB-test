@@ -39,11 +39,13 @@ const TestimonialsSection: React.FC = () => {
   
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setTestimonials(data);
+      setIsLoaded(true);
       setCurrentIndex(0);
     });
     return () => unsub();
@@ -85,7 +87,7 @@ const TestimonialsSection: React.FC = () => {
   if (!currentItem) return null;
 
   return (
-    <section id="testimonials" className="relative py-20 md:py-24 px-margin-mobile md:px-margin-desktop bg-[#1a1a1a] text-white overflow-hidden">
+    <section id="testimonials" className={`relative py-20 md:py-24 px-margin-mobile md:px-margin-desktop bg-[#1a1a1a] text-white overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative z-10 max-w-container-max mx-auto w-full">
         
         <motion.div 
