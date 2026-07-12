@@ -1,31 +1,86 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import mindsetImage from '../assets/founder-mindset-new.jpg';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
+import InlineEditControls from './admin/InlineEditControls';
+import ItemEditorModal from './admin/ItemEditorModal';
+import type { FieldConfig } from './admin/ItemEditorModal';
+import mindsetImageFallback from '../assets/founder-mindset-new.jpg';
+
+const fallbackData = {
+  id: 'mindset_main',
+  title: 'THE MINDSET',
+  image: mindsetImageFallback,
+  val1_title: 'PRECISION',
+  val1_desc: 'Every decision is intentional.',
+  val2_title: 'INNOVATION',
+  val2_desc: 'Progress through adaptation.',
+  val3_title: 'LONGEVITY',
+  val3_desc: 'Building for generations.',
+  val4_title: 'INTEGRITY',
+  val4_desc: 'Trust before growth.',
+  quoteText: '— Founder & Managing Director'
+};
+
+const mindsetFields: FieldConfig[] = [
+  { name: 'title', label: 'Section Title', type: 'text', required: true },
+  { name: 'image', label: 'Section Image', type: 'image' },
+  { name: 'val1_title', label: 'Value 1 Title', type: 'text' },
+  { name: 'val1_desc', label: 'Value 1 Description', type: 'textarea' },
+  { name: 'val2_title', label: 'Value 2 Title', type: 'text' },
+  { name: 'val2_desc', label: 'Value 2 Description', type: 'textarea' },
+  { name: 'val3_title', label: 'Value 3 Title', type: 'text' },
+  { name: 'val3_desc', label: 'Value 3 Description', type: 'textarea' },
+  { name: 'val4_title', label: 'Value 4 Title', type: 'text' },
+  { name: 'val4_desc', label: 'Value 4 Description', type: 'textarea' },
+  { name: 'quoteText', label: 'Quote / Signoff', type: 'text' },
+];
 
 const MindsetSection: React.FC = () => {
+  const { isAdmin } = useAuth();
+  const [data, setData] = useState<any>(fallbackData);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'mindset', 'main'), (docSnap) => {
+      if (docSnap.exists()) {
+        setData({ id: docSnap.id, ...docSnap.data() });
+      }
+    });
+    return () => unsub();
+  }, []);
+
   const containerVariants: Variants = {
     hidden: {},
     visible: {
-      transition: {
-        staggerChildren: 0.15
-      }
+      transition: { staggerChildren: 0.15 }
     }
   };
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
-      opacity: 1, 
-      y: 0,
+      opacity: 1, y: 0,
       transition: { duration: 0.8, ease: "easeOut" }
     }
   };
 
+  const handleEdit = () => {
+    setModalOpen(true);
+  };
+
   return (
     <section className="relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent border-t border-outline overflow-hidden">
-      <div className="relative z-10 max-w-container-max mx-auto flex flex-col lg:flex-row border border-outline rounded-[24px] overflow-hidden shadow-2xl bg-surface/80 backdrop-blur-2xl">
+      <div className="relative z-10 max-w-container-max mx-auto flex flex-col lg:flex-row border border-outline rounded-[24px] overflow-hidden shadow-2xl bg-surface/80 backdrop-blur-2xl group">
         
+        {isAdmin && (
+          <div className="absolute top-4 right-4 z-50">
+            <InlineEditControls onEdit={handleEdit} />
+          </div>
+        )}
+
         {/* Image Column */}
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
@@ -35,8 +90,8 @@ const MindsetSection: React.FC = () => {
           className="lg:w-5/12 border-b lg:border-b-0 lg:border-r border-outline relative min-h-[400px] lg:min-h-[600px]"
         >
           <img 
-            src={mindsetImage} 
-            alt="The Mindset" 
+            src={data.image || fallbackData.image} 
+            alt={data.title} 
             className="absolute inset-0 w-full h-full object-cover object-top transition-all duration-700"
           />
         </motion.div>
@@ -50,39 +105,44 @@ const MindsetSection: React.FC = () => {
           className="lg:w-7/12 flex flex-col justify-center h-auto p-6 md:p-12 lg:p-16 relative z-20"
         >
           <motion.h2 variants={itemVariants} className="font-headline-lg text-4xl md:text-headline-lg-mobile lg:text-headline-lg mb-8 uppercase leading-tight text-on-surface">
-            THE <span className="text-primary block sm:inline">MINDSET</span>
+            {data.title.split(' ').map((word: string, i: number, arr: string[]) => (
+              <React.Fragment key={i}>
+                {i === arr.length - 1 ? <span className="text-primary block sm:inline">{word}</span> : word + ' '}
+              </React.Fragment>
+            ))}
           </motion.h2>
 
           <div className="space-y-6">
-            <motion.div variants={itemVariants} className="border-b border-outline pb-6">
-              <h3 className="font-label-caps text-label-caps text-primary uppercase mb-2">PRECISION</h3>
-              <p className="font-body-lg text-body-lg text-on-surface">Every decision is intentional.</p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="border-b border-outline pb-6">
-              <h3 className="font-label-caps text-label-caps text-primary uppercase mb-2">INNOVATION</h3>
-              <p className="font-body-lg text-body-lg text-on-surface">Progress through adaptation.</p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="border-b border-outline pb-6">
-              <h3 className="font-label-caps text-label-caps text-primary uppercase mb-2">LONGEVITY</h3>
-              <p className="font-body-lg text-body-lg text-on-surface">Building for generations.</p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="border-b border-outline pb-6">
-              <h3 className="font-label-caps text-label-caps text-primary uppercase mb-2">INTEGRITY</h3>
-              <p className="font-body-lg text-body-lg text-on-surface">Trust before growth.</p>
-            </motion.div>
+            {[1, 2, 3, 4].map((num) => {
+              const title = data[`val${num}_title`];
+              const desc = data[`val${num}_desc`];
+              if (!title && !desc) return null;
+              return (
+                <motion.div key={num} variants={itemVariants} className="border-b border-outline pb-6">
+                  <h3 className="font-label-caps text-label-caps text-primary uppercase mb-2">{title}</h3>
+                  <p className="font-body-lg text-body-lg text-on-surface">{desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
 
           <motion.div variants={itemVariants} className="mt-10">
             <p className="font-body-md text-body-md text-on-surface-variant italic">
-              — Founder & Managing Director
+              {data.quoteText}
             </p>
           </motion.div>
         </motion.div>
-
       </div>
+
+      <ItemEditorModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Edit Mindset Section"
+        collectionName="mindset"
+        docId="main"
+        initialData={data}
+        fields={mindsetFields}
+      />
     </section>
   );
 };

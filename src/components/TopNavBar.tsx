@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PremiumToggle from './PremiumToggle';
+import { useAuth } from '../contexts/AuthContext';
 
 const navLinks = [
   { id: 'about', label: 'ABOUT' },
@@ -15,6 +16,7 @@ const TopNavBar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     if (location.pathname !== '/') return;
@@ -87,6 +89,14 @@ const TopNavBar: React.FC = () => {
               </a>
             );
           })}
+          {isAdmin && (
+            <a 
+              className={`font-label-caps text-label-caps uppercase tracking-widest transition-all duration-300 ease-in-out cursor-pointer ${location.pathname === '/admin' ? 'text-on-surface font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-on-surface'}`} 
+              onClick={() => navigate('/admin')}
+            >
+              ADMIN
+            </a>
+          )}
         </div>
         <div className="hidden md:flex items-center gap-4">
           <a onClick={(e) => handleNavClick(e, 'contact')} className="inline-block font-label-caps text-label-caps uppercase tracking-widest bg-on-surface text-background px-8 py-2 hover:bg-primary hover:text-on-primary transition-colors duration-300 text-center mt-1 cursor-pointer">
@@ -118,6 +128,14 @@ const TopNavBar: React.FC = () => {
             </a>
           );
         })}
+        {isAdmin && (
+          <a 
+            className={`font-label-caps text-label-caps uppercase tracking-widest transition-all duration-300 ease-in-out cursor-pointer ${location.pathname === '/admin' ? 'text-on-surface font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-on-surface'}`} 
+            onClick={() => { navigate('/admin'); setIsMobileMenuOpen(false); }}
+          >
+            ADMIN
+          </a>
+        )}
         <a 
           onClick={(e) => handleNavClick(e, 'contact')} 
           className="font-label-caps text-label-caps uppercase tracking-widest bg-on-surface text-background px-8 py-3 hover:bg-primary hover:text-on-primary transition-colors duration-300 text-center w-full max-w-xs mt-2 cursor-pointer"

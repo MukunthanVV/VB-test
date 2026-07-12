@@ -1,12 +1,11 @@
-import { useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import VBMotorsPage from './pages/VBMotorsPage';
-import UsedCarsPage from './pages/UsedCarsPage';
-import EventsPage from './pages/EventsPage';
-import RealEstatePage from './pages/RealEstatePage';
+import GenericDivisionPage from './pages/GenericDivisionPage';
+import AdminPage from './pages/admin/AdminPage';
+import { AuthProvider } from './contexts/AuthContext';
 
-function ScrollToTop() {
+const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -14,23 +13,23 @@ function ScrollToTop() {
   }, [pathname]);
 
   return null;
-}
+};
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-transparent font-body-md text-on-surface">
-      <HashRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/motors" element={<VBMotorsPage />} />
-          <Route path="/used-cars" element={<UsedCarsPage />} />
-          <Route path="/events" element={<EventsPage />} />
-          <Route path="/real-estate-constructions" element={<RealEstatePage />} />
-        </Routes>
-      </HashRouter>
+      <AuthProvider>
+        <Router>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/division/:id" element={<GenericDivisionPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </div>
   );
-}
+};
 
 export default App;
