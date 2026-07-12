@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import imageCompression from 'browser-image-compression';
 import { db } from '../../firebase';
 import { doc, addDoc, setDoc, collection } from 'firebase/firestore';
 
@@ -82,8 +83,17 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
     try {
       setUploadProgress(prev => ({ ...prev, [file.name]: 10 }));
 
+      // Compress image before upload
+      const options = {
+        maxSizeMB: 1, // Compress to max 1MB
+        maxWidthOrHeight: 1920, // Max HD resolution
+        useWebWorker: true
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+
       const formDataToUpload = new FormData();
-      formDataToUpload.append('file', file);
+      formDataToUpload.append('file', compressedFile);
       formDataToUpload.append('upload_preset', 'vbassociate');
 
       // Simulate upload progress since fetch doesn't support progress events natively
