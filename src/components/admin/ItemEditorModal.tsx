@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import imageCompression from 'browser-image-compression';
 import { db } from '../../firebase';
-import { doc, addDoc, setDoc, collection } from 'firebase/firestore';
+import { doc, addDoc, setDoc, collection, deleteField } from 'firebase/firestore';
 
 export type FieldConfig = {
   name: string;
@@ -49,7 +49,17 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
   }, [isOpen]); // Only initialize when the modal opens, ignore background data changes while open
 
   const handleSave = async () => {
+    // Validate required fields
+    for (const field of fields) {
+      const val = formData[field.name];
+      if (field.required && (!val || (typeof val === 'string' && val.trim() === ''))) {
+        setError(`"${field.label}" is required.`);
+        return;
+      }
+    }
+    
     setSaveStatus('saving');
+    setError(null);
     try {
       console.log("Saving formData to Firestore:", formData);
       console.log("activeDocId:", activeDocId.current);
@@ -76,11 +86,13 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setError(null);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleImageUpload = async (file: File, fieldName: string, isGallery: boolean) => {
     try {
+      setError(null);
       setUploadProgress(prev => ({ ...prev, [file.name]: 10 }));
 
       // Compress image before upload
@@ -121,10 +133,13 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
       setUploadProgress(prev => { const n = {...prev}; delete n[file.name]; return n; });
       
       if (isGallery) {
-        setFormData((prev: any) => ({
-          ...prev,
-          [fieldName]: [...(prev[fieldName] || []), downloadURL]
-        }));
+        setFormData((prev: any) => {
+          const arr = prev[fieldName] ? (Array.isArray(prev[fieldName]) ? prev[fieldName] : [prev[fieldName]]) : [];
+          return {
+            ...prev,
+            [fieldName]: [...arr, downloadURL]
+          };
+        });
       } else {
         setFormData((prev: any) => ({ ...prev, [fieldName]: downloadURL }));
       }
@@ -144,16 +159,19 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
   };
 
   const removeGalleryImage = (fieldName: string, indexToRemove: number) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      [fieldName]: prev[fieldName].filter((_: any, i: number) => i !== indexToRemove)
-    }));
+    setFormData((prev: any) => {
+      const arr = prev[fieldName] ? (Array.isArray(prev[fieldName]) ? prev[fieldName] : [prev[fieldName]]) : [];
+      return {
+        ...prev,
+        [fieldName]: arr.filter((_: any, i: number) => i !== indexToRemove)
+      };
+    });
   };
 
   const removeSingleImage = (fieldName: string) => {
     setFormData((prev: any) => {
       const newData = { ...prev };
-      delete newData[fieldName];
+      newData[fieldName] = deleteField();
       return newData;
     });
   };
@@ -194,7 +212,8 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                       name={field.name}
                       value={formData[field.name] || ''}
                       onChange={handleChange}
-                      className="bg-surface-variant border border-outline/20 rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors"
+                      required={field.required}
+                      className={`bg-surface-variant border ${field.required && !formData[field.name] ? 'border-red-500/50' : 'border-outline/20'} rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors`}
                     />
                   )}
 
@@ -203,8 +222,9 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                       name={field.name}
                       value={formData[field.name] || ''}
                       onChange={handleChange}
+                      required={field.required}
                       rows={4}
-                      className="bg-surface-variant border border-outline/20 rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors resize-none"
+                      className={`bg-surface-variant border ${field.required && !formData[field.name] ? 'border-red-500/50' : 'border-outline/20'} rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors resize-none`}
                     />
                   )}
 
@@ -241,9 +261,9 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
 
                   {field.type === 'image-gallery' && (
                     <div className="flex flex-col gap-4">
-                      {formData[field.name] && formData[field.name].length > 0 && (
+                      {formData[field.name] && (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {formData[field.name].map((url: string, i: number) => (
+                          {(Array.isArray(formData[field.name]) ? formData[field.name] : [formData[field.name]]).map((url: string, i: number) => (
                             <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-outline/20 group">
                               <img src={url} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
                               <button 
@@ -288,7 +308,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
               </button>
               <button
                 onClick={handleSave}
-                disabled={saveStatus === 'saving' || Object.keys(uploadProgress).length > 0}
+                disabled={saveStatus === 'saving' || Object.keys(uploadProgress).length > 0 || !!error}
                 className="px-6 py-2 rounded-full bg-primary text-on-primary font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {saveStatus === 'saving' ? 'Saving...' : Object.keys(uploadProgress).length > 0 ? 'Uploading...' : 'Save Changes'}

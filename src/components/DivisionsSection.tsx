@@ -195,7 +195,12 @@ const DivisionsSection: React.FC = () => {
     return () => unsub();
   }, []);
 
-  const displayData = services.length > 0 ? services : fallbackServices;
+  const displayData = fallbackServices.map(fb => {
+    const realService = services.find(s => s.id === fb.id);
+    return realService || fb;
+  });
+  const extraServices = services.filter(s => !fallbackServices.find(fb => fb.id === s.id));
+  const finalDisplayData = [...displayData, ...extraServices].sort((a, b) => (a.number || '').localeCompare(b.number || ''));
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -239,7 +244,7 @@ const DivisionsSection: React.FC = () => {
         </motion.div>
         
         <div className="flex flex-col gap-16 w-full">
-          {displayData.map((item, index) => (
+          {finalDisplayData.map((item, index) => (
             <DivisionCard 
               key={item.id} 
               item={item} 
@@ -257,7 +262,7 @@ const DivisionsSection: React.FC = () => {
         onClose={() => setModalOpen(false)}
         title={editingItem ? 'Edit Service' : 'Add Service'}
         collectionName="services"
-        docId={editingItem?.id?.startsWith('s') && displayData === fallbackServices ? null : editingItem?.id}
+        docId={editingItem?.id}
         initialData={editingItem || {}}
         fields={serviceFields}
       />

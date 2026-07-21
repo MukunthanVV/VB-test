@@ -9,6 +9,7 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 
 const fallbackTestimonials = [
   {
+    id: 't1',
     quote: "Working with VB Associates on our commercial development completely elevated the final outcome. Their attention to detail is unparalleled.",
     name: "James Harrington",
     title: "CEO, Harrington Holdings",
@@ -16,6 +17,7 @@ const fallbackTestimonials = [
     image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&auto=format&fit=crop&q=80"
   },
   {
+    id: 't2',
     quote: "The engine performance upgrades exceeded our wildest expectations on the track. A true partner in high-performance engineering.",
     name: "Elena Rostova",
     title: "Team Principal, Apex Racing",
@@ -29,7 +31,7 @@ const testimonialFields: FieldConfig[] = [
   { name: 'name', label: 'Person Name', type: 'text', required: true },
   { name: 'title', label: 'Job Title', type: 'text' },
   { name: 'division', label: 'Division / Company', type: 'text' },
-  { name: 'image', label: 'Person Image', type: 'image' },
+  { name: 'image', label: 'Person Images (Gallery)', type: 'image-gallery' },
 ];
 
 const TestimonialsSection: React.FC = () => {
@@ -43,8 +45,13 @@ const TestimonialsSection: React.FC = () => {
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTestimonials(data);
+      const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const mergedDisplayData = fallbackTestimonials.map(fb => {
+        const real = services.find(s => s.id === fb.id);
+        return real || fb;
+      });
+      const extra = services.filter(s => !fallbackTestimonials.find(fb => fb.id === s.id));
+      setTestimonials([...mergedDisplayData, ...extra]);
       setIsLoaded(true);
       setCurrentIndex(0);
     });
@@ -85,6 +92,23 @@ const TestimonialsSection: React.FC = () => {
   };
 
   if (!currentItem) return null;
+
+  const images = currentItem.image ? (Array.isArray(currentItem.image) ? currentItem.image : [currentItem.image]) : [];
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+
+  // Reset image index when testimonial changes
+  useEffect(() => {
+    setCurrentImgIndex(0);
+  }, [currentIndex]);
+
+  const nextImg = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImgIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+  };
+  const prevImg = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImgIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
+  };
 
   return (
     <section id="testimonials" className={`relative py-20 md:py-24 px-margin-mobile md:px-margin-desktop bg-[#1a1a1a] text-white overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
@@ -156,13 +180,39 @@ const TestimonialsSection: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="relative flex items-end justify-center md:justify-end md:pl-12">
-                  {currentItem.image && (
-                    <img 
-                      src={currentItem.image} 
-                      alt={currentItem.name} 
-                      className="w-full max-w-md h-auto max-h-[450px] object-contain object-bottom grayscale-[30%] hover:grayscale-0 transition-all duration-700 drop-shadow-2xl" 
-                    />
+                <div className="relative flex items-end justify-center md:justify-end md:pl-12 group/imgslider">
+                  {images.length > 0 && (
+                    <div className="relative w-full max-w-md h-[400px] md:h-[450px]">
+                      <AnimatePresence initial={false}>
+                        <motion.img 
+                          key={currentImgIndex}
+                          src={images[currentImgIndex]} 
+                          alt={currentItem.name} 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.5 }}
+                          className="absolute inset-0 w-full h-full object-contain object-bottom grayscale-[30%] hover:grayscale-0 transition-all duration-700 drop-shadow-2xl" 
+                        />
+                      </AnimatePresence>
+                      {images.length > 1 && (
+                        <>
+                          <div className="absolute top-1/2 -left-4 -right-4 flex justify-between -translate-y-1/2 z-20 opacity-0 group-hover/imgslider:opacity-100 transition-opacity duration-300">
+                            <button onClick={prevImg} className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-md hover:bg-white/30 transition-colors cursor-pointer">
+                              <span className="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <button onClick={nextImg} className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-md hover:bg-white/30 transition-colors cursor-pointer">
+                              <span className="material-symbols-outlined">chevron_right</span>
+                            </button>
+                          </div>
+                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                            {images.map((_: any, idx: number) => (
+                              <div key={idx} className={`h-1.5 transition-all duration-300 rounded-full ${idx === currentImgIndex ? 'w-6 bg-[#C5A059]' : 'w-2 bg-white/40'}`} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

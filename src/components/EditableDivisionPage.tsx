@@ -58,10 +58,17 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   useEffect(() => {
     const q = query(collection(db, `division_${pageId}_services`), orderBy('order', 'asc'));
     const unsub = onSnapshot(q, (snapshot) => {
+      let finalServices = fallbackServices;
       if (!snapshot.empty) {
         const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ServiceData));
-        setServicesData(services);
+        const mergedDisplayData = fallbackServices.map(fb => {
+          const realService = services.find(s => s.id === fb.id);
+          return realService || fb;
+        });
+        const extraServices = services.filter(s => !fallbackServices.find(fb => fb.id === s.id));
+        finalServices = [...mergedDisplayData, ...extraServices].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
       }
+      setServicesData(finalServices);
       setServicesLoaded(true);
     });
     return () => unsub();
@@ -77,7 +84,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
     { name: 'title', label: 'Service Title', type: 'text', required: true },
     { name: 'description', label: 'Service Description', type: 'textarea', required: true },
     { name: 'icon', label: 'Material Icon Name', type: 'text' },
-    { name: 'image', label: 'Override Image (Optional)', type: 'image' },
+    { name: 'image', label: 'Override Images (Gallery)', type: 'image-gallery' },
     { name: 'order', label: 'Display Order (Number)', type: 'text' }
   ];
 
@@ -168,9 +175,13 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                     </div>
                   )}
 
-                  <div className={`w-full md:w-[60%] relative min-h-[300px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0`}>
-                    {service.image ? (
-                      <img src={service.image} alt={service.title} className="w-full h-full object-cover absolute inset-0" />
+                  <div className={`w-full md:w-[60%] relative min-h-[300px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0 overflow-hidden`}>
+                    {service.image && service.image.length > 0 ? (
+                      <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
+                        {(Array.isArray(service.image) ? service.image : [service.image]).map((img, i) => (
+                          <img key={i} src={img} alt={`${service.title} - ${i + 1}`} className="w-full h-full flex-shrink-0 snap-center object-cover" />
+                        ))}
+                      </div>
                     ) : (
                       <span className="material-symbols-outlined text-7xl text-[#1A1A1A]/40 dark:text-white/40 z-10">{service.icon}</span>
                     )}
@@ -219,7 +230,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
         onClose={() => { setServiceModalOpen(false); setActiveService(null); }}
         title="Edit Service"
         collectionName={`division_${pageId}_services`}
-        docId={activeService?.id.startsWith('s') ? null : activeService?.id}
+        docId={activeService?.id}
         initialData={activeService || {}}
         fields={serviceFields}
       />

@@ -16,28 +16,28 @@ const fallbackDivisions = [
   {
     id: 'motors',
     title: 'MOTORS DIVISION',
-    featured: { title: 'Vantage Bespoke R', desc: 'High-Performance Automotive • Global', year: '2026', images: [project2] },
+    featured: { id: 'p_m_f', title: 'Vantage Bespoke R', desc: 'High-Performance Automotive • Global', year: '2026', images: [project2] },
     secondary: [
-      { title: 'Apex V8 Engine', desc: 'Powertrain R&D • Stuttgart, DE', images: [project1] },
-      { title: 'Aero Dynamics Lab', desc: 'Testing Facility • Silverstone, UK', images: [project3] }
+      { id: 'p_m_s1', title: 'Apex V8 Engine', desc: 'Powertrain R&D • Stuttgart, DE', images: [project1] },
+      { id: 'p_m_s2', title: 'Aero Dynamics Lab', desc: 'Testing Facility • Silverstone, UK', images: [project3] }
     ]
   },
   {
     id: 'real-estate',
     title: 'REAL ESTATE',
-    featured: { title: 'The Apex Tower', desc: 'Commercial Real Estate • London, UK', year: '2027', images: [project1] },
+    featured: { id: 'p_r_f', title: 'The Apex Tower', desc: 'Commercial Real Estate • London, UK', year: '2027', images: [project1] },
     secondary: [
-      { title: 'Azure Coast Villas', desc: 'Luxury Residential • Monaco', images: [project3] },
-      { title: 'Monolith Hub', desc: 'Mixed-Use Development • New York, USA', images: [project2] }
+      { id: 'p_r_s1', title: 'Azure Coast Villas', desc: 'Luxury Residential • Monaco', images: [project3] },
+      { id: 'p_r_s2', title: 'Monolith Hub', desc: 'Mixed-Use Development • New York, USA', images: [project2] }
     ]
   },
   {
     id: 'constructions',
     title: 'CONSTRUCTIONS',
-    featured: { title: 'Neo-Infrastructure Link', desc: 'Civil Engineering • Dubai, UAE', year: '2025', images: [project3] },
+    featured: { id: 'p_c_f', title: 'Neo-Infrastructure Link', desc: 'Civil Engineering • Dubai, UAE', year: '2025', images: [project3] },
     secondary: [
-      { title: 'Subterranean Network', desc: 'Transit System • Tokyo, JP', images: [project2] },
-      { title: 'Desert Bloom Highway', desc: 'Infrastructure • Saudi Arabia', images: [project1] }
+      { id: 'p_c_s1', title: 'Subterranean Network', desc: 'Transit System • Tokyo, JP', images: [project2] },
+      { id: 'p_c_s2', title: 'Desert Bloom Highway', desc: 'Infrastructure • Saudi Arabia', images: [project1] }
     ]
   }
 ];
@@ -102,12 +102,22 @@ const ProjectsSection: React.FC = () => {
   // Group projects by division
   const groupedData = fallbackDivisions.map(div => {
     const divProjects = projects.filter(p => p.divisionId === div.id);
-    const featured = divProjects.find(p => p.isFeatured) || { ...div.featured, divisionId: div.id, isFeatured: true };
-    const secondary = divProjects.filter(p => !p.isFeatured);
+    
+    const realFeatured = divProjects.find(p => p.id === div.featured.id) || divProjects.find(p => p.isFeatured);
+    const featured = realFeatured || { ...div.featured, divisionId: div.id, isFeatured: true };
+    
+    const mergedSecondary = div.secondary.map(fbSec => {
+      const realSec = divProjects.find(p => p.id === fbSec.id);
+      return realSec || { ...fbSec, divisionId: div.id, isFeatured: false };
+    });
+    
+    const extraSecondary = divProjects.filter(p => !p.isFeatured && !div.secondary.find(fb => fb.id === p.id));
+    const secondary = [...mergedSecondary, ...extraSecondary];
+
     return { 
       ...div, 
       featured, 
-      secondary: secondary.length > 0 ? secondary : div.secondary.map(s => ({ ...s, divisionId: div.id, isFeatured: false })) 
+      secondary
     };
   });
 

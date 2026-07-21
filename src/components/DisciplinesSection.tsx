@@ -26,7 +26,7 @@ const disciplinesFields: FieldConfig[] = [
   { name: 'subtitle', label: 'Subtitle', type: 'text' },
   { name: 'title', label: 'Main Title', type: 'text', required: true },
   { name: 'description', label: 'Main Description', type: 'textarea' },
-  { name: 'image', label: 'Section Image', type: 'image' },
+  { name: 'image', label: 'Section Images (Gallery)', type: 'image-gallery' },
   { name: 'trait1_title', label: 'Trait 1 Title', type: 'text' },
   { name: 'trait1_desc', label: 'Trait 1 Description', type: 'textarea' },
   { name: 'trait2_title', label: 'Trait 2 Title', type: 'text' },
@@ -127,20 +127,26 @@ const DisciplinesSection: React.FC = () => {
             })}
           </div>
 
-          {/* Right Side: Large Image */}
+          {/* Right Side: Large Image Gallery */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="w-full lg:w-1/2 relative min-h-[500px] lg:min-h-[700px] overflow-hidden rounded-[2rem] shadow-2xl"
+            className="w-full lg:w-1/2 relative min-h-[500px] lg:min-h-[700px] overflow-hidden rounded-[2rem] shadow-2xl group/imgslider"
           >
-            <div className="absolute inset-0 bg-primary/10 mix-blend-multiply z-10" />
-            <img 
-              src={data.image || fallbackData.image} 
-              alt="Company DNA" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 hover:scale-105" 
-            />
+            <div className="absolute inset-0 bg-primary/10 mix-blend-multiply z-10 pointer-events-none" />
+            
+            <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
+              {(Array.isArray(data.image || fallbackData.image) ? data.image || fallbackData.image : [data.image || fallbackData.image]).map((img: string, i: number) => (
+                <img 
+                  key={i}
+                  src={img} 
+                  alt={`Company DNA ${i+1}`} 
+                  className="w-full h-full flex-shrink-0 snap-center object-cover transition-transform duration-1000 group-hover/imgslider:scale-105" 
+                />
+              ))}
+            </div>
           </motion.div>
 
         </div>

@@ -26,7 +26,7 @@ const fallbackData = {
 
 const mindsetFields: FieldConfig[] = [
   { name: 'title', label: 'Section Title', type: 'text', required: true },
-  { name: 'image', label: 'Section Image', type: 'image' },
+  { name: 'image', label: 'Section Images (Gallery)', type: 'image-gallery' },
   { name: 'val1_title', label: 'Value 1 Title', type: 'text' },
   { name: 'val1_desc', label: 'Value 1 Description', type: 'textarea' },
   { name: 'val2_title', label: 'Value 2 Title', type: 'text' },
@@ -89,13 +89,18 @@ const MindsetSection: React.FC = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="lg:w-5/12 border-b lg:border-b-0 lg:border-r border-outline relative min-h-[400px] lg:min-h-[600px]"
+          className="lg:w-5/12 border-b lg:border-b-0 lg:border-r border-outline relative min-h-[400px] lg:min-h-[600px] group/imgslider overflow-hidden"
         >
-          <img 
-            src={data.image || fallbackData.image} 
-            alt={data.title} 
-            className="absolute inset-0 w-full h-full object-cover object-top transition-all duration-700"
-          />
+          <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
+            {(Array.isArray(data.image || fallbackData.image) ? data.image || fallbackData.image : [data.image || fallbackData.image]).map((img: string, i: number) => (
+              <img 
+                key={i}
+                src={img} 
+                alt={`${data.title} ${i+1}`} 
+                className="w-full h-full flex-shrink-0 snap-center object-cover object-top transition-transform duration-1000 group-hover/imgslider:scale-105"
+              />
+            ))}
+          </div>
         </motion.div>
 
         {/* Text Column */}
