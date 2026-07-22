@@ -40,7 +40,7 @@ const JournalSection: React.FC = () => {
   const [journals, setJournals] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'journals'), (snapshot) => {

@@ -39,7 +39,7 @@ const DisciplinesSection: React.FC = () => {
   const { isAdmin } = useAuth();
   const [data, setData] = useState<any>(fallbackData);
   const [modalOpen, setModalOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'disciplines', 'main'), (docSnap) => {

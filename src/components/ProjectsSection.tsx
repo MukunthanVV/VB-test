@@ -68,7 +68,7 @@ const ProjectsSection: React.FC = () => {
 
   const [activeDivision, setActiveDivision] = useState<string>('motors');
   const [isActiveFeatured, setIsActiveFeatured] = useState<boolean>(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     // Sort by title or keep original order

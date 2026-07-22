@@ -134,7 +134,7 @@ const DivisionsSection: React.FC = () => {
   const [services, setServices] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     // Sort by number field
