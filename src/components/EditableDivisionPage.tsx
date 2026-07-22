@@ -94,10 +94,6 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   };
 
   const handleDeleteService = async (id: string) => {
-    if (id.startsWith('s')) {
-      alert("This is a default template service. To delete it, first click edit and save it to the database, or just edit it to be the service you want!");
-      return;
-    }
     if (window.confirm('Are you sure you want to delete this service?')) {
       try {
         await deleteDoc(doc(db, `division_${pageId}_services`, id));

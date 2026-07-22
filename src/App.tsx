@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import GenericDivisionPage from './pages/GenericDivisionPage';
+import JournalArticlePage from './pages/JournalArticlePage';
 import AdminPage from './pages/admin/AdminPage';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -24,6 +25,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/division/:id" element={<GenericDivisionPage />} />
+            <Route path="/journal/:id" element={<JournalArticlePage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </Router>

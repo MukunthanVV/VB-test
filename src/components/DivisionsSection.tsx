@@ -7,56 +7,8 @@ import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 
-import motor1 from '../assets/motor-1.png';
-import motor2 from '../assets/motor-2.png';
-import motor3 from '../assets/motor-3.png';
-import motor4 from '../assets/motor-4.png';
 
-const fallbackServices = [
-  {
-    id: 's1',
-    number: '01',
-    category: 'PERFORMANCE',
-    title: 'VB MOTORS',
-    description: 'Engineering the future of automotive luxury and competitive performance sports. Nothing is built before precision is ensured.',
-    images: [motor1, motor2, motor3, motor4],
-    bgClass: 'bg-[#988E8B] dark:bg-neutral-900',
-    imgBgClass: 'bg-[#8F8A8B] dark:bg-neutral-800'
-  },
-  {
-    id: 's2',
-    number: '02',
-    category: 'AUTO SALES',
-    title: 'USED CAR SALES',
-    description: 'Discover a curated selection of premium pre-owned vehicles. Uncompromising quality, rigorous inspection, and unmatched value.',
-    images: [],
-    icon: 'directions_car',
-    bgClass: 'bg-[#D7D1C9] dark:bg-neutral-800',
-    imgBgClass: 'bg-[#C1BAB2] dark:bg-neutral-700'
-  },
-  {
-    id: 's3',
-    number: '03',
-    category: 'EVENTS',
-    title: 'VB EVENT MANAGEMENT',
-    description: 'Orchestrating unforgettable experiences. From corporate gatherings to grand celebrations, we deliver flawless event execution.',
-    images: [],
-    icon: 'celebration',
-    bgClass: 'bg-[#988E8B] dark:bg-neutral-900',
-    imgBgClass: 'bg-[#8F8A8B] dark:bg-neutral-800'
-  },
-  {
-    id: 's4',
-    number: '04',
-    category: 'PORTFOLIO & INFRASTRUCTURE',
-    title: 'VB REAL ESTATE & CONSTRUCTIONS',
-    description: 'Curating a legacy of iconic properties globally. Delivering complex infrastructure with an unwavering commitment to safety and innovation.',
-    images: [],
-    icon: 'domain',
-    bgClass: 'bg-[#D7D1C9] dark:bg-neutral-800',
-    imgBgClass: 'bg-[#C1BAB2] dark:bg-neutral-700'
-  }
-];
+// Removed hardcoded fallbackServices to allow full dynamic control
 
 const serviceFields: FieldConfig[] = [
   { name: 'number', label: 'List Number (e.g. 01)', type: 'text', required: true },
@@ -195,12 +147,13 @@ const DivisionsSection: React.FC = () => {
     return () => unsub();
   }, []);
 
-  const displayData = fallbackServices.map(fb => {
-    const realService = services.find(s => s.id === fb.id);
-    return realService || fb;
-  });
-  const extraServices = services.filter(s => !fallbackServices.find(fb => fb.id === s.id));
-  const finalDisplayData = [...displayData, ...extraServices].sort((a, b) => (a.number || '').localeCompare(b.number || ''));
+  const finalDisplayData = [...services]
+    .filter(s => s.id !== 's1')
+    .sort((a, b) => {
+      const numA = parseInt(a.number, 10) || 0;
+      const numB = parseInt(b.number, 10) || 0;
+      return numA - numB;
+    });
 
   const handleAdd = () => {
     setEditingItem(null);

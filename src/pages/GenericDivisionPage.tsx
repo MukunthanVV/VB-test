@@ -19,21 +19,7 @@ const genericServices = [
   }
 ];
 
-// Specific fallbacks for the original 4 templates to preserve the demo look
 const fallbackMap: Record<string, any> = {
-  's1': {
-    hero: {
-      title: 'VB MOTORS',
-      description: 'Engineering the future of automotive luxury. Discover our premium car modification and detailing services.',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
-    },
-    services: [
-      { id: 's1_1', order: 1, title: 'Performance Tuning', description: 'Unlock the true potential of your vehicle.', icon: 'car_repair' },
-      { id: 's1_2', order: 2, title: 'Luxury Detailing', description: 'Meticulous interior and exterior detailing.', icon: 'directions_car' },
-      { id: 's1_3', order: 3, title: 'Custom Modifications', description: 'Bespoke exterior and interior modifications.', icon: 'airport_shuttle' },
-      { id: 's1_4', order: 4, title: 'Ceramic Coating & PPF', description: 'Ultimate paint protection.', icon: 'auto_awesome' }
-    ]
-  },
   's2': {
     hero: {
       title: 'USED CAR SALES',

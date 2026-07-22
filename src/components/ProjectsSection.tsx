@@ -49,14 +49,23 @@ const projectFields: FieldConfig[] = [
   { name: 'images', label: 'Project Images (Upload multiple)', type: 'image-gallery' },
 ];
 
+const divisionFields: FieldConfig[] = [
+  { name: 'title', label: 'Division Title', type: 'text', required: true }
+];
+
 const ProjectsSection: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { isAdmin } = useAuth();
   
   const [projects, setProjects] = useState<any[]>([]);
+  const [divisionsDb, setDivisionsDb] = useState<any[]>([]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  
+  const [divModalOpen, setDivModalOpen] = useState(false);
+  const [editingDiv, setEditingDiv] = useState<any>(null);
+
   const [activeDivision, setActiveDivision] = useState<string>('motors');
   const [isActiveFeatured, setIsActiveFeatured] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -69,7 +78,16 @@ const ProjectsSection: React.FC = () => {
       setProjects(data);
       setIsLoaded(true);
     });
-    return () => unsub();
+
+    const unsubDivs = onSnapshot(collection(db, 'project_divisions'), (snapshot) => {
+      const divs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDivisionsDb(divs);
+    });
+
+    return () => {
+      unsub();
+      unsubDivs();
+    };
   }, []);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -99,8 +117,16 @@ const ProjectsSection: React.FC = () => {
     }
   };
 
+  const handleEditDiv = (divItem: any) => {
+    setEditingDiv(divItem);
+    setDivModalOpen(true);
+  };
+
   // Group projects by division
   const groupedData = fallbackDivisions.map(div => {
+    const dbDiv = divisionsDb.find(d => d.id === div.id);
+    const title = dbDiv?.title || div.title;
+
     const divProjects = projects.filter(p => p.divisionId === div.id);
     
     const realFeatured = divProjects.find(p => p.id === div.featured.id) || divProjects.find(p => p.isFeatured);
@@ -116,6 +142,7 @@ const ProjectsSection: React.FC = () => {
 
     return { 
       ...div, 
+      title,
       featured, 
       secondary
     };
@@ -164,8 +191,15 @@ const ProjectsSection: React.FC = () => {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="relative flex-shrink-0 w-[85vw] md:w-[75vw] lg:w-[70vw] xl:w-[1200px] snap-center bg-surface border border-outline rounded-[2.5rem] p-6 md:p-8 shadow-xl"
             >
-              <div className="flex justify-between items-center mb-6 pb-4 border-b border-outline">
-                <h3 className="font-headline-md text-2xl md:text-3xl uppercase tracking-tighter">{division.title}</h3>
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-outline relative group/div">
+                <div className="flex items-center gap-4">
+                  <h3 className="font-headline-md text-2xl md:text-3xl uppercase tracking-tighter">{division.title}</h3>
+                  {isAdmin && (
+                    <div className="opacity-0 group-hover/div:opacity-100 transition-opacity">
+                      <InlineEditControls onEdit={() => handleEditDiv({ id: division.id, title: division.title })} />
+                    </div>
+                  )}
+                </div>
                 <span className="font-label-caps text-on-surface-variant text-sm">0{index + 1}</span>
               </div>
 
@@ -250,6 +284,16 @@ const ProjectsSection: React.FC = () => {
         docId={editingItem?.id}
         initialData={editingItem ? editingItem : { divisionId: activeDivision, isFeatured: isActiveFeatured }}
         fields={projectFields}
+      />
+      
+      <ItemEditorModal
+        isOpen={divModalOpen}
+        onClose={() => setDivModalOpen(false)}
+        title="Edit Division Title"
+        collectionName="project_divisions"
+        docId={editingDiv?.id}
+        initialData={editingDiv || {}}
+        fields={divisionFields}
       />
     </section>
   );

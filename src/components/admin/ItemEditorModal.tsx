@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import imageCompression from 'browser-image-compression';
 import { db } from '../../firebase';
 import { doc, addDoc, setDoc, collection, deleteField } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
 
 export type FieldConfig = {
   name: string;
@@ -37,6 +38,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
   const activeDocId = useRef<string | null>(docId || null);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
@@ -46,9 +48,14 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
       setSaveStatus('idle');
       setUploadProgress({});
     }
-  }, [isOpen]); // Only initialize when the modal opens, ignore background data changes while open
+  }, [isOpen, docId, initialData]);
 
   const handleSave = async () => {
+    if (!isAdmin) {
+      setError("Unauthorized: Only admins can perform this action.");
+      return;
+    }
+
     // Validate required fields
     for (const field of fields) {
       const val = formData[field.name];
@@ -62,9 +69,12 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
     setError(null);
     try {
       console.log("Saving formData to Firestore:", formData);
-      console.log("activeDocId:", activeDocId.current);
-      if (activeDocId.current) {
-        await setDoc(doc(db, collectionName, activeDocId.current), formData, { merge: true });
+      const targetId = activeDocId.current || docId;
+      console.log("targetId:", targetId);
+      
+      if (targetId) {
+        await setDoc(doc(db, collectionName, targetId), formData, { merge: true });
+        if (!activeDocId.current) activeDocId.current = targetId;
       } else {
         const newDoc = await addDoc(collection(db, collectionName), formData);
         activeDocId.current = newDoc.id;
