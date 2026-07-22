@@ -72,14 +72,23 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
       const targetId = activeDocId.current || docId;
       console.log("targetId:", targetId);
       
-      if (targetId) {
-        await setDoc(doc(db, collectionName, targetId), formData, { merge: true });
-        if (!activeDocId.current) activeDocId.current = targetId;
-      } else {
-        const newDoc = await addDoc(collection(db, collectionName), formData);
-        activeDocId.current = newDoc.id;
-        console.log("Created new doc:", newDoc.id);
-      }
+      const savePromise = (async () => {
+        if (targetId) {
+          await setDoc(doc(db, collectionName, targetId), formData, { merge: true });
+          if (!activeDocId.current) activeDocId.current = targetId;
+        } else {
+          const newDoc = await addDoc(collection(db, collectionName), formData);
+          activeDocId.current = newDoc.id;
+          console.log("Created new doc:", newDoc.id);
+        }
+      })();
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Save operation timed out. Please check your Firebase Firestore rules and ensure your database is created.")), 8000);
+      });
+
+      await Promise.race([savePromise, timeoutPromise]);
+
       setSaveStatus('saved');
       setTimeout(() => {
         setSaveStatus('idle');
@@ -88,7 +97,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
       }, 1000);
     } catch (err: any) {
       console.error("Save failed:", err);
-      setError("Failed to save.");
+      setError(err.message || "Failed to save.");
       setSaveStatus('idle');
     }
   };
