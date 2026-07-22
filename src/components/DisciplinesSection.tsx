@@ -144,6 +144,8 @@ const DisciplinesSection: React.FC = () => {
                   src={img} 
                   alt={`Company DNA ${i+1}`} 
                   className="w-full h-full flex-shrink-0 snap-center object-cover transition-transform duration-1000 group-hover/imgslider:scale-105" 
+                  loading="lazy"
+                  decoding="async"
                 />
               ))}
             </div>

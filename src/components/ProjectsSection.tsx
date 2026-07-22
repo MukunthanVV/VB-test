@@ -217,7 +217,7 @@ const ProjectsSection: React.FC = () => {
                   <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-2xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
                     {division.featured.images?.map((imgUrl: string, idx: number) => (
                       <div key={idx} className="w-full flex-shrink-0 snap-center relative">
-                        <img src={imgUrl} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                        <img src={imgUrl} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" loading="lazy" decoding="async" />
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                       </div>
                     ))}
@@ -253,7 +253,7 @@ const ProjectsSection: React.FC = () => {
                       )}
                       <div className="relative overflow-hidden aspect-[2/1] mb-3 rounded-xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
                         {sec.images?.map((imgUrl: string, i: number) => (
-                          <img key={i} src={imgUrl} alt={sec.title} className="w-full flex-shrink-0 snap-center object-cover transition-transform duration-1000 group-hover:scale-105" />
+                          <img key={i} src={imgUrl} alt={sec.title} className="w-full flex-shrink-0 snap-center object-cover transition-transform duration-1000 group-hover:scale-105" loading="lazy" decoding="async" />
                         ))}
                         {(!sec.images || sec.images.length === 0) && (
                           <div className="absolute inset-0 w-full h-full bg-surface-variant flex items-center justify-center">No image</div>

@@ -98,6 +98,8 @@ const MindsetSection: React.FC = () => {
                 src={img} 
                 alt={`${data.title} ${i+1}`} 
                 className="w-full h-full flex-shrink-0 snap-center object-cover object-top transition-transform duration-1000 group-hover/imgslider:scale-105"
+                loading="lazy"
+                decoding="async"
               />
             ))}
           </div>

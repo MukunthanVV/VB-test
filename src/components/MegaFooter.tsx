@@ -43,6 +43,8 @@ const MegaFooter: React.FC = () => {
               src={megaFooterBg} 
               alt="Mega Footer Background" 
               className="w-full h-full object-cover object-top md:object-center"
+              loading="lazy"
+              decoding="async"
             />
           </picture>
         </motion.div>

@@ -1,15 +1,17 @@
+import { Suspense, lazy } from 'react';
 import TopNavBar from '../components/TopNavBar';
 import Hero from '../components/Hero';
-import AboutSection from '../components/AboutSection';
-import MindsetSection from '../components/MindsetSection';
-import DisciplinesSection from '../components/DisciplinesSection';
-import DivisionsSection from '../components/DivisionsSection';
-import ProjectsSection from '../components/ProjectsSection';
-import JournalSection from '../components/JournalSection';
-import ContactSection from '../components/ContactSection';
-import MegaFooter from '../components/MegaFooter';
 import AnimatedTopo from '../components/AnimatedTopo';
-import TestimonialsSection from '../components/TestimonialsSection';
+
+const AboutSection = lazy(() => import('../components/AboutSection'));
+const MindsetSection = lazy(() => import('../components/MindsetSection'));
+const DisciplinesSection = lazy(() => import('../components/DisciplinesSection'));
+const DivisionsSection = lazy(() => import('../components/DivisionsSection'));
+const ProjectsSection = lazy(() => import('../components/ProjectsSection'));
+const JournalSection = lazy(() => import('../components/JournalSection'));
+const ContactSection = lazy(() => import('../components/ContactSection'));
+const MegaFooter = lazy(() => import('../components/MegaFooter'));
+const TestimonialsSection = lazy(() => import('../components/TestimonialsSection'));
 
 const HomePage = () => {
   return (
@@ -18,16 +20,20 @@ const HomePage = () => {
       <TopNavBar />
       <main>
         <Hero />
-        <AboutSection />
-        <MindsetSection />
-        <DisciplinesSection />
-        <DivisionsSection />
-        <TestimonialsSection />
-        <ProjectsSection />
-        <JournalSection />
-        <ContactSection />
+        <Suspense fallback={<div className="h-screen" />}>
+          <AboutSection />
+          <MindsetSection />
+          <DisciplinesSection />
+          <DivisionsSection />
+          <TestimonialsSection />
+          <ProjectsSection />
+          <JournalSection />
+          <ContactSection />
+        </Suspense>
       </main>
-      <MegaFooter />
+      <Suspense fallback={<div />}>
+        <MegaFooter />
+      </Suspense>
     </>
   );
 };
