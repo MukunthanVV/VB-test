@@ -70,8 +70,8 @@ const JournalArticlePage = () => {
       <AnimatedTopo />
       <TopNavBar />
       
-      <main className="pt-32 pb-24 px-margin-mobile md:px-margin-desktop relative min-h-screen max-w-container-max mx-auto">
-        <div className="max-w-4xl">
+      <main className="pt-32 pb-24 px-4 md:px-8 lg:px-12 relative min-h-screen">
+        <div className="max-w-4xl mx-auto">
           <Link to="/" className="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-label-caps tracking-widest text-sm mb-12">
             <span className="material-symbols-outlined">arrow_back</span>
             BACK TO HOME
