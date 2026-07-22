@@ -50,6 +50,10 @@ const JournalArticlePage = () => {
         setArticle(fallbackMap[id] || genericFallback);
       }
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore error:", error);
+      setArticle(fallbackMap[id] || genericFallback);
+      setLoading(false);
     });
     
     return () => unsub();

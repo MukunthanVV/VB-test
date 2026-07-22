@@ -8,7 +8,12 @@ import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 
 
-// Removed hardcoded fallbackServices to allow full dynamic control
+const fallbackServices = [
+  { id: 's1_fb', number: '01', category: 'PERFORMANCE', title: 'VB MOTORS', description: 'Driving the future of automotive engineering with precision and power.' },
+  { id: 's2_fb', number: '02', category: 'AUTO SALES', title: 'USED CAR SALES', description: 'Discover a curated selection of premium pre-owned vehicles. Uncompromising quality, rigorous inspection, and unmatched value.' },
+  { id: 's3_fb', number: '03', category: 'EVENTS', title: 'VB EVENT MANAGEMENT', description: 'Orchestrating unforgettable experiences. From corporate gatherings to grand celebrations, we deliver flawless event execution.' },
+  { id: 's4_fb', number: '04', category: 'PORTFOLIO & INFRASTRUCTURE', title: 'VB REAL ESTATE & CONSTRUCTIONS', description: 'Curating a legacy of iconic properties globally. Delivering complex infrastructure with an unwavering commitment to safety and innovation.' }
+];
 
 const serviceFields: FieldConfig[] = [
   { name: 'number', label: 'List Number (e.g. 01)', type: 'text', required: true },
@@ -143,13 +148,16 @@ const DivisionsSection: React.FC = () => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setServices(data);
       setIsLoaded(true);
+    }, (error) => {
+      console.error(error);
+      setServices(fallbackServices);
+      setIsLoaded(true);
     });
     return () => unsub();
   }, []);
 
-  const finalDisplayData = [...services]
-    .filter(s => s.id !== 's1')
-    .sort((a, b) => {
+  const rawData = services.length > 0 ? [...services] : fallbackServices;
+  const finalDisplayData = rawData.sort((a, b) => {
       const numA = parseInt(a.number, 10) || 0;
       const numB = parseInt(b.number, 10) || 0;
       return numA - numB;

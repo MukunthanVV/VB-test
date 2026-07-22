@@ -52,6 +52,9 @@ const JournalSection: React.FC = () => {
       const extra = data.filter(d => !fallbackJournals.find(fb => fb.id === d.id));
       setJournals([...mergedData, ...extra]);
       setIsLoaded(true);
+    }, (error) => {
+      console.error(error);
+      setIsLoaded(true);
     });
     return () => unsub();
   }, []);
