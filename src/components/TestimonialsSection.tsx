@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
@@ -45,12 +45,18 @@ const TestimonialsSection: React.FC = () => {
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
-      const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const mergedDisplayData = fallbackTestimonials.map(fb => {
-        const real = services.find(s => s.id === fb.id);
+      const services = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
+      
+      const activeData = services.filter(d => !d.deleted);
+      const deletedIds = new Set(services.filter(d => d.deleted).map(d => d.id));
+      
+      const activeFallbacks = fallbackTestimonials.filter(fb => !deletedIds.has(fb.id));
+
+      const mergedDisplayData = activeFallbacks.map(fb => {
+        const real = activeData.find(s => s.id === fb.id);
         return real || fb;
       });
-      const extra = services.filter(s => !fallbackTestimonials.find(fb => fb.id === s.id));
+      const extra = activeData.filter(s => !fallbackTestimonials.find(fb => fb.id === s.id));
       setTestimonials([...mergedDisplayData, ...extra]);
       setIsLoaded(true);
       setCurrentIndex(0);
@@ -87,7 +93,7 @@ const TestimonialsSection: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Delete this testimonial?')) {
-      await deleteDoc(doc(db, 'testimonials', id));
+      await setDoc(doc(db, 'testimonials', id), { deleted: true });
     }
   };
 

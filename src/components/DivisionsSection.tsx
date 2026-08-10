@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { collection, onSnapshot, doc, deleteDoc, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
@@ -143,10 +143,32 @@ const DivisionsSection: React.FC = () => {
 
   useEffect(() => {
     // Sort by number field
-    const q = query(collection(db, 'services'), orderBy('number', 'asc'));
+    const q = query(collection(db, 'services'));
     const unsub = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setServices(data);
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
+      console.log("Services from DB:", data);
+      
+      const activeData = data.filter(d => !d.deleted);
+      const deletedIds = new Set(data.filter(d => d.deleted).map(d => d.id));
+      console.log("Deleted IDs:", Array.from(deletedIds));
+      
+      const activeFallbacks = fallbackServices.filter(fb => !deletedIds.has(fb.id));
+      console.log("Active Fallbacks:", activeFallbacks.map(f => f.id));
+      
+      // If we have custom items in the DB, or if fallbacks are deleted/modified
+      if (activeData.some(d => !fallbackServices.some(fb => fb.id === d.id)) || data.length > 0) {
+        // Merge fallbacks with DB overrides
+        const merged = activeFallbacks.map(fb => {
+          const real = activeData.find(d => d.id === fb.id);
+          return real || fb;
+        });
+        const extra = activeData.filter(d => !fallbackServices.some(fb => fb.id === d.id));
+        const finalSet = [...merged, ...extra];
+        console.log("Setting services to:", finalSet.map(s => s.id));
+        setServices(finalSet);
+      } else {
+        setServices(activeFallbacks);
+      }
       setIsLoaded(true);
     }, (error) => {
       console.error(error);
@@ -156,8 +178,8 @@ const DivisionsSection: React.FC = () => {
     return () => unsub();
   }, []);
 
-  const rawData = services.length > 0 ? [...services] : fallbackServices;
-  const finalDisplayData = rawData.sort((a, b) => {
+  const rawData = services;
+  const finalDisplayData = [...rawData].sort((a, b) => {
       const numA = parseInt(a.number, 10) || 0;
       const numB = parseInt(b.number, 10) || 0;
       return numA - numB;
@@ -175,7 +197,7 @@ const DivisionsSection: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Delete this service division?')) {
-      await deleteDoc(doc(db, 'services', id));
+      await setDoc(doc(db, 'services', id), { deleted: true });
     }
   };
 

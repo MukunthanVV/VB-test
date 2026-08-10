@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, query, orderBy, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import TopNavBar from './TopNavBar';
@@ -56,16 +56,24 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
 
   // Fetch Services Data
   useEffect(() => {
-    const q = query(collection(db, `division_${pageId}_services`), orderBy('order', 'asc'));
+    const q = query(collection(db, `division_${pageId}_services`));
     const unsub = onSnapshot(q, (snapshot) => {
       let finalServices = fallbackServices;
       if (!snapshot.empty) {
-        const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ServiceData));
-        const mergedDisplayData = fallbackServices.map(fb => {
-          const realService = services.find(s => s.id === fb.id);
+        const services = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
+        
+        // Filter out services marked as deleted in Firestore
+        const activeServices = services.filter(s => !s.deleted);
+        const deletedIds = new Set(services.filter(s => s.deleted).map(s => s.id));
+        
+        // Only include fallbacks that are not explicitly deleted
+        const activeFallbacks = fallbackServices.filter(fb => !deletedIds.has(fb.id));
+
+        const mergedDisplayData = activeFallbacks.map(fb => {
+          const realService = activeServices.find(s => s.id === fb.id);
           return realService || fb;
         });
-        const extraServices = services.filter(s => !fallbackServices.find(fb => fb.id === s.id));
+        const extraServices = activeServices.filter(s => !fallbackServices.find(fb => fb.id === s.id));
         finalServices = [...mergedDisplayData, ...extraServices].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
       }
       setServicesData(finalServices);
@@ -96,7 +104,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   const handleDeleteService = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this service?')) {
       try {
-        await deleteDoc(doc(db, `division_${pageId}_services`, id));
+        await setDoc(doc(db, `division_${pageId}_services`, id), { deleted: true });
       } catch (error) {
         console.error("Error deleting service:", error);
       }

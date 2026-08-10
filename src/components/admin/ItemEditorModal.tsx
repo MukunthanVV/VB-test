@@ -72,12 +72,15 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
       const targetId = activeDocId.current || docId;
       console.log("targetId:", targetId);
       
+      const dataToSave = { ...formData };
+      delete dataToSave.id;
+
       const savePromise = (async () => {
         if (targetId) {
-          await setDoc(doc(db, collectionName, targetId), formData, { merge: true });
+          await setDoc(doc(db, collectionName, targetId), dataToSave, { merge: true });
           if (!activeDocId.current) activeDocId.current = targetId;
         } else {
-          const newDoc = await addDoc(collection(db, collectionName), formData);
+          const newDoc = await addDoc(collection(db, collectionName), dataToSave);
           activeDocId.current = newDoc.id;
           console.log("Created new doc:", newDoc.id);
         }

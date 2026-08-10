@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
@@ -44,12 +44,18 @@ const JournalSection: React.FC = () => {
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'journals'), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const mergedData = fallbackJournals.map(fb => {
-        const real = data.find(d => d.id === fb.id);
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
+      
+      const activeData = data.filter(d => !d.deleted);
+      const deletedIds = new Set(data.filter(d => d.deleted).map(d => d.id));
+      
+      const activeFallbacks = fallbackJournals.filter(fb => !deletedIds.has(fb.id));
+
+      const mergedData = activeFallbacks.map(fb => {
+        const real = activeData.find(d => d.id === fb.id);
         return real || fb;
       });
-      const extra = data.filter(d => !fallbackJournals.find(fb => fb.id === d.id));
+      const extra = activeData.filter(d => !fallbackJournals.find(fb => fb.id === d.id));
       setJournals([...mergedData, ...extra]);
       setIsLoaded(true);
     }, (error) => {
@@ -73,7 +79,7 @@ const JournalSection: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Delete this journal entry?')) {
-      await deleteDoc(doc(db, 'journals', id));
+      await setDoc(doc(db, 'journals', id), { deleted: true });
     }
   };
 

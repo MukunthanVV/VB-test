@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { collection, onSnapshot, deleteDoc, doc, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
@@ -74,13 +74,13 @@ const ProjectsSection: React.FC = () => {
     // Sort by title or keep original order
     const q = query(collection(db, 'projects'));
     const unsub = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setProjects(data);
       setIsLoaded(true);
     });
 
     const unsubDivs = onSnapshot(collection(db, 'project_divisions'), (snapshot) => {
-      const divs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const divs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setDivisionsDb(divs);
     });
 
@@ -113,7 +113,7 @@ const ProjectsSection: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
-      await deleteDoc(doc(db, 'projects', id));
+      await setDoc(doc(db, 'projects', id), { deleted: true });
     }
   };
 
@@ -127,12 +127,18 @@ const ProjectsSection: React.FC = () => {
     const dbDiv = divisionsDb.find(d => d.id === div.id);
     const title = dbDiv?.title || div.title;
 
-    const divProjects = projects.filter(p => p.divisionId === div.id);
+    const divProjects = projects.filter(p => p.divisionId === div.id && !p.deleted);
+    const deletedIds = new Set(projects.filter(p => p.deleted).map(p => p.id));
+    
+    const isFeaturedDeleted = deletedIds.has(div.featured.id);
+    const activeFallbackFeatured = isFeaturedDeleted ? null : div.featured;
     
     const realFeatured = divProjects.find(p => p.id === div.featured.id) || divProjects.find(p => p.isFeatured);
-    const featured = realFeatured || { ...div.featured, divisionId: div.id, isFeatured: true };
+    const featured = realFeatured || (activeFallbackFeatured ? { ...activeFallbackFeatured, divisionId: div.id, isFeatured: true } : null);
     
-    const mergedSecondary = div.secondary.map(fbSec => {
+    const activeFallbackSecondary = div.secondary.filter(fbSec => !deletedIds.has(fbSec.id));
+    
+    const mergedSecondary = activeFallbackSecondary.map(fbSec => {
       const realSec = divProjects.find(p => p.id === fbSec.id);
       return realSec || { ...fbSec, divisionId: div.id, isFeatured: false };
     });
@@ -205,34 +211,36 @@ const ProjectsSection: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
                 {/* Featured Project */}
-                <div className="relative md:col-span-7 group cursor-pointer border border-transparent hover:border-outline/50 p-2 -m-2 rounded-2xl transition-colors">
-                  {isAdmin && (
-                    <div className="absolute top-2 right-2 z-50">
-                      <InlineEditControls 
-                        onEdit={() => handleEdit(division.featured)}
-                        onDelete={division.featured.id ? () => handleDelete(division.featured.id) : undefined}
-                      />
-                    </div>
-                  )}
-                  <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-2xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
-                    {division.featured.images?.map((imgUrl: string, idx: number) => (
-                      <div key={idx} className="w-full flex-shrink-0 snap-center relative">
-                        <img src={imgUrl} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+                {division.featured && (
+                  <div className="relative md:col-span-7 group cursor-pointer border border-transparent hover:border-outline/50 p-2 -m-2 rounded-2xl transition-colors">
+                    {isAdmin && (
+                      <div className="absolute top-2 right-2 z-50">
+                        <InlineEditControls 
+                          onEdit={() => handleEdit(division.featured)}
+                          onDelete={division.featured.id ? () => handleDelete(division.featured.id) : undefined}
+                        />
                       </div>
-                    ))}
-                    {(!division.featured.images || division.featured.images.length === 0) && (
-                       <div className="absolute inset-0 w-full h-full bg-surface-variant flex items-center justify-center">No image</div>
                     )}
-                  </div>
-                  <div className="flex justify-between items-start mt-2">
-                    <div>
-                      <h4 className="text-xl md:text-2xl font-bold uppercase mb-2">{division.featured.title}</h4>
-                      <p className="text-on-surface-variant text-sm whitespace-pre-wrap">{division.featured.desc}</p>
+                    <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-2xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
+                      {division.featured.images?.map((imgUrl: string, idx: number) => (
+                        <div key={idx} className="w-full flex-shrink-0 snap-center relative">
+                          <img src={imgUrl} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+                        </div>
+                      ))}
+                      {(!division.featured.images || division.featured.images.length === 0) && (
+                         <div className="absolute inset-0 w-full h-full bg-surface-variant flex items-center justify-center">No image</div>
+                      )}
                     </div>
-                    {division.featured.year && <span className="font-label-caps text-xs opacity-60 bg-surface-variant px-3 py-1 rounded-full flex-shrink-0 ml-4">{division.featured.year}</span>}
+                    <div className="flex justify-between items-start mt-2">
+                      <div>
+                        <h4 className="text-xl md:text-2xl font-bold uppercase mb-2">{division.featured.title}</h4>
+                        <p className="text-on-surface-variant text-sm whitespace-pre-wrap">{division.featured.desc}</p>
+                      </div>
+                      {division.featured.year && <span className="font-label-caps text-xs opacity-60 bg-surface-variant px-3 py-1 rounded-full flex-shrink-0 ml-4">{division.featured.year}</span>}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Secondary Projects */}
                 <div className="md:col-span-5 flex flex-col gap-4 md:gap-6 justify-end relative">
