@@ -15,9 +15,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 const ADMIN_EMAILS = [
   'tharunkarthikav21@gmail.com',
-  'sajinjr10root66@gmail.com',
-  'mukeshsai2007@gmail.com',
-  'ririphoenix15@gmail.com'
+
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
