@@ -30,6 +30,7 @@ const contactFields: FieldConfig[] = [
 const ContactSection: React.FC = () => {
   const { isAdmin } = useAuth();
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [inquiry, setInquiry] = useState('');
 
@@ -48,7 +49,7 @@ const ContactSection: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const phoneNumber = contactInfo.whatsappPhone;
-    const message = `*New Brief Received*\n*Name:* ${name}\n*Email:* ${email}\n*Inquiry:*\n${inquiry}`;
+    const message = `*New Brief Received*\n*Name:* ${name}\n*Phone:* ${phone}\n*Email:* ${email}\n*Inquiry:*\n${inquiry}`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -68,38 +69,52 @@ const ContactSection: React.FC = () => {
           className="max-w-2xl w-full"
         >
           <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-headline-lg-mobile lg:text-headline-lg mb-8 md:mb-12 uppercase text-on-surface break-words">CONNECT WITH <span className="text-primary block md:inline">THE BOARD</span></h2>
-          <form className="space-y-8 sm:space-y-12" onSubmit={handleSubmit}>
+          <form className="space-y-8 sm:space-y-10" onSubmit={handleSubmit}>
             <div className="relative">
-              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface-variant mb-2 sm:mb-4 uppercase tracking-wider">FULL NAME</label>
+              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface mb-2 sm:mb-3 uppercase tracking-wider font-semibold">FULL NAME</label>
               <input 
-                className="w-full bg-transparent border-0 border-b border-outline py-3 sm:py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
+                className="w-full bg-transparent border-0 border-b-2 border-on-surface/40 hover:border-on-surface/70 focus:border-primary py-3 sm:py-4 px-0 focus:ring-0 transition-all text-on-surface font-body-lg placeholder:text-on-surface/40 dark:placeholder:text-white/40 focus:outline-none" 
                 type="text" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
                 required
               />
             </div>
             <div className="relative">
-              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface-variant mb-2 sm:mb-4 uppercase tracking-wider">CORPORATE EMAIL</label>
+              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface mb-2 sm:mb-3 uppercase tracking-wider font-semibold">MOBILE NUMBER</label>
               <input 
-                className="w-full bg-transparent border-0 border-b border-outline py-3 sm:py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
+                className="w-full bg-transparent border-0 border-b-2 border-on-surface/40 hover:border-on-surface/70 focus:border-primary py-3 sm:py-4 px-0 focus:ring-0 transition-all text-on-surface font-body-lg placeholder:text-on-surface/40 dark:placeholder:text-white/40 focus:outline-none" 
+                type="tel" 
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. +91 98765 43210"
+                required
+              />
+            </div>
+            <div className="relative">
+              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface mb-2 sm:mb-3 uppercase tracking-wider font-semibold">CORPORATE EMAIL</label>
+              <input 
+                className="w-full bg-transparent border-0 border-b-2 border-on-surface/40 hover:border-on-surface/70 focus:border-primary py-3 sm:py-4 px-0 focus:ring-0 transition-all text-on-surface font-body-lg placeholder:text-on-surface/40 dark:placeholder:text-white/40 focus:outline-none" 
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="e.g. name@company.com"
                 required
               />
             </div>
             <div className="relative">
-              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface-variant mb-2 sm:mb-4 uppercase tracking-wider">NATURE OF INQUIRY</label>
+              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface mb-2 sm:mb-3 uppercase tracking-wider font-semibold">NATURE OF INQUIRY</label>
               <textarea 
-                className="w-full bg-transparent border-0 border-b border-outline py-3 sm:py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
+                className="w-full bg-transparent border-0 border-b-2 border-on-surface/40 hover:border-on-surface/70 focus:border-primary py-3 sm:py-4 px-0 focus:ring-0 transition-all text-on-surface font-body-lg placeholder:text-on-surface/40 dark:placeholder:text-white/40 focus:outline-none" 
                 rows={3}
                 value={inquiry}
                 onChange={(e) => setInquiry(e.target.value)}
+                placeholder="Describe your vehicle customization, performance upgrade, or inquiry..."
                 required
               ></textarea>
             </div>
-            <button className="group flex items-center justify-center gap-4 bg-primary text-on-primary px-8 sm:px-12 md:px-16 py-4 sm:py-5 md:py-6 font-label-caps text-xs sm:text-label-caps uppercase hover:bg-primary-hover transition-colors tactical-mask w-full sm:w-auto cursor-pointer" type="submit">
+            <button className="group flex items-center justify-center gap-4 bg-primary text-on-primary px-8 sm:px-12 md:px-16 py-4 sm:py-5 md:py-6 font-label-caps text-xs sm:text-label-caps uppercase hover:bg-primary-hover transition-colors tactical-mask w-full sm:w-auto cursor-pointer shadow-md" type="submit">
               SEND BRIEF
               <span className="material-symbols-outlined vertical-drive-arrow">send</span>
             </button>
