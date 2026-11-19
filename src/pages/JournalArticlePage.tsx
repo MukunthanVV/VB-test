@@ -74,20 +74,20 @@ const JournalArticlePage = () => {
       <AnimatedTopo />
       <TopNavBar />
       
-      <main className="pt-32 pb-24 px-margin-mobile md:px-margin-desktop relative min-h-screen max-w-container-max mx-auto">
+      <main className="pt-28 sm:pt-32 pb-24 px-4 sm:px-6 md:px-8 xl:px-margin-desktop relative min-h-screen max-w-container-max mx-auto">
         <div className="max-w-4xl">
-          <Link to="/" className="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-label-caps tracking-widest text-sm mb-12">
+          <Link to="/" className="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-label-caps tracking-widest text-xs sm:text-sm mb-8 sm:mb-12">
             <span className="material-symbols-outlined">arrow_back</span>
             BACK TO HOME
           </Link>
           
-          <div className="flex flex-col gap-4 mb-12">
+          <div className="flex flex-col gap-4 mb-8 sm:mb-12">
             <div className="flex items-center gap-4">
-              <span className="font-label-caps text-sm opacity-60">{article.date}</span>
+              <span className="font-label-caps text-xs sm:text-sm opacity-60">{article.date}</span>
               <span className="w-1 h-1 rounded-full bg-primary"></span>
-              <span className="font-label-caps text-sm text-primary">{article.category}</span>
+              <span className="font-label-caps text-xs sm:text-sm text-primary">{article.category}</span>
             </div>
-            <h1 className="font-headline-lg text-4xl md:text-5xl lg:text-6xl text-on-surface uppercase tracking-tight leading-tight">
+            <h1 className="font-headline-lg text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-on-surface uppercase tracking-tight leading-tight break-words">
               {article.title}
             </h1>
           </div>

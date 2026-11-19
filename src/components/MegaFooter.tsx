@@ -51,24 +51,24 @@ const MegaFooter: React.FC = () => {
 
 
       {/* Layer 4: Corner Metadata */}
-      <div className="absolute top-6 left-6 md:top-12 md:left-12 z-20 hidden md:block">
+      <div className="absolute top-6 left-6 md:top-12 md:left-12 z-20 hidden lg:block">
         <p className="font-label-caps text-label-caps text-[#F3C19D] tracking-widest uppercase flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#F3C19D] animate-pulse"></span>
           VB Associates
         </p>
       </div>
       
-      <div className="absolute top-12 right-12 z-20 hidden md:flex gap-8 bg-surface-container-low px-6 py-3 rounded-full border border-outline">
+      <div className="absolute top-6 right-6 md:top-12 md:right-12 z-20 hidden lg:flex gap-8 bg-surface-container-low px-6 py-3 rounded-full border border-outline">
         <a href="#" className="font-label-ui text-label-ui text-primary hover:opacity-70 transition-opacity">Email</a>
         <a href="#" className="font-label-ui text-label-ui text-primary hover:opacity-70 transition-opacity">LinkedIn</a>
         <a href="#" className="font-label-ui text-label-ui text-primary hover:opacity-70 transition-opacity">X</a>
       </div>
 
-      <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 z-20 hidden md:block">
+      <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 z-20 hidden lg:block">
         <p className="font-body-lg text-[#F3C19D] font-bold">
           Global Strategic Advisory
         </p>
-        <p className="font-body-md text-[#F3C19D] max-w-[300px] mt-2 hidden md:block">
+        <p className="font-body-md text-[#F3C19D] max-w-[300px] mt-2 hidden lg:block">
           Architects of diversified excellence since 2019. 
           Building the future of infrastructure and real estate.
         </p>
@@ -78,14 +78,14 @@ const MegaFooter: React.FC = () => {
       </section>
 
       {/* Final Copyright Footer */}
-      <footer className="w-full bg-[#0a0a0a] py-6 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 z-10">
+      <footer className="w-full bg-[#0a0a0a] py-6 px-4 sm:px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 z-10">
         
         <p className="font-label-caps text-[11px] leading-[16px] tracking-[0.15em] font-medium text-[#888888] uppercase text-center md:text-left">
           © 2026 VB ASSOCIATES. All rights reserved.
         </p>
         
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-3 w-full md:w-auto">
-          <p className="font-label-caps text-[10px] leading-[16px] tracking-[0.15em] font-medium text-[#888888] uppercase text-center whitespace-nowrap w-full md:w-auto border-t border-[#222] md:border-0 pt-4 md:pt-0">
+          <p className="font-label-caps text-[10px] leading-[16px] tracking-[0.15em] font-medium text-[#888888] uppercase text-center whitespace-normal sm:whitespace-nowrap w-full md:w-auto border-t border-[#222] md:border-0 pt-4 md:pt-0">
             Designed & developed by <span className="text-[#F3C19D]">Acala Solutions</span>.
           </p>
 

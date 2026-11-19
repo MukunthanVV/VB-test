@@ -56,13 +56,13 @@ const DisciplinesSection: React.FC = () => {
   };
 
   return (
-    <section id="disciplines" className={`relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-variant border-t border-outline overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <section id="disciplines" className={`relative py-16 sm:py-24 md:py-section-gap px-4 sm:px-6 md:px-8 xl:px-margin-desktop bg-surface-variant border-t border-outline overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       
       {/* Background Architectural Watermark */}
-      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none opacity-[0.03] select-none flex flex-col justify-center w-full z-0">
-        <span className="font-display-xl text-[180px] lg:text-[350px] leading-[0.8] text-primary text-left pl-[5%]">HOW</span>
-        <span className="font-display-xl text-[180px] lg:text-[350px] leading-[0.8] text-primary text-right pr-[5%]">WE</span>
-        <span className="font-display-xl text-[180px] lg:text-[350px] leading-[0.8] text-primary text-left pl-[5%]">WORK</span>
+      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none opacity-[0.03] select-none flex flex-col justify-center w-full z-0 max-w-full overflow-hidden">
+        <span className="font-display-xl text-[120px] sm:text-[180px] lg:text-[350px] leading-[0.8] text-primary text-left pl-[5%]">HOW</span>
+        <span className="font-display-xl text-[120px] sm:text-[180px] lg:text-[350px] leading-[0.8] text-primary text-right pr-[5%]">WE</span>
+        <span className="font-display-xl text-[120px] sm:text-[180px] lg:text-[350px] leading-[0.8] text-primary text-left pl-[5%]">WORK</span>
       </div>
 
       <div className="relative z-10 max-w-container-max mx-auto group">
@@ -78,25 +78,25 @@ const DisciplinesSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mb-16 md:mb-24"
+          className="mb-12 md:mb-20"
         >
           <span className="font-label-caps text-label-caps text-on-surface-variant mb-4 block">{data.subtitle}</span>
-          <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg uppercase text-on-surface max-w-4xl">
+          <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-5xl lg:text-headline-lg uppercase text-on-surface max-w-4xl break-words">
             {data.title.split(' ').map((word: string, i: number, arr: string[]) => (
               <React.Fragment key={i}>
                 {i === arr.length - 1 ? <span className="text-primary block sm:inline">{word}</span> : word + ' '}
               </React.Fragment>
             ))}
           </h2>
-          <p className="text-lg md:text-xl lg:text-3xl leading-relaxed mt-6 max-w-3xl text-on-surface-variant font-medium">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed mt-6 max-w-3xl text-on-surface-variant font-medium">
             {data.description}
           </p>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-24">
           
           {/* Left Side: DNA Traits */}
-          <div className="w-full lg:w-1/2 flex flex-col justify-center gap-12 lg:gap-16">
+          <div className="w-full lg:w-1/2 flex flex-col justify-center gap-8 lg:gap-16">
             {[1, 2, 3].map((num) => {
               const title = data[`trait${num}_title`];
               const desc = data[`trait${num}_desc`];
@@ -109,15 +109,15 @@ const DisciplinesSection: React.FC = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: num * 0.2 }}
-                  className="group/trait border-t border-outline pt-8"
+                  className="group/trait border-t border-outline pt-6 sm:pt-8"
                 >
-                  <div className="flex items-start gap-6 lg:gap-10">
-                    <span className="font-headline-md text-3xl lg:text-5xl text-outline-variant font-bold transition-colors group-hover/trait:text-primary">
+                  <div className="flex items-start gap-4 sm:gap-6 lg:gap-10">
+                    <span className="font-headline-md text-2xl sm:text-3xl lg:text-5xl text-outline-variant font-bold transition-colors group-hover/trait:text-primary flex-shrink-0">
                       0{num}
                     </span>
                     <div>
-                      <h3 className="text-xl lg:text-2xl font-bold uppercase mb-4 tracking-tight">{title}</h3>
-                      <p className="text-lg text-on-surface-variant leading-relaxed">
+                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold uppercase mb-3 tracking-tight break-words">{title}</h3>
+                      <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant leading-relaxed break-words">
                         {desc}
                       </p>
                     </div>
@@ -133,7 +133,7 @@ const DisciplinesSection: React.FC = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="w-full lg:w-1/2 relative min-h-[500px] lg:min-h-[700px] overflow-hidden rounded-[2rem] shadow-2xl group/imgslider"
+            className="w-full lg:w-1/2 relative min-h-[280px] sm:min-h-[400px] lg:min-h-[700px] overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl group/imgslider"
           >
             <div className="absolute inset-0 bg-primary/10 mix-blend-multiply z-10 pointer-events-none" />
             

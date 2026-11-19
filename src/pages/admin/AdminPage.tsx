@@ -10,7 +10,7 @@ const AdminPage: React.FC = () => {
     <div className="bg-background min-h-screen font-body flex flex-col text-on-background selection:bg-primary/30">
       <TopNavBar />
       
-      <main className="flex-1 flex flex-col items-center justify-center pt-24 pb-12 px-margin-mobile md:px-margin-desktop">
+      <main className="flex-1 flex flex-col items-center justify-center pt-24 pb-12 px-4 sm:px-6 md:px-8 xl:px-margin-desktop">
         <div className="w-full max-w-md bg-surface p-8 rounded-2xl shadow-xl border border-outline">
           <h1 className="font-headline-md text-3xl mb-6 text-center text-on-surface uppercase tracking-tight">Admin Portal</h1>
           

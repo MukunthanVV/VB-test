@@ -84,27 +84,27 @@ const JournalSection: React.FC = () => {
   };
 
   return (
-    <section id="journal" className={`relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent border-t border-outline overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <section id="journal" className={`relative py-16 sm:py-24 md:py-section-gap px-4 sm:px-6 md:px-8 xl:px-margin-desktop bg-transparent border-t border-outline overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative z-10 max-w-container-max mx-auto">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-24 gap-6 relative"
+          className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 sm:mb-16 md:mb-24 gap-6 relative"
         >
           <div>
-            <span className="font-label-caps text-label-caps text-on-surface-variant mb-4 block">05. INSIGHTS</span>
-            <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg uppercase text-on-surface">THE <span className="text-primary block md:inline">JOURNAL</span></h2>
+            <span className="font-label-caps text-xs sm:text-label-caps text-on-surface-variant mb-4 block">05. INSIGHTS</span>
+            <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-headline-lg-mobile lg:text-headline-lg uppercase text-on-surface break-words">THE <span className="text-primary block md:inline">JOURNAL</span></h2>
           </div>
           
           <div className="flex gap-4 items-center">
             {isAdmin && (
-              <button onClick={handleAdd} className="text-sm bg-primary text-on-primary px-6 py-3 rounded-full hover:opacity-90 font-bold">
+              <button onClick={handleAdd} className="text-xs sm:text-sm bg-primary text-on-primary px-4 sm:px-6 py-2.5 sm:py-3 rounded-full hover:opacity-90 font-bold">
                 + Add Entry
               </button>
             )}
-            <button className="group flex items-center gap-4 border-b border-on-surface pb-2 text-sm font-label-caps tracking-widest uppercase hover:text-primary hover:border-primary transition-colors">
+            <button className="group flex items-center gap-3 sm:gap-4 border-b border-on-surface pb-2 text-xs sm:text-sm font-label-caps tracking-widest uppercase hover:text-primary hover:border-primary transition-colors">
               READ ALL ARTICLES
               <span className="material-symbols-outlined transition-transform group-hover:translate-x-2">arrow_right_alt</span>
             </button>
@@ -119,7 +119,7 @@ const JournalSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative flex flex-col md:flex-row md:items-center justify-between py-10 md:py-16 border-b border-on-surface/20 hover:bg-surface-variant transition-colors duration-500 px-4 md:px-8 -mx-4 md:-mx-8 w-full"
+              className="group relative flex flex-col md:flex-row md:items-center justify-between py-8 sm:py-10 md:py-14 border-b border-on-surface/20 hover:bg-surface-variant transition-colors duration-500 px-3 sm:px-6 md:px-8 w-full rounded-xl"
             >
               {isAdmin && (
                 <div className="absolute top-4 right-4 z-50">
@@ -130,20 +130,20 @@ const JournalSection: React.FC = () => {
                 </div>
               )}
               
-              <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-16 w-full md:w-auto">
-                <div className="w-32 flex flex-col gap-1">
+              <div className="flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 md:gap-12 lg:gap-16 w-full md:w-auto">
+                <div className="w-auto sm:w-32 flex flex-row md:flex-col gap-2 md:gap-1 flex-shrink-0">
                   <span className="font-label-caps text-xs opacity-60">{entry.date}</span>
                   <span className="font-label-caps text-[10px] text-primary">{entry.category}</span>
                 </div>
-                <h3 className="text-2xl md:text-3xl lg:text-4xl font-medium tracking-tight max-w-3xl group-hover:translate-x-4 transition-transform duration-500 pr-12">
+                <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium tracking-tight max-w-3xl group-hover:translate-x-2 sm:group-hover:translate-x-4 transition-transform duration-500 pr-4 sm:pr-12 break-words">
                   {entry.title}
                 </h3>
               </div>
               
-              <div className="pt-4 md:pt-6 mt-auto">
+              <div className="pt-4 md:pt-0 mt-2 md:mt-0 flex-shrink-0">
                 <a 
                   href={`#/journal/${entry.id}`}
-                  className="font-label-caps text-label-caps text-on-surface uppercase hover:text-primary transition-colors flex items-center gap-2"
+                  className="font-label-caps text-xs sm:text-label-caps text-on-surface uppercase hover:text-primary transition-colors flex items-center gap-2"
                 >
                   READ DISPATCH <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </a>

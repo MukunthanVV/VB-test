@@ -165,7 +165,7 @@ const ProjectsSection: React.FC = () => {
 
       <div className="relative z-10 w-full">
         {/* Header Container */}
-        <div className="w-full z-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mb-8 lg:mb-12">
+        <div className="w-full z-20 px-4 sm:px-6 md:px-8 xl:px-margin-desktop max-w-container-max mx-auto mb-8 lg:mb-12">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -174,18 +174,18 @@ const ProjectsSection: React.FC = () => {
             className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6"
           >
             <div>
-              <span className="font-label-caps text-label-caps text-on-surface-variant mb-4 block">04. PORTFOLIO</span>
-              <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg uppercase text-on-surface">SELECTED <span className="text-primary block md:inline">PROJECTS</span></h2>
+              <span className="font-label-caps text-xs sm:text-label-caps text-on-surface-variant mb-4 block">04. PORTFOLIO</span>
+              <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-5xl lg:text-headline-lg uppercase text-on-surface break-words">SELECTED <span className="text-primary block md:inline">PROJECTS</span></h2>
             </div>
             <div className="flex items-center gap-4 mt-4 md:mt-0">
-              <button onClick={() => scroll('left')} className="w-12 h-12 rounded-full border border-on-surface flex items-center justify-center hover:bg-on-surface hover:text-surface transition-colors"><span className="material-symbols-outlined">arrow_back</span></button>
-              <button onClick={() => scroll('right')} className="w-12 h-12 rounded-full border border-on-surface flex items-center justify-center hover:bg-on-surface hover:text-surface transition-colors"><span className="material-symbols-outlined">arrow_forward</span></button>
+              <button onClick={() => scroll('left')} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-on-surface flex items-center justify-center hover:bg-on-surface hover:text-surface transition-colors cursor-pointer" aria-label="Scroll left"><span className="material-symbols-outlined">arrow_back</span></button>
+              <button onClick={() => scroll('right')} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-on-surface flex items-center justify-center hover:bg-on-surface hover:text-surface transition-colors cursor-pointer" aria-label="Scroll right"><span className="material-symbols-outlined">arrow_forward</span></button>
             </div>
           </motion.div>
         </div>
 
         {/* Swipeable Horizontal Gallery */}
-        <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory gap-8 px-margin-mobile md:px-margin-desktop pb-12 pt-4 hide-scrollbar">
+        <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory gap-6 sm:gap-8 px-4 sm:px-6 md:px-8 xl:px-margin-desktop pb-12 pt-4 hide-scrollbar">
           <div className="w-[calc((100vw-min(100vw,1600px))/2)] flex-shrink-0 hidden xl:block"></div>
 
           {groupedData.map((division, index) => (
@@ -195,11 +195,11 @@ const ProjectsSection: React.FC = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="relative flex-shrink-0 w-[85vw] md:w-[75vw] lg:w-[70vw] xl:w-[1200px] snap-center bg-surface border border-outline rounded-[2.5rem] p-6 md:p-8 shadow-xl"
+              className="relative flex-shrink-0 w-[88vw] sm:w-[82vw] md:w-[75vw] lg:w-[70vw] xl:w-[1200px] snap-center bg-surface border border-outline rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-xl"
             >
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-outline relative group/div">
                 <div className="flex items-center gap-4">
-                  <h3 className="font-headline-md text-2xl md:text-3xl uppercase tracking-tighter">{division.title}</h3>
+                  <h3 className="font-headline-md text-xl sm:text-2xl md:text-3xl uppercase tracking-tighter break-words">{division.title}</h3>
                   {isAdmin && (
                     <div className="opacity-0 group-hover/div:opacity-100 transition-opacity">
                       <InlineEditControls onEdit={() => handleEditDiv({ id: division.id, title: division.title })} />
@@ -232,12 +232,12 @@ const ProjectsSection: React.FC = () => {
                          <div className="absolute inset-0 w-full h-full bg-surface-variant flex items-center justify-center">No image</div>
                       )}
                     </div>
-                    <div className="flex justify-between items-start mt-2">
+                    <div className="flex justify-between items-start mt-2 gap-2">
                       <div>
-                        <h4 className="text-xl md:text-2xl font-bold uppercase mb-2">{division.featured.title}</h4>
-                        <p className="text-on-surface-variant text-sm whitespace-pre-wrap">{division.featured.desc}</p>
+                        <h4 className="text-lg sm:text-xl md:text-2xl font-bold uppercase mb-2 break-words">{division.featured.title}</h4>
+                        <p className="text-on-surface-variant text-xs sm:text-sm whitespace-pre-wrap break-words">{division.featured.desc}</p>
                       </div>
-                      {division.featured.year && <span className="font-label-caps text-xs opacity-60 bg-surface-variant px-3 py-1 rounded-full flex-shrink-0 ml-4">{division.featured.year}</span>}
+                      {division.featured.year && <span className="font-label-caps text-xs opacity-60 bg-surface-variant px-3 py-1 rounded-full flex-shrink-0 ml-2">{division.featured.year}</span>}
                     </div>
                   </div>
                 )}

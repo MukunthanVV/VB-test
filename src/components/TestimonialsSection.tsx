@@ -117,7 +117,7 @@ const TestimonialsSection: React.FC = () => {
   };
 
   return (
-    <section id="testimonials" className={`relative py-20 md:py-24 px-margin-mobile md:px-margin-desktop bg-[#1a1a1a] text-white overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <section id="testimonials" className={`relative py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-8 xl:px-margin-desktop bg-[#1a1a1a] text-white overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative z-10 max-w-container-max mx-auto w-full">
         
         <motion.div 
@@ -125,28 +125,28 @@ const TestimonialsSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-20 gap-6 relative"
+          className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 sm:mb-16 md:mb-20 gap-6 relative"
         >
           <div>
-            <span className="font-label-caps text-label-caps text-[#C5A059] mb-4 block">CLIENT VOICES</span>
-            <h2 className="font-headline-lg text-4xl md:text-headline-lg-mobile lg:text-headline-lg uppercase text-left">TRUSTED <span className="text-white block md:inline">WORLDWIDE</span></h2>
+            <span className="font-label-caps text-xs sm:text-label-caps text-[#C5A059] mb-4 block">CLIENT VOICES</span>
+            <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-headline-lg-mobile lg:text-headline-lg uppercase text-left break-words">TRUSTED <span className="text-white block md:inline">WORLDWIDE</span></h2>
           </div>
           <div className="flex gap-4 items-center">
             {isAdmin && (
-              <button onClick={handleAdd} className="text-sm bg-primary text-on-primary px-4 py-2 rounded-full hover:opacity-90 font-bold mr-4">
+              <button onClick={handleAdd} className="text-xs sm:text-sm bg-primary text-on-primary px-3 sm:px-4 py-2 rounded-full hover:opacity-90 font-bold mr-2 sm:mr-4">
                 + Add Testimonial
               </button>
             )}
-             <button onClick={prevTestimonial} className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer z-20">
+             <button onClick={prevTestimonial} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer z-20" aria-label="Previous testimonial">
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
-            <button onClick={nextTestimonial} className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer z-20">
+            <button onClick={nextTestimonial} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer z-20" aria-label="Next testimonial">
               <span className="material-symbols-outlined">arrow_forward</span>
             </button>
           </div>
         </motion.div>
 
-        <div className="relative min-h-[400px] flex items-stretch">
+        <div className="relative min-h-[350px] sm:min-h-[400px] flex items-stretch">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
@@ -168,27 +168,27 @@ const TestimonialsSection: React.FC = () => {
                   />
                 </div>
               )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 h-full items-stretch">
-                <div className="flex flex-col justify-center relative py-8 pointer-events-none">
-                  <span className="material-symbols-outlined text-6xl md:text-8xl text-white opacity-10 absolute -top-4 -left-4 md:-top-8 md:-left-8 -z-10">format_quote</span>
-                  <p className="text-2xl md:text-3xl lg:text-4xl font-medium leading-[1.3] tracking-tight mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 h-full items-stretch">
+                <div className="flex flex-col justify-center relative py-6 sm:py-8 pointer-events-none">
+                  <span className="material-symbols-outlined text-5xl sm:text-6xl md:text-8xl text-white opacity-10 absolute -top-4 -left-4 md:-top-8 md:-left-8 -z-10 select-none">format_quote</span>
+                  <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-medium leading-[1.3] tracking-tight mb-8 sm:mb-10 break-words">
                     "{currentItem.quote}"
                   </p>
                   
-                  <div className="flex items-center gap-6 mt-auto">
-                    <div className="w-14 h-14 rounded-full bg-[#C5A059] flex items-center justify-center flex-shrink-0">
-                      <span className="text-black font-bold text-2xl">{currentItem.name?.charAt(0) || 'U'}</span>
+                  <div className="flex items-center gap-4 sm:gap-6 mt-auto">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#C5A059] flex items-center justify-center flex-shrink-0">
+                      <span className="text-black font-bold text-xl sm:text-2xl">{currentItem.name?.charAt(0) || 'U'}</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-lg md:text-xl uppercase">{currentItem.name}</h4>
-                      <p className="text-[#C5A059] text-sm font-label-caps uppercase tracking-wider">{currentItem.title} • {currentItem.division}</p>
+                      <h4 className="font-bold text-base sm:text-lg md:text-xl uppercase break-words">{currentItem.name}</h4>
+                      <p className="text-[#C5A059] text-xs sm:text-sm font-label-caps uppercase tracking-wider">{currentItem.title} • {currentItem.division}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="relative flex items-end justify-center md:justify-end md:pl-12 group/imgslider">
                   {images.length > 0 && (
-                    <div className="relative w-full max-w-md h-[400px] md:h-[450px]">
+                    <div className="relative w-full max-w-md h-[280px] sm:h-[350px] md:h-[450px]">
                       <AnimatePresence initial={false}>
                         <motion.img 
                           key={currentImgIndex}

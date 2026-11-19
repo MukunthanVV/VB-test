@@ -151,13 +151,13 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
         </video>
       </div>
 
-      <main className={`pt-16 pb-24 px-4 md:px-8 lg:px-12 relative transition-opacity duration-500 ${heroLoaded && servicesLoaded ? 'opacity-100' : 'opacity-0'}`}>
+      <main className={`pt-12 sm:pt-16 pb-24 px-4 sm:px-6 md:px-8 lg:px-12 relative transition-opacity duration-500 ${heroLoaded && servicesLoaded ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-container-max mx-auto">
-          <div className="mb-16">
-            <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-6 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm">
+          <div className="mb-12 sm:mb-16">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4 sm:mb-6 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm break-words">
               {heroData.title}
             </h1>
-            <p className="text-xl md:text-2xl font-medium tracking-tight text-[#1A1A1A] dark:text-white max-w-3xl">
+            <p className="text-lg sm:text-xl md:text-2xl font-medium tracking-tight text-[#1A1A1A] dark:text-white max-w-3xl break-words">
               {heroData.description}
             </p>
           </div>

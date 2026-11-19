@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PremiumToggle from './PremiumToggle';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,6 +17,8 @@ const TopNavBar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (location.pathname !== '/') return;
@@ -35,15 +37,45 @@ const TopNavBar: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     // Initial check
     handleScroll();
     
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
+  // Close mobile menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMobileMenuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobileMenuOpen]);
+
+  // Close mobile menu on window resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileMenuOpen]);
+
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
+    setIsMobileMenuOpen(false);
     if (location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -51,18 +83,18 @@ const TopNavBar: React.FC = () => {
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 100);
+      }, 150);
     } else {
       const element = document.getElementById(id);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     }
-    setIsMobileMenuOpen(false);
   };
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    setIsMobileMenuOpen(false);
     if (location.pathname !== '/') {
       navigate('/');
     }
@@ -71,18 +103,35 @@ const TopNavBar: React.FC = () => {
 
   return (
     <nav className="fixed top-0 z-50 w-full bg-surface/90 backdrop-blur-md border-b border-outline-variant">
-      <div className="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-3 w-full max-w-container-max mx-auto">
-        <a className="flex items-center gap-3 font-headline-md text-3xl md:text-headline-md text-on-surface tracking-tighter whitespace-nowrap cursor-pointer" onClick={handleLogoClick}>
-          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="VB Associates Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-sm" />
-          VB ASSOCIATES
+      <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-margin-desktop py-2.5 sm:py-3 w-full max-w-container-max mx-auto">
+        {/* Brand Logo */}
+        <a 
+          className="flex items-center gap-2 sm:gap-3 flex-shrink-0 cursor-pointer select-none group" 
+          onClick={handleLogoClick}
+          aria-label="VB Associates Home"
+        >
+          <img 
+            src={`${import.meta.env.BASE_URL}logo.png`} 
+            alt="VB Associates Logo" 
+            className="w-8 h-8 sm:w-10 sm:h-10 xl:w-12 xl:h-12 rounded-full object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 flex-shrink-0" 
+          />
+          <span className="font-headline-md text-xl sm:text-2xl lg:text-2xl xl:text-3xl 2xl:text-headline-md text-on-surface tracking-tighter whitespace-nowrap">
+            VB ASSOCIATES
+          </span>
         </a>
-        <div className="hidden md:flex gap-10 items-center">
+
+        {/* Desktop Navigation Links (Visible on lg and above: 1024px+) */}
+        <div className="hidden lg:flex items-center gap-4 xl:gap-8 2xl:gap-10 min-w-0">
           {navLinks.map((link) => {
             const isActive = activeSection === link.id && location.pathname === '/';
             return (
               <a 
                 key={link.id}
-                className={`font-label-caps text-label-caps uppercase tracking-widest transition-all duration-300 ease-in-out cursor-pointer ${isActive ? 'text-on-surface font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-on-surface'}`} 
+                className={`font-label-caps text-xs xl:text-label-caps uppercase tracking-wider xl:tracking-widest whitespace-nowrap transition-all duration-200 ease-in-out cursor-pointer py-1 ${
+                  isActive 
+                    ? 'text-on-surface font-bold border-b-2 border-primary' 
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`} 
                 onClick={(e) => handleNavClick(e, link.id)}
               >
                 {link.label}
@@ -91,58 +140,93 @@ const TopNavBar: React.FC = () => {
           })}
           {isAdmin && (
             <a 
-              className={`font-label-caps text-label-caps uppercase tracking-widest transition-all duration-300 ease-in-out cursor-pointer ${location.pathname === '/admin' ? 'text-on-surface font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-on-surface'}`} 
+              className={`font-label-caps text-xs xl:text-label-caps uppercase tracking-wider xl:tracking-widest whitespace-nowrap transition-all duration-200 ease-in-out cursor-pointer py-1 ${
+                location.pathname === '/admin' 
+                  ? 'text-on-surface font-bold border-b-2 border-primary' 
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`} 
               onClick={() => navigate('/admin')}
             >
               ADMIN
             </a>
           )}
         </div>
-        <div className="hidden md:flex items-center gap-4">
-          <a onClick={(e) => handleNavClick(e, 'contact')} className="inline-block font-label-caps text-label-caps uppercase tracking-widest bg-on-surface text-background px-8 py-2 hover:bg-primary hover:text-on-primary transition-colors duration-300 text-center mt-1 cursor-pointer">
+
+        {/* Desktop Action Buttons */}
+        <div className="hidden lg:flex items-center gap-3 xl:gap-4 flex-shrink-0">
+          <a 
+            onClick={(e) => handleNavClick(e, 'contact')} 
+            className="inline-block font-label-caps text-xs xl:text-label-caps uppercase tracking-wider xl:tracking-widest bg-on-surface text-background px-4 py-2 xl:px-8 xl:py-2.5 hover:bg-primary hover:text-on-primary transition-colors duration-300 text-center whitespace-nowrap cursor-pointer shadow-sm"
+          >
             CONTACT GROUP
           </a>
           <PremiumToggle />
         </div>
-        <button 
-          className="md:hidden text-on-surface"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'menu'}</span>
-        </button>
+
+        {/* Mobile & Tablet Hamburger Toggle (Visible below lg: foldables, phones, portrait & small tablets) */}
+        <div className="flex lg:hidden items-center gap-3">
+          <div className="scale-90 origin-right">
+            <PremiumToggle />
+          </div>
+          <button 
+            ref={buttonRef}
+            className="text-on-surface p-1.5 rounded-md hover:bg-surface-variant transition-colors flex items-center justify-center focus:outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
+          >
+            <span className="material-symbols-outlined text-2xl sm:text-3xl">
+              {isMobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile & Tablet Drawer Menu */}
       <div 
-        className={`md:hidden absolute top-full left-0 w-full bg-surface/95 backdrop-blur-md border-b border-outline-variant shadow-lg py-6 px-margin-mobile flex flex-col gap-6 items-center overflow-hidden transition-all duration-300 ease-in-out origin-top ${isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 py-0 pointer-events-none'}`}
+        ref={menuRef}
+        className={`lg:hidden absolute top-full left-0 w-full bg-surface/98 backdrop-blur-xl border-b border-outline-variant shadow-2xl transition-all duration-300 ease-in-out origin-top overflow-y-auto ${
+          isMobileMenuOpen 
+            ? 'max-h-[calc(100vh-65px)] opacity-100 py-6 px-6 pointer-events-auto' 
+            : 'max-h-0 opacity-0 py-0 px-6 pointer-events-none'
+        }`}
       >
-        {navLinks.map((link) => {
-          const isActive = activeSection === link.id && location.pathname === '/';
-          return (
+        <div className="flex flex-col gap-4 items-center max-w-sm mx-auto text-center">
+          {navLinks.map((link) => {
+            const isActive = activeSection === link.id && location.pathname === '/';
+            return (
+              <a 
+                key={link.id}
+                className={`font-label-caps text-sm uppercase tracking-widest transition-all duration-200 cursor-pointer py-2 w-full rounded-md ${
+                  isActive 
+                    ? 'text-on-surface font-bold bg-surface-variant' 
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
+                }`} 
+                onClick={(e) => handleNavClick(e, link.id)}
+              >
+                {link.label}
+              </a>
+            );
+          })}
+          {isAdmin && (
             <a 
-              key={link.id}
-              className={`font-label-caps text-label-caps uppercase tracking-widest transition-all duration-300 ease-in-out cursor-pointer ${isActive ? 'text-on-surface font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-on-surface'}`} 
-              onClick={(e) => handleNavClick(e, link.id)}
+              className={`font-label-caps text-sm uppercase tracking-widest transition-all duration-200 cursor-pointer py-2 w-full rounded-md ${
+                location.pathname === '/admin' 
+                  ? 'text-on-surface font-bold bg-surface-variant' 
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
+              }`} 
+              onClick={() => { navigate('/admin'); setIsMobileMenuOpen(false); }}
             >
-              {link.label}
+              ADMIN
             </a>
-          );
-        })}
-        {isAdmin && (
+          )}
           <a 
-            className={`font-label-caps text-label-caps uppercase tracking-widest transition-all duration-300 ease-in-out cursor-pointer ${location.pathname === '/admin' ? 'text-on-surface font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-on-surface'}`} 
-            onClick={() => { navigate('/admin'); setIsMobileMenuOpen(false); }}
+            onClick={(e) => handleNavClick(e, 'contact')} 
+            className="font-label-caps text-sm uppercase tracking-widest bg-on-surface text-background px-8 py-3.5 hover:bg-primary hover:text-on-primary transition-colors duration-300 text-center w-full mt-2 cursor-pointer shadow-md"
           >
-            ADMIN
+            CONTACT GROUP
           </a>
-        )}
-        <a 
-          onClick={(e) => handleNavClick(e, 'contact')} 
-          className="font-label-caps text-label-caps uppercase tracking-widest bg-on-surface text-background px-8 py-3 hover:bg-primary hover:text-on-primary transition-colors duration-300 text-center w-full max-w-xs mt-2 cursor-pointer"
-        >
-          CONTACT GROUP
-        </a>
-        <PremiumToggle />
+        </div>
       </div>
     </nav>
   );

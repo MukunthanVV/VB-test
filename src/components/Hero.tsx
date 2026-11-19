@@ -45,7 +45,7 @@ const Hero: React.FC = () => {
   return (
     <section className={`relative min-h-screen flex items-center justify-center pt-32 pb-16 overflow-hidden bg-transparent transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
 
-      <div className="relative z-10 px-margin-mobile md:px-margin-desktop max-w-container-max w-full text-center pointer-events-auto">
+      <div className="relative z-10 px-4 sm:px-6 md:px-8 xl:px-margin-desktop max-w-container-max w-full text-center pointer-events-auto">
         {isAdmin && (
           <div className="absolute top-0 right-0 z-50">
             <InlineEditControls onEdit={handleEdit} />
@@ -55,7 +55,7 @@ const Hero: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display-xl text-display-xl-mobile md:text-display-xl leading-none tracking-tighter mb-12 max-w-6xl mx-auto uppercase"
+          className="font-display-xl text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-display-xl leading-[0.95] tracking-tighter mb-12 max-w-6xl mx-auto uppercase break-words"
         >
           <span 
             className="bg-clip-text text-transparent bg-gradient-to-br from-neutral-600 via-neutral-900 to-black transition-all duration-500" 

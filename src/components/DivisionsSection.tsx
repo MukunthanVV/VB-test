@@ -63,7 +63,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        className={`w-full md:w-[40%] relative min-h-[300px] md:min-h-[600px] bg-[#8F8A8B] dark:bg-neutral-800 flex flex-col justify-center items-center group/slider flex-shrink-0 ${isReversed ? 'border-l border-outline' : 'border-r border-outline'}`}
+        className={`w-full md:w-[40%] relative min-h-[260px] sm:min-h-[340px] md:min-h-[450px] lg:min-h-[550px] xl:min-h-[600px] bg-[#8F8A8B] dark:bg-neutral-800 flex flex-col justify-center items-center group/slider flex-shrink-0 ${isReversed ? 'border-l border-outline' : 'border-r border-outline'}`}
       >
         {images.length > 0 ? (
           <>
@@ -111,20 +111,20 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-16 text-[#1A1A1A] dark:text-white flex-shrink-0"
+        className="w-full md:w-[60%] flex flex-col justify-center px-6 sm:px-8 md:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-14 text-[#1A1A1A] dark:text-white min-w-0"
       >
-        <div className="flex items-center gap-4 mb-6">
-          <span className="font-label-caps text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">{item.number}. {item.category}</span>
+        <div className="flex items-center gap-4 mb-4 sm:mb-6">
+          <span className="font-label-caps text-xs sm:text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">{item.number}. {item.category}</span>
         </div>
-        <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm">{item.title}</h3>
+        <h3 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm break-words">{item.title}</h3>
         
-        <p className="text-lg md:text-[28px] lg:text-[32px] leading-[1.4] font-medium mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white">
+        <p className="text-base sm:text-lg md:text-xl lg:text-[24px] xl:text-[30px] leading-relaxed md:leading-[1.4] font-medium mb-8 sm:mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white break-words">
           {item.description}
         </p>
         
         <a 
           href={`#/division/${item.id}`}
-          className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-4 px-6 text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#988E8B] dark:hover:text-neutral-900 transition-colors duration-300"
+          className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-3.5 sm:py-4 px-5 sm:px-6 text-xs sm:text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#988E8B] dark:hover:text-neutral-900 transition-colors duration-300"
         >
           ENTER DIVISION
           <span className="text-xl leading-none transition-transform group-hover:rotate-90">+</span>
@@ -202,7 +202,7 @@ const DivisionsSection: React.FC = () => {
   };
 
   return (
-    <section id="services" className={`relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent w-full overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <section id="services" className={`relative py-16 sm:py-24 md:py-section-gap px-4 sm:px-6 md:px-8 xl:px-margin-desktop bg-transparent w-full overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative z-10 max-w-container-max mx-auto w-full">
         
         <motion.div 
@@ -213,8 +213,8 @@ const DivisionsSection: React.FC = () => {
           className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-16 gap-6 relative"
         >
           <div>
-            <h2 className="font-headline-lg text-4xl md:text-headline-lg-mobile lg:text-headline-lg uppercase text-on-surface text-left">OUR <span className="text-primary block md:inline">SPECIALIZATIONS</span></h2>
-            <p className="font-label-caps text-label-caps text-on-surface-variant max-w-xs text-left mt-4">DYNAMIC SYNERGY ACROSS HIGH-STAKES INDUSTRIES</p>
+            <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-headline-lg-mobile lg:text-headline-lg uppercase text-on-surface text-left break-words">OUR <span className="text-primary block md:inline">SPECIALIZATIONS</span></h2>
+            <p className="font-label-caps text-xs sm:text-label-caps text-on-surface-variant max-w-xs text-left mt-3 sm:mt-4">DYNAMIC SYNERGY ACROSS HIGH-STAKES INDUSTRIES</p>
           </div>
           
           {isAdmin && (

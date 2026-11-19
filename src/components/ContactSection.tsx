@@ -58,8 +58,8 @@ const ContactSection: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="relative py-24 md:py-section-gap px-margin-mobile md:px-margin-desktop bg-transparent overflow-hidden">
-      <div className="relative z-10 max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-start">
+    <section id="contact" className="relative py-16 sm:py-24 md:py-section-gap px-4 sm:px-6 md:px-8 xl:px-margin-desktop bg-transparent overflow-hidden">
+      <div className="relative z-10 max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-start gap-12 lg:gap-16">
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -67,12 +67,12 @@ const ContactSection: React.FC = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="max-w-2xl w-full"
         >
-          <h2 className="font-headline-lg text-4xl md:text-headline-lg-mobile lg:text-headline-lg mb-8 md:mb-12 uppercase text-on-surface">CONNECT WITH <span className="text-primary block md:inline">THE BOARD</span></h2>
-          <form className="space-y-12" onSubmit={handleSubmit}>
+          <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-headline-lg-mobile lg:text-headline-lg mb-8 md:mb-12 uppercase text-on-surface break-words">CONNECT WITH <span className="text-primary block md:inline">THE BOARD</span></h2>
+          <form className="space-y-8 sm:space-y-12" onSubmit={handleSubmit}>
             <div className="relative">
-              <label className="block font-label-caps text-2xl text-on-surface-variant mb-4 uppercase">FULL NAME</label>
+              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface-variant mb-2 sm:mb-4 uppercase tracking-wider">FULL NAME</label>
               <input 
-                className="w-full bg-transparent border-0 border-b border-outline py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
+                className="w-full bg-transparent border-0 border-b border-outline py-3 sm:py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
                 type="text" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -80,9 +80,9 @@ const ContactSection: React.FC = () => {
               />
             </div>
             <div className="relative">
-              <label className="block font-label-caps text-2xl text-on-surface-variant mb-4 uppercase">CORPORATE EMAIL</label>
+              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface-variant mb-2 sm:mb-4 uppercase tracking-wider">CORPORATE EMAIL</label>
               <input 
-                className="w-full bg-transparent border-0 border-b border-outline py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
+                className="w-full bg-transparent border-0 border-b border-outline py-3 sm:py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -90,16 +90,16 @@ const ContactSection: React.FC = () => {
               />
             </div>
             <div className="relative">
-              <label className="block font-label-caps text-2xl text-on-surface-variant mb-4 uppercase">NATURE OF INQUIRY</label>
+              <label className="block font-label-caps text-xs sm:text-sm md:text-base text-on-surface-variant mb-2 sm:mb-4 uppercase tracking-wider">NATURE OF INQUIRY</label>
               <textarea 
-                className="w-full bg-transparent border-0 border-b border-outline py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
+                className="w-full bg-transparent border-0 border-b border-outline py-3 sm:py-4 px-0 focus:ring-0 focus:border-primary transition-all text-on-surface font-body-lg placeholder:text-outline focus:outline-none" 
                 rows={3}
                 value={inquiry}
                 onChange={(e) => setInquiry(e.target.value)}
                 required
               ></textarea>
             </div>
-            <button className="group flex items-center gap-4 bg-primary text-on-primary px-16 py-6 font-label-caps text-label-caps uppercase hover:bg-primary-hover transition-colors tactical-mask" type="submit">
+            <button className="group flex items-center justify-center gap-4 bg-primary text-on-primary px-8 sm:px-12 md:px-16 py-4 sm:py-5 md:py-6 font-label-caps text-xs sm:text-label-caps uppercase hover:bg-primary-hover transition-colors tactical-mask w-full sm:w-auto cursor-pointer" type="submit">
               SEND BRIEF
               <span className="material-symbols-outlined vertical-drive-arrow">send</span>
             </button>
@@ -111,7 +111,7 @@ const ContactSection: React.FC = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="mt-24 md:mt-0 space-y-12 relative group"
+          className="mt-8 md:mt-0 space-y-8 sm:space-y-12 relative group w-full md:w-auto"
         >
           {isAdmin && (
             <div className="absolute -top-12 right-0 z-50">
