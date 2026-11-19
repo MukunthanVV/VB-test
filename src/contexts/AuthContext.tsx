@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 const ADMIN_EMAILS = [
   'tharunkarthikav21@gmail.com',
-
+  'vickybond123@gmail.com',
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email);
+  const isAdmin = !!user?.email && ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
   return (
     <AuthContext.Provider value={{ user, isAdmin, login, logout, loading }}>
