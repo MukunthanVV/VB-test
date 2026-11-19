@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { collection, onSnapshot, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -122,13 +123,13 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
           {item.description}
         </p>
         
-        <a 
-          href={`#/division/${item.id}`}
+        <Link 
+          to={`/division/${item.id}`}
           className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-3.5 sm:py-4 px-5 sm:px-6 text-xs sm:text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#988E8B] dark:hover:text-neutral-900 transition-colors duration-300"
         >
           ENTER DIVISION
           <span className="text-xl leading-none transition-transform group-hover:rotate-90">+</span>
-        </a>
+        </Link>
       </motion.div>
     </div>
   );

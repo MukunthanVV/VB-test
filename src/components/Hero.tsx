@@ -10,7 +10,7 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 const fallbackData = {
   id: 'main',
   title: 'VB ASSOCIATES',
-  subtitle: 'THE ARCHITECTS OF DIVERSIFIED EXCELLENCE',
+  subtitle: 'PERFORMANCE & AUTO MODIFICATION GARAGE',
   btn1_text: 'EXPLORE PORTFOLIO',
   btn2_text: 'VIEW INVESTOR RELATIONS',
 };

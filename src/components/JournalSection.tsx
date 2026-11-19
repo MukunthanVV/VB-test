@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -141,12 +142,12 @@ const JournalSection: React.FC = () => {
               </div>
               
               <div className="pt-4 md:pt-0 mt-2 md:mt-0 flex-shrink-0">
-                <a 
-                  href={`#/journal/${entry.id}`}
+                <Link 
+                  to={`/journal/${entry.id}`}
                   className="font-label-caps text-xs sm:text-label-caps text-on-surface uppercase hover:text-primary transition-colors flex items-center gap-2"
                 >
                   READ DISPATCH <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </a>
+                </Link>
               </div>
             </motion.div>
           ))}
