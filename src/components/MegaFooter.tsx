@@ -57,12 +57,6 @@ const MegaFooter: React.FC = () => {
           VB Associates
         </p>
       </div>
-      
-      <div className="absolute top-6 right-6 md:top-12 md:right-12 z-20 hidden lg:flex gap-8 bg-surface-container-low px-6 py-3 rounded-full border border-outline">
-        <a href="#" className="font-label-ui text-label-ui text-primary hover:opacity-70 transition-opacity">Email</a>
-        <a href="#" className="font-label-ui text-label-ui text-primary hover:opacity-70 transition-opacity">LinkedIn</a>
-        <a href="#" className="font-label-ui text-label-ui text-primary hover:opacity-70 transition-opacity">X</a>
-      </div>
 
       <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 z-20 hidden lg:block">
         <p className="font-body-lg text-[#F3C19D] font-bold">
