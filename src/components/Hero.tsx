@@ -10,9 +10,9 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 const fallbackData = {
   id: 'main',
   title: 'VB ASSOCIATES',
-  subtitle: 'PERFORMANCE & AUTO MODIFICATION GARAGE',
-  btn1_text: 'EXPLORE PORTFOLIO',
-  btn2_text: 'VIEW INVESTOR RELATIONS',
+  subtitle: 'ONE VISION. MANY VENTURES. Demo',
+  btn1_text: '',
+  btn2_text: '',
 };
 
 const heroFields: FieldConfig[] = [
@@ -24,14 +24,23 @@ const heroFields: FieldConfig[] = [
 
 const Hero: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [data, setData] = useState<any>(fallbackData);
+  const [data, setData] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('cache_hero');
+      return cached ? JSON.parse(cached) : fallbackData;
+    } catch {
+      return fallbackData;
+    }
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'hero', 'main'), (docSnap) => {
       if (docSnap.exists()) {
-        setData({ id: docSnap.id, ...docSnap.data() });
+        const docData = { id: docSnap.id, ...docSnap.data() };
+        setData(docData);
+        try { localStorage.setItem('cache_hero', JSON.stringify(docData)); } catch {}
       }
       setIsLoaded(true);
     });

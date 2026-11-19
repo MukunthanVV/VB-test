@@ -7,21 +7,22 @@ import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
-import mindsetImageFallback from '../assets/founder-mindset-new.jpg';
 
 const fallbackData = {
   id: 'mindset_main',
-  title: 'THE MINDSET',
-  image: mindsetImageFallback,
+  title: 'Managing Director and CEO',
+  image: [
+    'https://res.cloudinary.com/dgssrfsli/image/upload/v1795011510/ud40goz0rvayyrwsi9t5.jpg'
+  ],
   val1_title: 'PRECISION',
-  val1_desc: 'Every decision is intentional.',
+  val1_desc: "Precision is not a choice , it's our standard.",
   val2_title: 'INNOVATION',
-  val2_desc: 'Progress through adaptation.',
+  val2_desc: 'Where ideas evolve into excellence.',
   val3_title: 'LONGEVITY',
-  val3_desc: 'Building for generations.',
+  val3_desc: 'Crafting a legacy for generations.',
   val4_title: 'INTEGRITY',
-  val4_desc: 'Trust before growth.',
-  quoteText: '— Founder & Managing Director'
+  val4_desc: 'Trust is the foundation of everything we build.',
+  quoteText: '"A leader\'s true influence is reflected not in titles, but in the lives they inspire."'
 };
 
 const mindsetFields: FieldConfig[] = [
@@ -40,14 +41,23 @@ const mindsetFields: FieldConfig[] = [
 
 const MindsetSection: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [data, setData] = useState<any>(fallbackData);
+  const [data, setData] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('cache_mindset');
+      return cached ? JSON.parse(cached) : fallbackData;
+    } catch {
+      return fallbackData;
+    }
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'mindset', 'main'), (docSnap) => {
       if (docSnap.exists()) {
-        setData({ id: docSnap.id, ...docSnap.data() });
+        const docData = { id: docSnap.id, ...docSnap.data() };
+        setData(docData);
+        try { localStorage.setItem('cache_mindset', JSON.stringify(docData)); } catch {}
       }
       setIsLoaded(true);
     });

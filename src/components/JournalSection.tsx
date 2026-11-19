@@ -11,21 +11,21 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 const fallbackJournals = [
   {
     id: 'j1',
-    date: 'JUN 14, 2026',
-    category: 'PRESS RELEASE',
-    title: 'VB Associates Announces £1.2B Infrastructure Expansion in the Middle East.',
+    date: 'JUN 14, 2025',
+    category: 'PASSION FOR AUTOMOBILES',
+    title: 'The Passion Behind the Drive',
   },
   {
     id: 'j2',
-    date: 'MAY 28, 2026',
-    category: 'MARKET INSIGHTS',
-    title: 'The Future of High-Performance Engineering in the Era of Sustainability.',
+    date: 'MAY 28, 2024',
+    category: 'PUBLIC LIFE & CONNECTIONS',
+    title: 'A Commitment to Public Life',
   },
   {
     id: 'j3',
-    date: 'MAY 02, 2026',
-    category: 'REAL ESTATE',
-    title: 'Topping Out Ceremony Held for The Apex Tower in Central London.',
+    date: 'MAY 02, 2023',
+    category: 'ENTREPRENEURSHIP',
+    title: 'A Journey Across Industries',
   },
 ];
 
@@ -38,7 +38,14 @@ const journalFields: FieldConfig[] = [
 
 const JournalSection: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [journals, setJournals] = useState<any[]>([]);
+  const [journals, setJournals] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('cache_journals');
+      return cached ? JSON.parse(cached) : fallbackJournals;
+    } catch {
+      return fallbackJournals;
+    }
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(true);
@@ -57,7 +64,9 @@ const JournalSection: React.FC = () => {
         return real || fb;
       });
       const extra = activeData.filter(d => !fallbackJournals.find(fb => fb.id === d.id));
-      setJournals([...mergedData, ...extra]);
+      const finalJournals = [...mergedData, ...extra];
+      setJournals(finalJournals);
+      try { localStorage.setItem('cache_journals', JSON.stringify(finalJournals)); } catch {}
       setIsLoaded(true);
     }, (error) => {
       console.error(error);

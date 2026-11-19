@@ -33,21 +33,37 @@ interface EditableDivisionPageProps {
 const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fallbackHero, fallbackServices }) => {
   const { isAdmin } = useAuth();
   
-  const [heroData, setHeroData] = useState<HeroData>(fallbackHero);
-  const [servicesData, setServicesData] = useState<ServiceData[]>(fallbackServices);
+  const [heroData, setHeroData] = useState<HeroData>(() => {
+    try {
+      const cached = localStorage.getItem(`cache_div_hero_${pageId}`);
+      return cached ? JSON.parse(cached) : fallbackHero;
+    } catch {
+      return fallbackHero;
+    }
+  });
+  const [servicesData, setServicesData] = useState<ServiceData[]>(() => {
+    try {
+      const cached = localStorage.getItem(`cache_div_services_${pageId}`);
+      return cached ? JSON.parse(cached) : fallbackServices;
+    } catch {
+      return fallbackServices;
+    }
+  });
   
   const [heroModalOpen, setHeroModalOpen] = useState(false);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [activeService, setActiveService] = useState<ServiceData | null>(null);
 
-  const [heroLoaded, setHeroLoaded] = useState(false);
-  const [servicesLoaded, setServicesLoaded] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(true);
+  const [servicesLoaded, setServicesLoaded] = useState(true);
 
   // Fetch Hero Data
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'division_pages', `${pageId}_hero`), (docSnap) => {
       if (docSnap.exists()) {
-        setHeroData(docSnap.data() as HeroData);
+        const d = docSnap.data() as HeroData;
+        setHeroData(d);
+        try { localStorage.setItem(`cache_div_hero_${pageId}`, JSON.stringify(d)); } catch {}
       }
       setHeroLoaded(true);
     });
@@ -77,6 +93,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
         finalServices = [...mergedDisplayData, ...extraServices].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
       }
       setServicesData(finalServices);
+      try { localStorage.setItem(`cache_div_services_${pageId}`, JSON.stringify(finalServices)); } catch {}
       setServicesLoaded(true);
     });
     return () => unsub();

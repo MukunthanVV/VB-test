@@ -57,8 +57,22 @@ const ProjectsSection: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { isAdmin } = useAuth();
   
-  const [projects, setProjects] = useState<any[]>([]);
-  const [divisionsDb, setDivisionsDb] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('cache_projects');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [divisionsDb, setDivisionsDb] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('cache_project_divisions');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -76,12 +90,14 @@ const ProjectsSection: React.FC = () => {
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setProjects(data);
+      try { localStorage.setItem('cache_projects', JSON.stringify(data)); } catch {}
       setIsLoaded(true);
     });
 
     const unsubDivs = onSnapshot(collection(db, 'project_divisions'), (snapshot) => {
       const divs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setDivisionsDb(divs);
+      try { localStorage.setItem('cache_project_divisions', JSON.stringify(divs)); } catch {}
     });
 
     return () => {

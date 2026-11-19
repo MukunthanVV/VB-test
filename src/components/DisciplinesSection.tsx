@@ -6,20 +6,21 @@ import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
-import dnaImageFallback from '../assets/motor-1.png';
 
 const fallbackData = {
   id: 'disciplines_main',
   subtitle: 'THE DNA',
-  title: 'HOW WE WORK.',
-  description: 'This is the operational blueprint that drives VB Associates. Our disciplines form the foundational DNA applied across every sector we touch.',
-  image: dnaImageFallback,
-  trait1_title: 'ARCHITECTURAL INTEGRITY',
-  trait1_desc: 'We do not just build structures or businesses; we engineer ecosystems designed to outlast market cycles. Every foundation is laid with uncompromising quality.',
+  title: 'HOW WE WORK',
+  description: 'These are the principles that guide VB Associates every day. They shape how we work, how we make decisions, and how we bring every project to life.',
+  image: [
+    'https://res.cloudinary.com/dgssrfsli/image/upload/v1784734012/hi7ogcnmwgs2oo0ekaxc.png'
+  ],
+  trait1_title: 'ARCHITECTURAL INTEGRITY ',
+  trait1_desc: 'For us, integrity begins with doing things right. We pay attention to every detail, choose quality over shortcuts, and build spaces we can be proud of for years to come.',
   trait2_title: 'DECISIVE LEADERSHIP',
   trait2_desc: 'Agility meets absolute precision. We operate with a clear chain of command and a strategic mandate, allowing our subsidiaries to move faster than the competition.',
-  trait3_title: 'SYNERGISTIC SCALE',
-  trait3_desc: 'Our divisions do not operate in silos. The knowledge gained in high-performance motors fuels the engineering in our real estate and construction ventures.',
+  trait3_title: 'SYNERGISTIC SCALE ',
+  trait3_desc: 'When different strengths come together, they create something greater. We bring knowledge and experience from across our ventures to drive growth and innovation.',
 };
 
 const disciplinesFields: FieldConfig[] = [
@@ -37,14 +38,23 @@ const disciplinesFields: FieldConfig[] = [
 
 const DisciplinesSection: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [data, setData] = useState<any>(fallbackData);
+  const [data, setData] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('cache_disciplines');
+      return cached ? JSON.parse(cached) : fallbackData;
+    } catch {
+      return fallbackData;
+    }
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'disciplines', 'main'), (docSnap) => {
       if (docSnap.exists()) {
-        setData({ id: docSnap.id, ...docSnap.data() });
+        const docData = { id: docSnap.id, ...docSnap.data() };
+        setData(docData);
+        try { localStorage.setItem('cache_disciplines', JSON.stringify(docData)); } catch {}
       }
       setIsLoaded(true);
     });

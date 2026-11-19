@@ -10,14 +10,14 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 const fallbackData = {
   id: 'main',
   label_caps: 'ESTABLISHED LEGACY',
-  title_p1: 'A MONOLITH OF',
-  title_italic: 'STRATEGIC',
-  title_p2: 'PRECISION',
-  desc_1: 'Founded on the principles of architectural integrity and decisive market leadership, VB Associates operates at the intersection of performance and permanence.',
-  desc_2: 'Our group empowers specialized subsidiaries to redefine their respective industries through engineering excellence and visionary development. We do not just build companies; we engineer legacies designed to withstand the test of time and market volatility.',
-  stat1_num: '35+',
-  stat1_label: 'YEARS OF GROWTH',
-  stat2_num: '3.2B',
+  title_p1: 'FROM',
+  title_italic: 'VISION',
+  title_p2: 'TO REALITY',
+  desc_1: 'We believe business is about more than what we create—it’s about the experiences we share, the relationships we build, and the opportunities we create along the way.',
+  desc_2: 'Every project we undertake is guided by innovation, integrity, and a passion for excellence. Beyond creating successful ventures, we are committed to building a legacy that stands strong for generations.',
+  stat1_num: '3K+',
+  stat1_label: 'Customers',
+  stat2_num: '10 Cr',
   stat2_label: 'ASSETS UNDER MGMT',
 };
 
@@ -36,14 +36,23 @@ const aboutFields: FieldConfig[] = [
 
 const AboutSection: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [data, setData] = useState<any>(fallbackData);
+  const [data, setData] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('cache_about');
+      return cached ? JSON.parse(cached) : fallbackData;
+    } catch {
+      return fallbackData;
+    }
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'about', 'main'), (docSnap) => {
       if (docSnap.exists()) {
-        setData({ id: docSnap.id, ...docSnap.data() });
+        const docData = { id: docSnap.id, ...docSnap.data() };
+        setData(docData);
+        try { localStorage.setItem('cache_about', JSON.stringify(docData)); } catch {}
       }
       setIsLoaded(true);
     });

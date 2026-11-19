@@ -10,10 +10,46 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 
 
 const fallbackServices = [
-  { id: 's1_fb', number: '01', category: 'PERFORMANCE', title: 'VB MOTORS', description: 'Driving the future of automotive engineering with precision and power.' },
-  { id: 's2_fb', number: '02', category: 'AUTO SALES', title: 'USED CAR SALES', description: 'Discover a curated selection of premium pre-owned vehicles. Uncompromising quality, rigorous inspection, and unmatched value.' },
-  { id: 's3_fb', number: '03', category: 'EVENTS', title: 'VB EVENT MANAGEMENT', description: 'Orchestrating unforgettable experiences. From corporate gatherings to grand celebrations, we deliver flawless event execution.' },
-  { id: 's4_fb', number: '04', category: 'PORTFOLIO & INFRASTRUCTURE', title: 'VB REAL ESTATE & CONSTRUCTIONS', description: 'Curating a legacy of iconic properties globally. Delivering complex infrastructure with an unwavering commitment to safety and innovation.' }
+  {
+    id: 'zKNi37OfWQFhk27pQXCR',
+    number: '01',
+    category: 'VB Used Cars',
+    title: 'PRE-OWNED EXCELLENCE',
+    description: 'Making Every Pre-Owned Car Feel Like the Right Choice',
+    images: ['https://res.cloudinary.com/dgssrfsli/image/upload/v1786272021/ae0zm55l6ewnyngadkvl.webp']
+  },
+  {
+    id: 's1_fb',
+    number: '02',
+    category: 'VB AUTOMOTIVE CUSTOMIZATION',
+    title: 'Built to Stand Apart',
+    description: 'We give every vehicle a unique character through thoughtful modifications tailored to your style.',
+    images: ['https://res.cloudinary.com/dgssrfsli/image/upload/v1786270844/ijbuegynlc9a3hkqh7rl.jpg']
+  },
+  {
+    id: 'PCuKhjgp3ZJZnwUeqwyM',
+    number: '03',
+    category: 'VB Real Estates',
+    title: 'Spaces Made for Living',
+    description: 'We bring together thoughtfully chosen properties, strong value, and opportunities designed to feel right for the future.',
+    images: ['https://res.cloudinary.com/dgssrfsli/image/upload/v1786271065/nuwmplzpniwbdvqp7c6n.jpg']
+  },
+  {
+    id: 'IkvD92RBXH35H2dalCji',
+    number: '04',
+    category: 'VB EVENTS',
+    title: 'Creating Moments Worth Remembering',
+    description: 'From lively celebrations to meaningful milestones, we bring people together and turn every occasion into an experience worth remembering.',
+    images: ['https://res.cloudinary.com/dgssrfsli/image/upload/v1786271307/lvsldfdiauaiyffyyj0e.jpg']
+  },
+  {
+    id: 'W52BZp1rioWXgLBkHMVQ',
+    number: '05',
+    category: 'VB Crackers',
+    title: 'Light Up Every Celebration',
+    description: 'Bringing colour, excitement, and joy to every celebration with crackers made for memorable moments.',
+    images: ['https://res.cloudinary.com/dgssrfsli/image/upload/v1786271582/i7pheqvcpn3xdseduzlz.png']
+  }
 ];
 
 const serviceFields: FieldConfig[] = [
@@ -137,7 +173,14 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
 
 const DivisionsSection: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('cache_services');
+      return cached ? JSON.parse(cached) : fallbackServices;
+    } catch {
+      return fallbackServices;
+    }
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(true);
@@ -147,14 +190,11 @@ const DivisionsSection: React.FC = () => {
     const q = query(collection(db, 'services'));
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
-      console.log("Services from DB:", data);
       
       const activeData = data.filter(d => !d.deleted);
       const deletedIds = new Set(data.filter(d => d.deleted).map(d => d.id));
-      console.log("Deleted IDs:", Array.from(deletedIds));
       
       const activeFallbacks = fallbackServices.filter(fb => !deletedIds.has(fb.id));
-      console.log("Active Fallbacks:", activeFallbacks.map(f => f.id));
       
       // If we have custom items in the DB, or if fallbacks are deleted/modified
       if (activeData.some(d => !fallbackServices.some(fb => fb.id === d.id)) || data.length > 0) {
@@ -165,10 +205,11 @@ const DivisionsSection: React.FC = () => {
         });
         const extra = activeData.filter(d => !fallbackServices.some(fb => fb.id === d.id));
         const finalSet = [...merged, ...extra];
-        console.log("Setting services to:", finalSet.map(s => s.id));
         setServices(finalSet);
+        try { localStorage.setItem('cache_services', JSON.stringify(finalSet)); } catch {}
       } else {
         setServices(activeFallbacks);
+        try { localStorage.setItem('cache_services', JSON.stringify(activeFallbacks)); } catch {}
       }
       setIsLoaded(true);
     }, (error) => {

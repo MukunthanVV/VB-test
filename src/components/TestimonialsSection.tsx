@@ -10,19 +10,11 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 const fallbackTestimonials = [
   {
     id: 't1',
-    quote: "Working with VB Associates on our commercial development completely elevated the final outcome. Their attention to detail is unparalleled.",
-    name: "James Harrington",
-    title: "CEO, Harrington Holdings",
-    division: "REAL ESTATE",
+    quote: "Success is built on the courage to dream, the discipline to act, and the commitment to keep moving forward.",
+    name: "Suriya",
+    title: "ENTREPRENEUR • BUSINESSMAN",
+    division: "VB ASSOCIATES",
     image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 't2',
-    quote: "The engine performance upgrades exceeded our wildest expectations on the track. A true partner in high-performance engineering.",
-    name: "Elena Rostova",
-    title: "Team Principal, Apex Racing",
-    division: "MOTORS",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80"
   }
 ];
 
@@ -36,7 +28,14 @@ const testimonialFields: FieldConfig[] = [
 
 const TestimonialsSection: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('cache_testimonials');
+      return cached ? JSON.parse(cached) : fallbackTestimonials;
+    } catch {
+      return fallbackTestimonials;
+    }
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   
   const [modalOpen, setModalOpen] = useState(false);
@@ -57,7 +56,9 @@ const TestimonialsSection: React.FC = () => {
         return real || fb;
       });
       const extra = activeData.filter(s => !fallbackTestimonials.find(fb => fb.id === s.id));
-      setTestimonials([...mergedDisplayData, ...extra]);
+      const finalTestimonials = [...mergedDisplayData, ...extra];
+      setTestimonials(finalTestimonials);
+      try { localStorage.setItem('cache_testimonials', JSON.stringify(finalTestimonials)); } catch {}
       setIsLoaded(true);
       setCurrentIndex(0);
     });
