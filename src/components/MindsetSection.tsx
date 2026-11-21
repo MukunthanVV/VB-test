@@ -100,7 +100,7 @@ const MindsetSection: React.FC = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="lg:w-5/12 border-b lg:border-b-0 lg:border-r border-outline relative min-h-[280px] sm:min-h-[380px] lg:min-h-[600px] group/imgslider overflow-hidden"
+          className="lg:w-5/12 border-b lg:border-b-0 lg:border-r border-outline relative min-h-[340px] sm:min-h-[420px] lg:min-h-[600px] group/imgslider overflow-hidden"
         >
           <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
             {(Array.isArray(data.image || fallbackData.image) ? data.image || fallbackData.image : [data.image || fallbackData.image]).map((img: any, i: number) => (

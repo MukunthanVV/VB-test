@@ -7,10 +7,9 @@ export interface DeviceCropConfig {
   id: DeviceType;
   label: string;
   subLabel: string;
-  defaultRatio: number; // width / height
+  defaultRatio: number;
   ratioText: string;
   description: string;
-  aspectClass: string;
 }
 
 export const DEVICE_CONFIGS: DeviceCropConfig[] = [
@@ -20,8 +19,7 @@ export const DEVICE_CONFIGS: DeviceCropConfig[] = [
     subLabel: 'Widescreen & Laptops (1024px+)',
     defaultRatio: 16 / 9,
     ratioText: '16:9 Widescreen',
-    description: 'How visitors on desktop and laptop screens will see this section',
-    aspectClass: 'aspect-[16/9]',
+    description: 'Desktop monitors display wide landscape sections (~16:9)',
   },
   {
     id: 'foldable',
@@ -29,25 +27,24 @@ export const DEVICE_CONFIGS: DeviceCropConfig[] = [
     subLabel: 'Tablets & Folded/Unfolded (641px - 1024px)',
     defaultRatio: 4 / 3,
     ratioText: '4:3 Tablet',
-    description: 'How visitors on iPads, tablets, and foldable phones will see this section',
-    aspectClass: 'aspect-[4/3]',
+    description: 'iPads and tablets display balanced section frames (~4:3)',
   },
   {
     id: 'mobile',
     label: 'Mobile Phones',
-    subLabel: 'Smartphones Portrait (up to 640px)',
-    defaultRatio: 9 / 16,
-    ratioText: '9:16 Portrait',
-    description: 'How visitors on iPhone and Android smartphones will see this section',
-    aspectClass: 'aspect-[9/16]',
+    subLabel: 'Smartphones (up to 640px)',
+    // Website sections on mobile are rectangular cards (~4:3), not 9:16 full-screen
+    defaultRatio: 4 / 3,
+    ratioText: 'Mobile Section (4:3 Rectangle)',
+    description: 'On mobile phones, sections display as a clean rectangle (~4:3)',
   },
 ];
 
 export interface CropRect {
-  x: number; // percentage (0 - 100)
-  y: number; // percentage (0 - 100)
-  width: number; // percentage (0 - 100)
-  height: number; // percentage (0 - 100)
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export interface ThreeDeviceFiles {
@@ -72,16 +69,16 @@ interface DeviceSetting {
 }
 
 // -------------------------------------------------------------
-// Pure HTML5 Canvas Live Preview (Zero Distortion / True Output)
+// Live Output Canvas Preview (Exact Dimensions, Zero Distortion)
 // -------------------------------------------------------------
 const LiveCanvasPreview: React.FC<{
   imageSrc: string;
   crop: CropRect;
   rotation: number;
   className?: string;
-  aspectClass?: string;
-}> = ({ imageSrc, crop, rotation, className = '', aspectClass = 'aspect-[16/9]' }) => {
+}> = ({ imageSrc, crop, rotation, className = '' }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [aspect, setAspect] = useState<number>(4 / 3);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -96,7 +93,6 @@ const LiveCanvasPreview: React.FC<{
       const naturalW = isRotated ? img.naturalHeight : img.naturalWidth;
       const naturalH = isRotated ? img.naturalWidth : img.naturalHeight;
 
-      // 1. Prepare rotated canvas
       const rotCanvas = document.createElement('canvas');
       rotCanvas.width = naturalW;
       rotCanvas.height = naturalH;
@@ -109,7 +105,6 @@ const LiveCanvasPreview: React.FC<{
       rotCtx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
       rotCtx.restore();
 
-      // 2. Compute exact crop slice coordinates in real pixels
       const pixelX = Math.max(0, Math.min(naturalW - 1, Math.round((crop.x / 100) * naturalW)));
       const pixelY = Math.max(0, Math.min(naturalH - 1, Math.round((crop.y / 100) * naturalH)));
       const pixelW = Math.max(1, Math.min(naturalW - pixelX, Math.round((crop.width / 100) * naturalW)));
@@ -117,6 +112,8 @@ const LiveCanvasPreview: React.FC<{
 
       canvas.width = pixelW;
       canvas.height = pixelH;
+      setAspect(pixelW / pixelH);
+
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
@@ -126,10 +123,13 @@ const LiveCanvasPreview: React.FC<{
   }, [imageSrc, crop, rotation]);
 
   return (
-    <div className={`relative overflow-hidden ${aspectClass} bg-black/60 rounded-xl flex items-center justify-center border border-white/10 ${className}`}>
+    <div
+      style={{ aspectRatio: aspect }}
+      className={`relative overflow-hidden bg-black/60 rounded-xl flex items-center justify-center border border-white/10 shadow-2xl max-h-[46vh] max-w-full ${className}`}
+    >
       <canvas
         ref={canvasRef}
-        className="w-full h-full object-cover select-none pointer-events-none"
+        className="w-full h-full object-contain select-none pointer-events-none"
       />
     </div>
   );
@@ -150,18 +150,18 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const [rotation, setRotation] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // Settings per device - default to device-matching ratios so previews match website sections
+  // Settings per device - Mobile defaults to Section Rectangle (~4:3) matching the mobile layout
   const [deviceSettings, setDeviceSettings] = useState<Record<DeviceType, DeviceSetting>>({
     desktop: { isFree: false, ratio: 16 / 9, label: '16:9 Widescreen' },
     foldable: { isFree: false, ratio: 4 / 3, label: '4:3 Tablet' },
-    mobile: { isFree: false, ratio: 9 / 16, label: '9:16 Portrait' },
+    mobile: { isFree: false, ratio: 4 / 3, label: '4:3 Mobile Section' },
   });
 
   // Store crop coordinates for all 3 devices
   const [crops, setCrops] = useState<Record<DeviceType, CropRect>>({
     desktop: { x: 5, y: 15, width: 90, height: 50.6 },
     foldable: { x: 10, y: 10, width: 80, height: 60 },
-    mobile: { x: 25, y: 5, width: 50, height: 88.8 },
+    mobile: { x: 10, y: 10, width: 80, height: 60 },
   });
 
   // Track confirmation
@@ -215,11 +215,9 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       let newH = 90;
 
       if (targetRatio > imgRatio) {
-        // Target is wider than image
         newW = 92;
         newH = (newW * imgRatio) / targetRatio;
       } else {
-        // Target is taller than image
         newH = 92;
         newW = (newH * targetRatio) / imgRatio;
       }
@@ -240,7 +238,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     setCrops({
       desktop: calculateDefaultCrop(16 / 9, false),
       foldable: calculateDefaultCrop(4 / 3, false),
-      mobile: calculateDefaultCrop(9 / 16, false),
+      mobile: calculateDefaultCrop(4 / 3, false),
     });
   }, [calculateDefaultCrop]);
 
@@ -252,7 +250,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       setDeviceSettings({
         desktop: { isFree: false, ratio: 16 / 9, label: '16:9 Widescreen' },
         foldable: { isFree: false, ratio: 4 / 3, label: '4:3 Tablet' },
-        mobile: { isFree: false, ratio: 9 / 16, label: '9:16 Portrait' },
+        mobile: { isFree: false, ratio: 4 / 3, label: '4:3 Mobile Section' },
       });
       setConfirmed({
         desktop: true,
@@ -269,7 +267,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const handleToggleFreeCrop = () => {
     setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
     if (currentSetting.isFree) {
-      // Switch back to device recommended ratio
       const ratio = currentConfig.defaultRatio;
       setDeviceSettings((prev) => ({
         ...prev,
@@ -278,10 +275,9 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       const newCrop = calculateDefaultCrop(ratio, false);
       setCrops((prev) => ({ ...prev, [activeDevice]: newCrop }));
     } else {
-      // Unlock: keep current frame, allow free resizing
       setDeviceSettings((prev) => ({
         ...prev,
-        [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop' },
+        [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop (Custom Rectangle)' },
       }));
     }
   };
@@ -623,7 +619,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
           exit={{ opacity: 0, scale: 0.96 }}
           className="bg-[#121418] text-[#E8E6E3] w-full max-w-6xl rounded-2xl shadow-2xl border border-white/10 flex flex-col max-h-[96vh] overflow-hidden"
         >
-          {/* Header */}
+          {/* Clean Header */}
           <div className="p-3 sm:p-4 border-b border-white/10 flex justify-between items-center bg-[#181B21]">
             <div>
               <div className="flex items-center gap-3">
@@ -648,20 +644,19 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
               <p className="text-xs text-neutral-400 mt-0.5">
                 Crop for <span className="text-white font-medium">Desktop</span>,{' '}
                 <span className="text-white font-medium">Foldables</span>, and{' '}
-                <span className="text-white font-medium">Mobile Phones</span>. Right preview shows the exact result.
+                <span className="text-white font-medium">Mobile Phones</span>. Right preview shows the exact output with zero distortion.
               </p>
             </div>
 
             <button
               onClick={onClose}
-              className="text-neutral-400 hover:text-white px-2.5 py-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-sm font-semibold"
-              title="Close"
+              className="text-neutral-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-sm font-semibold"
             >
-              ✕ Close
+              Close
             </button>
           </div>
 
-          {/* Device Tabs Bar (Clean, Minimal, No Broken Icons) */}
+          {/* Clean Device Tabs Bar */}
           <div className="grid grid-cols-3 bg-[#0B0D10] border-b border-white/10 p-2 gap-2">
             {DEVICE_CONFIGS.map((device, index) => {
               const isActive = activeDevice === device.id;
@@ -686,7 +681,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                       <span className="text-primary font-mono mr-1">{index + 1}.</span> {device.label}
                     </div>
                     <div className="text-[11px] text-neutral-400 mt-0.5">
-                      {setting.isFree ? 'Free Crop (Custom)' : setting.label}
+                      {setting.isFree ? 'Free Crop (Custom Rectangle)' : setting.label}
                     </div>
                   </div>
 
@@ -706,14 +701,14 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
             })}
           </div>
 
-          {/* Quick Ratios Bar (Clean text buttons, No icons) */}
+          {/* Clean Ratios & Dimensions Bar */}
           <div className="px-3 sm:px-4 py-2 bg-[#16191F] border-b border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="font-bold text-white uppercase tracking-wider text-[11px] mr-1">
                 {currentConfig.label} Ratio:
               </span>
 
-              {/* Quick Preset Buttons */}
+              {/* Presets adapted to the device */}
               <button
                 type="button"
                 onClick={() => handleApplyRatio(currentConfig.defaultRatio, currentConfig.ratioText)}
@@ -723,56 +718,98 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                     : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
                 }`}
               >
-                Recommended ({currentConfig.ratioText})
+                Recommended ({currentConfig.id === 'mobile' ? 'Mobile Section Rectangle 4:3' : currentConfig.ratioText})
               </button>
 
-              <button
-                type="button"
-                onClick={() => handleApplyRatio(9 / 16, '9:16 Mobile')}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                  !currentSetting.isFree && currentSetting.ratio === 9 / 16
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                }`}
-              >
-                9:16 Mobile
-              </button>
+              {currentConfig.id === 'mobile' ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyRatio(4 / 3, '4:3 Rectangle')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                      !currentSetting.isFree && currentSetting.ratio === 4 / 3
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    4:3 Section Rectangle
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => handleApplyRatio(4 / 5, '4:5 Social')}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                  !currentSetting.isFree && currentSetting.ratio === 4 / 5
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                }`}
-              >
-                4:5 Portrait
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyRatio(1, '1:1 Square')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                      !currentSetting.isFree && currentSetting.ratio === 1
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    1:1 Square
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => handleApplyRatio(1, '1:1 Square')}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                  !currentSetting.isFree && currentSetting.ratio === 1
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                }`}
-              >
-                1:1 Square
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyRatio(4 / 5, '4:5 Portrait')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                      !currentSetting.isFree && currentSetting.ratio === 4 / 5
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    4:5 Portrait
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => handleApplyRatio(16 / 9, '16:9 Widescreen')}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                  !currentSetting.isFree && currentSetting.ratio === 16 / 9
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                }`}
-              >
-                16:9 Desktop
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyRatio(9 / 16, '9:16 Full Vertical')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                      !currentSetting.isFree && currentSetting.ratio === 9 / 16
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    9:16 Full Vertical
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyRatio(16 / 9, '16:9 Desktop')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                      !currentSetting.isFree && currentSetting.ratio === 16 / 9
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    16:9 Widescreen
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleApplyRatio(4 / 3, '4:3 Rectangle')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                      !currentSetting.isFree && currentSetting.ratio === 4 / 3
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    4:3 Rectangle
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleApplyRatio(1, '1:1 Square')}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                      !currentSetting.isFree && currentSetting.ratio === 1
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    1:1 Square
+                  </button>
+                </>
+              )}
 
               <button
                 type="button"
@@ -783,7 +820,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                     : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
                 }`}
               >
-                Free Crop (Custom)
+                Free Crop (Custom Rectangle)
               </button>
             </div>
 
@@ -793,12 +830,12 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                   ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
                   : 'bg-primary/10 text-primary border-primary/20'
               }`}>
-                {currentSetting.isFree ? 'Free Crop Mode' : `Locked: ${currentSetting.label}`}
+                {currentSetting.isFree ? 'Free Crop (Custom)' : `Locked: ${currentSetting.label}`}
               </span>
             </div>
           </div>
 
-          {/* Main Body: Split View (Interactive Cropper on Left, Live Preview on Right) */}
+          {/* Main Body: Split View (Interactive Cropper on Left, Live Output Preview on Right) */}
           <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden bg-black/95">
             {/* Left: Source Image + Draggable Crop Box */}
             <div className="flex-1 relative flex items-center justify-center p-3 sm:p-5 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[300px]">
@@ -930,29 +967,28 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
               </div>
             </div>
 
-            {/* Right: EXACT SECTION PREVIEW (No Distortion, Matches Saved Image) */}
-            <div className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 bg-[#0E1014] p-4 flex flex-col justify-between overflow-y-auto">
+            {/* Right: EXACT SECTION PREVIEW (No Distortion, 100% Matches What Is Selected) */}
+            <div className="w-full lg:w-[400px] xl:w-[450px] flex-shrink-0 bg-[#0E1014] p-4 flex flex-col justify-between overflow-y-auto">
               <div>
                 <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
                   <div className="text-xs font-bold text-white uppercase tracking-wider">
-                    Exact {currentConfig.label} Section Preview
+                    Exact {currentConfig.label} Result Preview
                   </div>
-                  <span className="text-[10px] text-emerald-400 font-mono">Live Result</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">100% True Output</span>
                 </div>
 
                 <p className="text-[11px] text-neutral-400 mb-3">
-                  {currentConfig.description}. This preview displays the exact pixel crop that will be rendered.
+                  {currentConfig.description}. Shows the exact output image without any stretching or cropping.
                 </p>
 
-                {/* Pixel-Perfect Canvas Live Preview Container */}
+                {/* Pixel-Perfect Canvas Live Preview Container (Matches exact aspect of the crop) */}
                 <div className="py-2 flex items-center justify-center">
-                  <div className="w-full max-w-[340px]">
+                  <div className="w-full flex items-center justify-center">
                     <LiveCanvasPreview
                       imageSrc={imageSrc}
                       crop={currentCrop}
                       rotation={rotation}
-                      aspectClass={currentConfig.aspectClass}
-                      className="w-full shadow-2xl"
+                      className="w-full"
                     />
                   </div>
                 </div>
@@ -979,7 +1015,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                         imageSrc={imageSrc}
                         crop={crops[other.id]}
                         rotation={rotation}
-                        aspectClass={other.aspectClass}
                         className="w-full h-16"
                       />
                     </button>
@@ -989,7 +1024,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
             </div>
           </div>
 
-          {/* Quick Tools Bar (Clean Text Controls) */}
+          {/* Quick Tools Bar */}
           <div className="px-3 sm:px-4 py-2 bg-[#15181E] border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex flex-wrap items-center gap-1.5">
               <button
@@ -1037,7 +1072,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
             </div>
 
             <div className="text-neutral-400 text-xs hidden sm:block">
-              Drag handles to crop • Right preview updates in real time with exact output
+              Drag handles to frame subject • Right preview matches 100% of your selection
             </div>
           </div>
 
@@ -1052,7 +1087,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
             </button>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Stepper Next button if not on last device */}
               {activeDevice !== 'mobile' && (
                 <button
                   type="button"
@@ -1064,7 +1098,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                 </button>
               )}
 
-              {/* Final Save 3-Device Set Button */}
               <button
                 type="button"
                 onClick={handleFinalizeAllThreeCrops}
