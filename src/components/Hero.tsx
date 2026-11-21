@@ -89,28 +89,6 @@ const Hero: React.FC = () => {
             {data.title}
           </span> <span className="text-primary">{data.subtitle}</span>
         </motion.h1>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col md:flex-row justify-center gap-8 mt-12"
-        >
-          <a
-            href="#divisions"
-            className="group flex items-center justify-center gap-4 bg-primary text-on-primary px-6 md:px-12 py-5 font-label-caps text-label-caps uppercase hover:bg-primary-hover transition-colors tactical-mask w-full md:w-auto"
-          >
-            {data.btn1_text || 'EXPLORE PORTFOLIO'}
-            <span className="material-symbols-outlined vertical-drive-arrow">arrow_forward</span>
-          </a>
-          <a
-            href="#contact"
-            className="group flex items-center justify-center gap-4 border border-on-surface/20 px-6 md:px-12 py-5 font-label-caps text-label-caps uppercase hover:border-primary hover:text-primary transition-colors w-full md:w-auto"
-          >
-            {data.btn2_text || 'VIEW INVESTOR RELATIONS'}
-            <span className="material-symbols-outlined vertical-drive-arrow">north_east</span>
-          </a>
-        </motion.div>
       </div>
 
       <ItemEditorModal
