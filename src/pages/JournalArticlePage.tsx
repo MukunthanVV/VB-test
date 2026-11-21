@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import TopNavBar from '../components/TopNavBar';
 import NormalFooter from '../components/NormalFooter';
-import AnimatedTopo from '../components/AnimatedTopo';
+
+const AnimatedTopo = lazy(() => import('../components/AnimatedTopo'));
 
 const fallbackMap: Record<string, any> = {
   'j1': {
@@ -71,7 +72,9 @@ const JournalArticlePage = () => {
 
   return (
     <>
-      <AnimatedTopo />
+      <Suspense fallback={null}>
+        <AnimatedTopo />
+      </Suspense>
       <TopNavBar />
       
       <main className="pt-28 sm:pt-32 pb-24 px-4 sm:px-6 md:px-8 xl:px-margin-desktop relative min-h-screen max-w-container-max mx-auto">

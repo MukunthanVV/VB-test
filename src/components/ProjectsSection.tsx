@@ -7,9 +7,9 @@ import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 
-import project1 from '../assets/motor-2.png';
-import project2 from '../assets/motor-3.png';
-import project3 from '../assets/motor-4.png';
+import project1 from '../assets/motor-2.webp';
+import project2 from '../assets/motor-3.webp';
+import project3 from '../assets/motor-4.webp';
 
 // Fallback Data
 const fallbackDivisions = [

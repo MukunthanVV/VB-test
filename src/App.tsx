@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import GenericDivisionPage from './pages/GenericDivisionPage';
-import JournalArticlePage from './pages/JournalArticlePage';
-import AdminPage from './pages/admin/AdminPage';
 import { AuthProvider } from './contexts/AuthContext';
+
+const GenericDivisionPage = lazy(() => import('./pages/GenericDivisionPage'));
+const JournalArticlePage = lazy(() => import('./pages/JournalArticlePage'));
+const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -36,12 +37,14 @@ const App: React.FC = () => {
         <Router>
           <ScrollToTop />
           <LegacyHashRedirector />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/division/:id" element={<GenericDivisionPage />} />
-            <Route path="/journal/:id" element={<JournalArticlePage />} />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/division/:id" element={<GenericDivisionPage />} />
+              <Route path="/journal/:id" element={<JournalArticlePage />} />
+              <Route path="/admin" element={<AdminPage />} />
+            </Routes>
+          </Suspense>
         </Router>
       </AuthProvider>
     </div>

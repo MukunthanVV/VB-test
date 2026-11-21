@@ -4,10 +4,11 @@ import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import TopNavBar from './TopNavBar';
 import NormalFooter from './NormalFooter';
-import AnimatedTopo from './AnimatedTopo';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
+
+const AnimatedTopo = React.lazy(() => import('./AnimatedTopo'));
 
 interface ServiceData {
   id: string;
@@ -141,7 +142,9 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
 
   return (
     <>
-      <AnimatedTopo />
+      <React.Suspense fallback={null}>
+        <AnimatedTopo />
+      </React.Suspense>
       <TopNavBar />
 
       {/* Video Hero Section */}

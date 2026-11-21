@@ -110,11 +110,18 @@ const TopNavBar: React.FC = () => {
           onClick={handleLogoClick}
           aria-label="VB Associates Home"
         >
-          <img 
-            src={`${import.meta.env.BASE_URL}logo.png`} 
-            alt="VB Associates Logo" 
-            className="w-8 h-8 sm:w-10 sm:h-10 xl:w-12 xl:h-12 rounded-full object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 flex-shrink-0" 
-          />
+          <picture className="flex-shrink-0">
+            <source srcSet={`${import.meta.env.BASE_URL}logo.webp`} type="image/webp" />
+            <img 
+              src={`${import.meta.env.BASE_URL}logo.png`} 
+              alt="VB Associates Logo" 
+              width="48"
+              height="48"
+              fetchPriority="high"
+              decoding="async"
+              className="w-8 h-8 sm:w-10 sm:h-10 xl:w-12 xl:h-12 rounded-full object-cover shadow-sm transition-transform duration-300 group-hover:scale-105 flex-shrink-0" 
+            />
+          </picture>
           <span className="font-headline-md text-xl sm:text-2xl lg:text-2xl xl:text-3xl 2xl:text-headline-md text-on-surface tracking-tighter whitespace-nowrap">
             VB ASSOCIATES
           </span>

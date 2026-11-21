@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
-import megaFooterBg from '../assets/new_mega_footer_bg.png';
-import mobileMegaFooterBg from '../assets/mobile-mega-footer.png';
+import megaFooterBg from '../assets/new_mega_footer_bg.webp';
+import mobileMegaFooterBg from '../assets/mobile-mega-footer.webp';
 
 const MegaFooter: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);

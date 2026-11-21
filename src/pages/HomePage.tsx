@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import TopNavBar from '../components/TopNavBar';
 import Hero from '../components/Hero';
 import AboutSection from '../components/AboutSection';
@@ -8,13 +9,17 @@ import ProjectsSection from '../components/ProjectsSection';
 import JournalSection from '../components/JournalSection';
 import ContactSection from '../components/ContactSection';
 import MegaFooter from '../components/MegaFooter';
-import AnimatedTopo from '../components/AnimatedTopo';
 import TestimonialsSection from '../components/TestimonialsSection';
+
+// Lazy-load the Three.js 3D canvas so main thread and UI load with 0ms blocking
+const AnimatedTopo = lazy(() => import('../components/AnimatedTopo'));
 
 const HomePage = () => {
   return (
     <>
-      <AnimatedTopo />
+      <Suspense fallback={null}>
+        <AnimatedTopo />
+      </Suspense>
       <TopNavBar />
       <main>
         <Hero />
