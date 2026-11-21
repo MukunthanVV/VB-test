@@ -243,7 +243,7 @@ const ProjectsSection: React.FC = () => {
                 {division.featured && (
                   <div className="relative md:col-span-7 group cursor-pointer border border-transparent hover:border-outline/50 p-2 -m-2 rounded-2xl transition-colors">
                     {isAdmin && (
-                      <div className="absolute top-2 right-2 z-50">
+                      <div className="absolute top-2 right-2 z-30">
                         <InlineEditControls 
                           onEdit={() => handleEdit(division.featured)}
                           onDelete={division.featured.id ? () => handleDelete(division.featured.id) : undefined}
@@ -274,14 +274,14 @@ const ProjectsSection: React.FC = () => {
                 {/* Secondary Projects */}
                 <div className="md:col-span-5 flex flex-col gap-4 md:gap-6 justify-end relative">
                   {isAdmin && (
-                    <div className="absolute -top-12 right-0 z-50">
+                    <div className="absolute -top-12 right-0 z-30">
                        <button onClick={() => handleAdd(division.id, false)} className="text-sm bg-primary text-on-primary px-4 py-2 rounded-full hover:opacity-90 shadow-lg">Add Secondary Project</button>
                     </div>
                   )}
                   {division.secondary.map((sec: any, idx: number) => (
                     <div key={sec.id || idx} className="relative group cursor-pointer border border-transparent hover:border-outline/50 p-2 -m-2 rounded-xl transition-colors">
                       {isAdmin && (
-                        <div className="absolute top-2 right-2 z-50">
+                        <div className="absolute top-2 right-2 z-30">
                           <InlineEditControls 
                             onEdit={() => handleEdit(sec)}
                             onDelete={sec.id ? () => handleDelete(sec.id) : undefined}

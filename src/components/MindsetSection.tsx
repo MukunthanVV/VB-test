@@ -112,7 +112,7 @@ const MindsetSection: React.FC = () => {
       <div className="relative z-10 max-w-container-max mx-auto flex flex-col md:flex-row border border-outline rounded-[20px] sm:rounded-[24px] overflow-hidden shadow-2xl bg-surface/80 backdrop-blur-2xl group">
         
         {isAdmin && (
-          <div className="absolute top-4 right-4 z-50">
+          <div className="absolute top-4 right-4 z-30">
             <InlineEditControls onEdit={handleEdit} />
           </div>
         )}

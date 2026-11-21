@@ -163,7 +163,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
       {/* Video Hero Section */}
       <div className={`w-full h-[60vh] md:h-[80vh] relative overflow-hidden mt-[65px] md:mt-[73px] group/hero transition-opacity duration-500 ${heroLoaded && servicesLoaded ? 'opacity-100' : 'opacity-0'}`}>
         {isAdmin && (
-          <div className="absolute top-4 right-4 z-[60]">
+          <div className="absolute top-4 right-4 z-30">
             <InlineEditControls onEdit={() => setHeroModalOpen(true)} />
           </div>
         )}
@@ -204,7 +204,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
               return (
                 <div key={service.id} className={`flex flex-col md:flex-row ${isReverse ? 'md:flex-row-reverse' : ''} ${bgClass} rounded-[2rem] overflow-hidden shadow-xl w-full relative group`}>
                   {isAdmin && (
-                    <div className="absolute top-4 right-4 z-50">
+                    <div className="absolute top-4 right-4 z-30">
                       <InlineEditControls 
                         onEdit={() => handleEditService(service)} 
                         onDelete={() => handleDeleteService(service.id)} 

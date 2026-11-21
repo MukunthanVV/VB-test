@@ -74,7 +74,7 @@ const AboutSection: React.FC = () => {
       <div className="relative z-10 max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-12 gap-gutter items-stretch group">
         
         {isAdmin && (
-          <div className="absolute top-0 right-0 z-50">
+          <div className="absolute top-0 right-0 z-30">
             <InlineEditControls onEdit={handleEdit} />
           </div>
         )}

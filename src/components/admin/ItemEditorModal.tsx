@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import imageCompression from 'browser-image-compression';
 import { db } from '../../firebase';
 import { doc, addDoc, setDoc, collection, deleteField } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
@@ -31,6 +30,50 @@ export const getDisplayImageUrl = (val: any): string => {
     return val.desktop || val.foldable || val.mobile || '';
   }
   return '';
+};
+
+// Fast 1-pass canvas resize for images > 2.5MB; instant bypass for images <= 2.5MB
+const prepareImageQuickly = async (file: File): Promise<Blob | File> => {
+  if (file.size <= 2.5 * 1024 * 1024) {
+    return file;
+  }
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const maxDim = 1920;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => resolve(blob || file),
+          'image/jpeg',
+          0.85
+        );
+      } else {
+        resolve(file);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file);
+    };
+    img.src = objectUrl;
+  });
 };
 
 const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
@@ -103,7 +146,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
         setSaveStatus('idle');
         if (onSuccess) onSuccess();
         onClose();
-      }, 1000);
+      }, 150);
     } catch (err: any) {
       console.error("Save failed:", err);
       setError(err.message || "Failed to save.");
@@ -121,42 +164,43 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
   const handleImageUpload = async (file: File, fieldName: string, isGallery: boolean) => {
     try {
       setError(null);
-      setUploadProgress(prev => ({ ...prev, [file.name]: 10 }));
+      setUploadProgress(prev => ({ ...prev, [file.name]: 5 }));
 
-      // Compress image before upload
-      const options = {
-        maxSizeMB: 1, // Compress to max 1MB
-        maxWidthOrHeight: 1920, // Max HD resolution
-        useWebWorker: true
-      };
-      
-      const compressedFile = await imageCompression(file, options);
+      // Fast preparation (< 50ms)
+      const fileToUpload = await prepareImageQuickly(file);
 
-      const formDataToUpload = new FormData();
-      formDataToUpload.append('file', compressedFile);
-      formDataToUpload.append('upload_preset', 'vbassociate');
+      // Real-time XMLHttpRequest upload for instant response
+      const downloadURL = await new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://api.cloudinary.com/v1_1/dgssrfsli/image/upload', true);
 
-      // Simulate upload progress
-      const interval = setInterval(() => {
-        setUploadProgress(prev => {
-          const current = prev[file.name] || 10;
-          return current >= 90 ? prev : { ...prev, [file.name]: current + 15 };
-        });
-      }, 300);
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 98);
+            setUploadProgress(prev => ({ ...prev, [file.name]: Math.max(percent, 5) }));
+          }
+        };
 
-      const response = await fetch(`https://api.cloudinary.com/v1_1/dgssrfsli/image/upload`, {
-        method: 'POST',
-        body: formDataToUpload,
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const res = JSON.parse(xhr.responseText);
+              resolve(res.secure_url);
+            } catch {
+              reject(new Error('Invalid Cloudinary response'));
+            }
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+
+        const formDataToUpload = new FormData();
+        formDataToUpload.append('file', fileToUpload, file.name);
+        formDataToUpload.append('upload_preset', 'vbassociate');
+        xhr.send(formDataToUpload);
       });
-
-      clearInterval(interval);
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const data = await response.json();
-      const downloadURL = data.secure_url;
 
       setUploadProgress(prev => {
         const next = { ...prev };

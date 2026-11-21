@@ -91,7 +91,7 @@ const DisciplinesSection: React.FC = () => {
       <div className="relative z-10 max-w-container-max mx-auto group">
         
         {isAdmin && (
-          <div className="absolute -top-12 right-0 z-50">
+          <div className="absolute -top-12 right-0 z-30">
             <InlineEditControls onEdit={handleEdit} />
           </div>
         )}

@@ -132,7 +132,7 @@ const JournalSection: React.FC = () => {
               className="group relative flex flex-col md:flex-row md:items-center justify-between py-8 sm:py-10 md:py-14 border-b border-on-surface/20 hover:bg-surface-variant transition-colors duration-500 px-3 sm:px-6 md:px-8 w-full rounded-xl"
             >
               {isAdmin && (
-                <div className="absolute top-4 right-4 z-50">
+                <div className="absolute top-4 right-4 z-30">
                   <InlineEditControls 
                     onEdit={() => handleEdit(entry)} 
                     onDelete={() => handleDelete(entry.id)} 

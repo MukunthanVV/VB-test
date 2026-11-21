@@ -129,7 +129,7 @@ const ContactSection: React.FC = () => {
           className="mt-8 md:mt-0 space-y-8 sm:space-y-12 relative group w-full md:w-auto"
         >
           {isAdmin && (
-            <div className="absolute -top-12 right-0 z-50">
+            <div className="absolute -top-12 right-0 z-30">
               <InlineEditControls 
                 onEdit={handleEdit} 
               />

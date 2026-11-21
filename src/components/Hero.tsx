@@ -70,7 +70,7 @@ const Hero: React.FC = () => {
 
       <div className="relative z-10 px-4 sm:px-6 md:px-8 xl:px-margin-desktop max-w-container-max w-full text-center pointer-events-auto">
         {isAdmin && (
-          <div className="absolute top-0 right-0 z-50">
+          <div className="absolute top-0 right-0 z-30">
             <InlineEditControls onEdit={handleEdit} />
           </div>
         )}

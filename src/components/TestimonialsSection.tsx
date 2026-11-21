@@ -163,7 +163,7 @@ const TestimonialsSection: React.FC = () => {
               className="w-full relative cursor-grab active:cursor-grabbing group"
             >
               {isAdmin && (
-                <div className="absolute top-0 right-0 z-50">
+                <div className="absolute top-0 right-0 z-30">
                   <InlineEditControls 
                     onEdit={() => handleEdit(currentItem)} 
                     onDelete={currentItem.id ? () => handleDelete(currentItem.id) : undefined} 
