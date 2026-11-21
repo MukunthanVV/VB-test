@@ -8,7 +8,8 @@ import { useAuth } from '../../contexts/AuthContext';
 export type FieldConfig = {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'image' | 'image-gallery';
+  type: 'text' | 'textarea' | 'image' | 'image-gallery' | 'select';
+  options?: { label: string; value: string }[];
   required?: boolean;
 };
 
@@ -112,7 +113,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setError(null);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -260,6 +261,21 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                       rows={4}
                       className={`bg-surface-variant border ${field.required && !formData[field.name] ? 'border-red-500/50' : 'border-outline/20'} rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors resize-none`}
                     />
+                  )}
+
+                  {field.type === 'select' && (
+                    <select
+                      name={field.name}
+                      value={formData[field.name] || (field.options && field.options[0]?.value) || ''}
+                      onChange={handleChange}
+                      className="bg-surface-variant border border-outline/20 rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                    >
+                      {field.options?.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="bg-surface text-on-surface">
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   )}
 
                   {/* Single Image Upload */}

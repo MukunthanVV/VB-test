@@ -33,34 +33,10 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
 }) => {
   if (!src) return null;
 
-  // If specific target device is requested or it's a simple string URL
-  if (typeof src === 'string' || targetDevice) {
-    const url = getImageUrl(src, targetDevice);
-    return <img src={url} alt={alt} className={className} {...rest} />;
-  }
+  const url = getImageUrl(src, targetDevice);
+  if (!url) return null;
 
-  // Multi-device responsive picture element
-  const hasResponsiveVariants = src.mobile || src.foldable || src.desktop;
-  if (!hasResponsiveVariants) {
-    return null;
-  }
-
-  const defaultUrl = src.desktop || src.foldable || src.mobile || '';
-
-  return (
-    <picture className="contents">
-      {/* Mobile: Phones (up to 640px) */}
-      {src.mobile && (
-        <source media="(max-width: 640px)" srcSet={src.mobile} />
-      )}
-      {/* Foldables & iPads: Tablets & Foldables (641px to 1024px) */}
-      {src.foldable && (
-        <source media="(max-width: 1024px)" srcSet={src.foldable} />
-      )}
-      {/* Desktop: Default fallback for 1025px+ */}
-      <img src={defaultUrl} alt={alt} className={className} {...rest} />
-    </picture>
-  );
+  return <img src={url} alt={alt} className={className} {...rest} />;
 };
 
 export default ResponsiveImage;

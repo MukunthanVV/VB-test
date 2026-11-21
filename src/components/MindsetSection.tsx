@@ -13,7 +13,7 @@ const fallbackData = {
   id: 'mindset_main',
   title: 'Managing Director and CEO',
   image: [
-    'https://res.cloudinary.com/dgssrfsli/image/upload/v1795011510/ud40goz0rvayyrwsi9t5.jpg'
+    'https://res.cloudinary.com/dgssrfsli/image/upload/v1795289854/vrcjopflsoz8nrueyjbt.jpg'
   ],
   val1_title: 'PRECISION',
   val1_desc: "Precision is not a choice , it's our standard.",
@@ -26,9 +26,32 @@ const fallbackData = {
   quoteText: '"A leader\'s true influence is reflected not in titles, but in the lives they inspire."'
 };
 
+const getObjectPosition = (focus?: string): string => {
+  switch (focus) {
+    case 'top': return 'center top';
+    case 'upper': return 'center 35%';
+    case 'lower': return 'center 65%';
+    case 'bottom': return 'center bottom';
+    case 'center':
+    default: return 'center 45%';
+  }
+};
+
 const mindsetFields: FieldConfig[] = [
   { name: 'title', label: 'Section Title', type: 'text', required: true },
   { name: 'image', label: 'Section Images (Gallery)', type: 'image-gallery' },
+  {
+    name: 'image_focus',
+    label: 'Image Framing Focus',
+    type: 'select',
+    options: [
+      { label: 'Upper-Center (Face & Torso Focus - Recommended)', value: 'upper' },
+      { label: 'Center (Balanced)', value: 'center' },
+      { label: 'Top (Roof / Sky / Upper)', value: 'top' },
+      { label: 'Lower-Center (Body & Car)', value: 'lower' },
+      { label: 'Bottom', value: 'bottom' },
+    ],
+  },
   { name: 'val1_title', label: 'Value 1 Title', type: 'text' },
   { name: 'val1_desc', label: 'Value 1 Description', type: 'textarea' },
   { name: 'val2_title', label: 'Value 2 Title', type: 'text' },
@@ -86,7 +109,7 @@ const MindsetSection: React.FC = () => {
 
   return (
     <section id="mindset" className={`relative py-16 sm:py-24 md:py-section-gap px-4 sm:px-6 md:px-8 xl:px-margin-desktop bg-transparent overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="relative z-10 max-w-container-max mx-auto flex flex-col lg:flex-row border border-outline rounded-[20px] sm:rounded-[24px] overflow-hidden shadow-2xl bg-surface/80 backdrop-blur-2xl group">
+      <div className="relative z-10 max-w-container-max mx-auto flex flex-col md:flex-row border border-outline rounded-[20px] sm:rounded-[24px] overflow-hidden shadow-2xl bg-surface/80 backdrop-blur-2xl group">
         
         {isAdmin && (
           <div className="absolute top-4 right-4 z-50">
@@ -100,7 +123,7 @@ const MindsetSection: React.FC = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="lg:w-5/12 border-b lg:border-b-0 lg:border-r border-outline relative min-h-[340px] sm:min-h-[420px] lg:min-h-[600px] group/imgslider overflow-hidden"
+          className="md:w-5/12 border-b md:border-b-0 md:border-r border-outline relative min-h-[420px] sm:min-h-[480px] md:min-h-[560px] lg:min-h-[640px] group/imgslider overflow-hidden"
         >
           <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
             {(Array.isArray(data.image || fallbackData.image) ? data.image || fallbackData.image : [data.image || fallbackData.image]).map((img: any, i: number) => (
@@ -108,7 +131,8 @@ const MindsetSection: React.FC = () => {
                 <ResponsiveImage 
                   src={img} 
                   alt={`${data.title} ${i+1}`} 
-                  className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover/imgslider:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover/imgslider:scale-105"
+                  style={{ objectPosition: getObjectPosition(data.image_focus) }}
                 />
               </div>
             ))}
@@ -121,7 +145,7 @@ const MindsetSection: React.FC = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="lg:w-7/12 flex flex-col justify-center h-auto p-5 sm:p-8 md:p-10 lg:p-16 relative z-20"
+          className="md:w-7/12 flex flex-col justify-center h-auto p-5 sm:p-8 md:p-10 lg:p-16 relative z-20"
         >
           <motion.h2 variants={itemVariants} className="font-headline-lg text-3xl sm:text-4xl md:text-headline-lg-mobile lg:text-headline-lg mb-8 uppercase leading-tight text-on-surface break-words">
             {data.title.split(' ').map((word: string, i: number, arr: string[]) => (
