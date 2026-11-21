@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
+import ResponsiveImage from './ResponsiveImage';
 
 
 const fallbackServices = [
@@ -105,16 +106,20 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         {images.length > 0 ? (
           <>
             <AnimatePresence initial={false}>
-              <motion.img 
+              <motion.div 
                 key={currentMotorImage}
-                src={images[currentMotorImage]}
-                alt={item.title}
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
-              />
+                className="absolute inset-0 w-full h-full"
+              >
+                <ResponsiveImage 
+                  src={images[currentMotorImage]}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-all duration-700"
+                />
+              </motion.div>
             </AnimatePresence>
             
             {images.length > 1 && (

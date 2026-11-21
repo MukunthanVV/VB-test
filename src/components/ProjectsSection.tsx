@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
+import ResponsiveImage from './ResponsiveImage';
 
 import project1 from '../assets/motor-2.webp';
 import project2 from '../assets/motor-3.webp';
@@ -238,10 +239,10 @@ const ProjectsSection: React.FC = () => {
                       </div>
                     )}
                     <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-2xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
-                      {division.featured.images?.map((imgUrl: string, idx: number) => (
+                      {division.featured.images?.map((imgUrl: any, idx: number) => (
                         <div key={idx} className="w-full flex-shrink-0 snap-center relative">
-                          <img src={imgUrl} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+                          <ResponsiveImage src={imgUrl} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none" />
                         </div>
                       ))}
                       {(!division.featured.images || division.featured.images.length === 0) && (
@@ -276,8 +277,10 @@ const ProjectsSection: React.FC = () => {
                         </div>
                       )}
                       <div className="relative overflow-hidden aspect-[2/1] mb-3 rounded-xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
-                        {sec.images?.map((imgUrl: string, i: number) => (
-                          <img key={i} src={imgUrl} alt={sec.title} className="w-full flex-shrink-0 snap-center object-cover transition-transform duration-1000 group-hover:scale-105" />
+                        {sec.images?.map((imgUrl: any, i: number) => (
+                          <div key={i} className="w-full flex-shrink-0 snap-center relative">
+                            <ResponsiveImage src={imgUrl} alt={sec.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                          </div>
                         ))}
                         {(!sec.images || sec.images.length === 0) && (
                           <div className="absolute inset-0 w-full h-full bg-surface-variant flex items-center justify-center">No image</div>

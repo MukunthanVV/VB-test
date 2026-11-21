@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
+import ResponsiveImage from './ResponsiveImage';
 
 const fallbackData = {
   id: 'mindset_main',
@@ -102,13 +103,14 @@ const MindsetSection: React.FC = () => {
           className="lg:w-5/12 border-b lg:border-b-0 lg:border-r border-outline relative min-h-[280px] sm:min-h-[380px] lg:min-h-[600px] group/imgslider overflow-hidden"
         >
           <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
-            {(Array.isArray(data.image || fallbackData.image) ? data.image || fallbackData.image : [data.image || fallbackData.image]).map((img: string, i: number) => (
-              <img 
-                key={i}
-                src={img} 
-                alt={`${data.title} ${i+1}`} 
-                className="w-full h-full flex-shrink-0 snap-center object-cover object-top transition-transform duration-1000 group-hover/imgslider:scale-105"
-              />
+            {(Array.isArray(data.image || fallbackData.image) ? data.image || fallbackData.image : [data.image || fallbackData.image]).map((img: any, i: number) => (
+              <div key={i} className="w-full h-full flex-shrink-0 snap-center relative">
+                <ResponsiveImage 
+                  src={img} 
+                  alt={`${data.title} ${i+1}`} 
+                  className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover/imgslider:scale-105"
+                />
+              </div>
             ))}
           </div>
         </motion.div>

@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
+import ResponsiveImage from './ResponsiveImage';
 
 const fallbackTestimonials = [
   {
@@ -191,16 +192,20 @@ const TestimonialsSection: React.FC = () => {
                   {images.length > 0 && (
                     <div className="relative w-full max-w-md h-[280px] sm:h-[350px] md:h-[450px]">
                       <AnimatePresence initial={false}>
-                        <motion.img 
+                        <motion.div 
                           key={currentImgIndex}
-                          src={images[currentImgIndex]} 
-                          alt={currentItem.name} 
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.5 }}
-                          className="absolute inset-0 w-full h-full object-contain object-bottom grayscale-[30%] hover:grayscale-0 transition-all duration-700 drop-shadow-2xl" 
-                        />
+                          className="absolute inset-0 w-full h-full flex items-end justify-center md:justify-end"
+                        >
+                          <ResponsiveImage 
+                            src={images[currentImgIndex]} 
+                            alt={currentItem.name} 
+                            className="max-h-full max-w-full object-contain object-bottom grayscale-[30%] hover:grayscale-0 transition-all duration-700 drop-shadow-2xl" 
+                          />
+                        </motion.div>
                       </AnimatePresence>
                       {images.length > 1 && (
                         <>

@@ -7,6 +7,7 @@ import NormalFooter from './NormalFooter';
 import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
+import ResponsiveImage, { type ResponsiveImageSource } from './ResponsiveImage';
 
 const AnimatedTopo = React.lazy(() => import('./AnimatedTopo'));
 
@@ -15,7 +16,7 @@ interface ServiceData {
   title: string;
   description: string;
   icon: string;
-  image?: string;
+  image?: ResponsiveImageSource | ResponsiveImageSource[];
   order: number;
 }
 
@@ -200,10 +201,12 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                   )}
 
                   <div className={`w-full md:w-[60%] relative min-h-[300px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0 overflow-hidden`}>
-                    {service.image && service.image.length > 0 ? (
+                    {service.image ? (
                       <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
                         {(Array.isArray(service.image) ? service.image : [service.image]).map((img, i) => (
-                          <img key={i} src={img} alt={`${service.title} - ${i + 1}`} className="w-full h-full flex-shrink-0 snap-center object-cover" />
+                          <div key={i} className="w-full h-full flex-shrink-0 snap-center relative">
+                            <ResponsiveImage src={img} alt={`${service.title} - ${i + 1}`} className="w-full h-full object-cover" />
+                          </div>
                         ))}
                       </div>
                     ) : (
