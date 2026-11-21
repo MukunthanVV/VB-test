@@ -86,6 +86,159 @@ interface DeviceSetting {
   label: string;
 }
 
+// -------------------------------------------------------------
+// Live Visual SVG Crop Preview Component (GPU Accelerated)
+// -------------------------------------------------------------
+const LiveCroppedPreview: React.FC<{
+  imageSrc: string;
+  crop: CropRect;
+  rotation: number;
+  className?: string;
+  aspectRatioClass?: string;
+}> = ({
+  imageSrc,
+  crop,
+  rotation,
+  className = '',
+  aspectRatioClass = 'aspect-[16/9]',
+}) => {
+  const width = Math.max(0.5, crop.width);
+  const height = Math.max(0.5, crop.height);
+
+  return (
+    <div className={`relative overflow-hidden ${aspectRatioClass} bg-neutral-950 flex items-center justify-center ${className}`}>
+      <svg
+        viewBox={`${crop.x} ${crop.y} ${width} ${height}`}
+        className="w-full h-full"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <g transform={rotation ? `rotate(${rotation} 50 50)` : undefined}>
+          <image
+            href={imageSrc}
+            x="0"
+            y="0"
+            width="100"
+            height="100"
+            preserveAspectRatio="none"
+          />
+        </g>
+      </svg>
+    </div>
+  );
+};
+
+// -------------------------------------------------------------
+// Device Mockup Container Component
+// -------------------------------------------------------------
+const DeviceMockup: React.FC<{
+  device: DeviceType;
+  imageSrc: string;
+  crop: CropRect;
+  rotation: number;
+  onEdit?: () => void;
+  isCompact?: boolean;
+}> = ({ device, imageSrc, crop, rotation, onEdit, isCompact = false }) => {
+  if (device === 'mobile') {
+    // Smartphone Mockup Frame
+    return (
+      <div className={`flex flex-col items-center ${isCompact ? 'w-24 sm:w-28' : 'w-full max-w-[220px] mx-auto'}`}>
+        <div className="w-full relative bg-[#1c1f26] border-[3px] border-[#2d323e] rounded-[1.8rem] p-1.5 shadow-2xl flex flex-col items-center">
+          {/* Dynamic Island / Notch */}
+          <div className="w-12 h-2.5 bg-black rounded-full mb-1 flex items-center justify-end px-1.5 z-10">
+            <div className="w-1 h-1 bg-neutral-800 rounded-full" />
+          </div>
+          {/* Screen */}
+          <div className="w-full overflow-hidden rounded-[1.2rem] bg-black">
+            <LiveCroppedPreview
+              imageSrc={imageSrc}
+              crop={crop}
+              rotation={rotation}
+              aspectRatioClass="aspect-[9/16]"
+              className="w-full"
+            />
+          </div>
+          {/* Home Bar */}
+          <div className="w-12 h-1 bg-white/30 rounded-full mt-1.5" />
+        </div>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="mt-2 text-[10px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>Fix / Adjust</span>
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (device === 'foldable') {
+    // Tablet / Foldable Mockup Frame
+    return (
+      <div className={`flex flex-col items-center ${isCompact ? 'w-32 sm:w-36' : 'w-full max-w-[320px] mx-auto'}`}>
+        <div className="w-full relative bg-[#1c1f26] border-[3px] border-[#2d323e] rounded-[1.4rem] p-1.5 shadow-2xl">
+          {/* Camera dot */}
+          <div className="w-1.5 h-1.5 bg-black rounded-full mx-auto mb-1" />
+          {/* Screen */}
+          <div className="w-full overflow-hidden rounded-xl bg-black">
+            <LiveCroppedPreview
+              imageSrc={imageSrc}
+              crop={crop}
+              rotation={rotation}
+              aspectRatioClass="aspect-[4/3]"
+              className="w-full"
+            />
+          </div>
+        </div>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="mt-2 text-[10px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>Fix / Adjust</span>
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop Laptop Mockup Frame
+  return (
+    <div className={`flex flex-col items-center ${isCompact ? 'w-36 sm:w-44' : 'w-full max-w-[380px] mx-auto'}`}>
+      <div className="w-full relative bg-[#1c1f26] border-[3px] border-[#2d323e] rounded-t-xl p-1.5 shadow-2xl">
+        {/* Camera dot */}
+        <div className="w-1.5 h-1.5 bg-black rounded-full mx-auto mb-1" />
+        {/* Screen */}
+        <div className="w-full overflow-hidden rounded-lg bg-black">
+          <LiveCroppedPreview
+            imageSrc={imageSrc}
+            crop={crop}
+            rotation={rotation}
+            aspectRatioClass="aspect-[16/9]"
+            className="w-full"
+          />
+        </div>
+      </div>
+      {/* Laptop base */}
+      <div className="w-[108%] h-2.5 bg-[#2a2f3a] rounded-b-md shadow-md border-t border-white/10" />
+      {onEdit && (
+        <button
+          type="button"
+          onClick={onEdit}
+          className="mt-2 text-[10px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+        >
+          <span>Fix / Adjust</span>
+        </button>
+      )}
+    </div>
+  );
+};
+
+// -------------------------------------------------------------
+// Main Modal Component
+// -------------------------------------------------------------
 const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   isOpen,
   imageSrc,
@@ -95,6 +248,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   onCropComplete,
 }) => {
   const [activeDevice, setActiveDevice] = useState<DeviceType>('desktop');
+  const [viewMode, setViewMode] = useState<'adjust' | 'all-previews'>('adjust');
   const [rotation, setRotation] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
@@ -199,6 +353,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       setRotation(0);
       setIsProcessing(false);
       setActiveDevice('desktop');
+      setViewMode('adjust');
       // Always start UNLOCKED with full free crop
       setDeviceSettings({
         desktop: { isFree: true, ratio: null, label: 'Free Crop' },
@@ -242,7 +397,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const handleToggleLock = () => {
     setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
     if (currentSetting.isFree) {
-      // Lock to 16:9 or 9:16 depending on device
       const defaultLockRatio = activeDevice === 'mobile' ? 9 / 16 : 16 / 9;
       const defaultLabel = activeDevice === 'mobile' ? '9:16' : '16:9';
       setDeviceSettings((prev) => ({
@@ -252,7 +406,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       const newCrop = calculateDefaultCrop(defaultLockRatio, false);
       setCrops((prev) => ({ ...prev, [activeDevice]: newCrop }));
     } else {
-      // Unlock: Keep current framing, just set isFree: true
       setDeviceSettings((prev) => ({
         ...prev,
         [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop' },
@@ -482,6 +635,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const handleSelectDevice = (device: DeviceType) => {
     setConfirmed((prev) => ({ ...prev, [device]: true }));
     setActiveDevice(device);
+    setViewMode('adjust'); // Return to adjust mode when switching device
   };
 
   const handleNextStep = () => {
@@ -583,19 +737,19 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md select-none">
+      <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-3 md:p-5 bg-black/90 backdrop-blur-md select-none">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-[#121418] text-[#E8E6E3] w-full max-w-5xl rounded-2xl shadow-2xl border border-white/10 flex flex-col max-h-[98vh] overflow-hidden"
+          className="bg-[#121418] text-[#E8E6E3] w-full max-w-6xl rounded-2xl shadow-2xl border border-white/10 flex flex-col max-h-[96vh] overflow-hidden"
         >
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-white/10 flex justify-between items-center bg-[#181B21]">
+          <div className="p-3 sm:p-4 border-b border-white/10 flex justify-between items-center bg-[#181B21]">
             <div>
               <div className="flex items-center gap-3">
-                <h3 className="text-base sm:text-lg font-bold font-display uppercase tracking-wide text-white">
-                  3-Device Image Cropping
+                <h3 className="text-sm sm:text-base md:text-lg font-bold font-display uppercase tracking-wide text-white">
+                  3-Device Image Preview & Cropper
                 </h3>
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wider transition-colors ${
@@ -604,7 +758,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                       : 'bg-primary/20 text-primary border border-primary/30'
                   }`}
                 >
-                  {allThreeDone ? '✓ All 3 Devices Cropped' : `Step: ${completedCount} of 3 Set`}
+                  {allThreeDone ? '✓ All 3 Devices Ready' : `${completedCount} of 3 Set`}
                 </span>
                 {queueInfo && queueInfo.total > 1 && (
                   <span className="px-2 py-0.5 rounded bg-white/10 text-neutral-300 text-xs">
@@ -612,345 +766,557 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-xs text-neutral-400 mt-1">
-                Crop for <span className="text-white font-medium">Desktop</span>,{' '}
-                <span className="text-white font-medium">Foldables & iPads</span>, and{' '}
-                <span className="text-white font-medium">Mobile</span>. Select any dimensions (mobile, square, widescreen, or free).
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Preview and fix each section for <span className="text-white font-medium">Desktop</span>,{' '}
+                <span className="text-white font-medium">Foldables</span>, and{' '}
+                <span className="text-white font-medium">Mobile Phones</span>.
               </p>
             </div>
 
-            <button
-              onClick={onClose}
-              className="text-neutral-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
-              title="Cancel"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Device Tabs Bar (Required 3 Options) */}
-          <div className="grid grid-cols-3 bg-[#0E1013] border-b border-white/10 p-1.5 gap-1.5 sm:gap-2">
-            {DEVICE_CONFIGS.map((device, index) => {
-              const isActive = activeDevice === device.id;
-              const isDone = confirmed[device.id];
-              const setting = deviceSettings[device.id];
-
-              return (
+            <div className="flex items-center gap-2">
+              {/* Toggle View Mode: Adjust vs All 3 Previews Grid */}
+              <div className="flex items-center bg-[#0E1013] p-1 rounded-xl border border-white/10">
                 <button
-                  key={device.id}
                   type="button"
-                  onClick={() => handleSelectDevice(device.id)}
-                  className={`relative p-2.5 sm:p-3 rounded-xl transition-all duration-200 text-left flex flex-col justify-between border cursor-pointer ${
-                    isActive
-                      ? 'bg-[#1E232B] border-primary text-white shadow-lg ring-1 ring-primary/40'
-                      : isDone
-                      ? 'bg-[#14171C] border-emerald-500/30 text-neutral-200 hover:bg-[#1A1E24]'
-                      : 'bg-[#14171C]/60 border-white/5 text-neutral-400 hover:bg-[#181B22]'
+                  onClick={() => setViewMode('adjust')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    viewMode === 'adjust'
+                      ? 'bg-primary text-on-primary shadow-md'
+                      : 'text-neutral-400 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full mb-1">
-                    <span className="text-xs sm:text-sm font-bold tracking-tight flex items-center gap-1.5">
-                      <span className="text-primary font-mono">{index + 1}.</span> {device.label}
-                    </span>
-                    <span
-                      className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-semibold ${
-                        isDone
-                          ? 'bg-emerald-500/20 text-emerald-400'
-                          : 'bg-white/5 text-neutral-400'
-                      }`}
-                    >
-                      {isDone ? '✓ Set' : 'Pending'}
-                    </span>
+                  <span className="material-symbols-outlined text-sm">crop</span>
+                  <span>Crop & Fix</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('all-previews')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    viewMode === 'all-previews'
+                      ? 'bg-primary text-on-primary shadow-md'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">visibility</span>
+                  <span>All 3 Previews</span>
+                </button>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="text-neutral-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                title="Cancel"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Top 3 Interactive Section Cards (Live Mini-Previews + Section Switcher) */}
+          <div className="grid grid-cols-3 bg-[#0B0D10] border-b border-white/10 p-2 gap-2">
+            {DEVICE_CONFIGS.map((device, index) => {
+              const isActive = activeDevice === device.id && viewMode === 'adjust';
+              const isDone = confirmed[device.id];
+              const setting = deviceSettings[device.id];
+              const deviceCrop = crops[device.id];
+
+              return (
+                <div
+                  key={device.id}
+                  onClick={() => handleSelectDevice(device.id)}
+                  className={`relative p-2 sm:p-2.5 rounded-xl transition-all duration-200 text-left flex items-center gap-2 sm:gap-3 border cursor-pointer group ${
+                    isActive
+                      ? 'bg-[#1E232B] border-primary text-white shadow-xl ring-1 ring-primary/40'
+                      : 'bg-[#13161C] border-white/5 text-neutral-300 hover:bg-[#181C23] hover:border-white/15'
+                  }`}
+                >
+                  {/* Live Mini Preview Thumbnail */}
+                  <div className="w-14 h-10 sm:w-16 sm:h-12 flex-shrink-0 rounded-lg overflow-hidden border border-white/15 bg-black shadow-inner flex items-center justify-center">
+                    <LiveCroppedPreview
+                      imageSrc={imageSrc}
+                      crop={deviceCrop}
+                      rotation={rotation}
+                      aspectRatioClass={device.id === 'mobile' ? 'aspect-[9/16]' : device.id === 'foldable' ? 'aspect-[4/3]' : 'aspect-[16/9]'}
+                      className="w-full h-full"
+                    />
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-neutral-400">
-                    <span className="font-mono text-primary/90 font-medium">
-                      {setting.isFree ? '🔓 Free Crop' : `🔒 ${setting.label}`}
-                    </span>
-                    <span className="hidden sm:inline text-[10px] text-neutral-400">{device.subLabel}</span>
+                  {/* Info & Status */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-xs sm:text-sm font-bold truncate flex items-center gap-1">
+                        <span className="text-primary font-mono">{index + 1}.</span> {device.label}
+                      </span>
+                      <span
+                        className={`text-[9px] uppercase font-mono px-1.5 py-0.2 rounded font-semibold ${
+                          isActive
+                            ? 'bg-primary/20 text-primary border border-primary/30'
+                            : isDone
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-white/5 text-neutral-400'
+                        }`}
+                      >
+                        {isActive ? 'Editing' : isDone ? '✓ Ready' : 'Pending'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-neutral-400">
+                      <span className="truncate font-mono text-primary/80">
+                        {setting.isFree ? '🔓 Free Crop' : `🔒 ${setting.label}`}
+                      </span>
+                      <span className="text-primary text-[10px] opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+                        Fix →
+                      </span>
+                    </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
 
-          {/* Active Device Dimensions Toolbar (Including Mobile Dimensions on Desktop) */}
-          <div className="px-4 py-2.5 bg-[#16191F] border-b border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-white uppercase tracking-wider text-[11px]">
-                {currentConfig.label} Ratio:
-              </span>
+          {/* ===================== VIEW MODE 1: ADJUST & CROP (Split with Live Device Preview) ===================== */}
+          {viewMode === 'adjust' && (
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* Dimensions Toolbar */}
+              <div className="px-3 sm:px-4 py-2 bg-[#16191F] border-b border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm text-primary">aspect_ratio</span>
+                    {currentConfig.label} Ratio:
+                  </span>
 
-              {/* Preset buttons including Mobile Portrait, Square, Widescreen, and Free Crop */}
-              <div className="flex flex-wrap items-center gap-1 bg-[#0E1013] p-1 rounded-lg border border-white/5">
-                {currentConfig.presets.map((p) => {
-                  const isCurrent =
-                    (p.isFree && currentSetting.isFree) ||
-                    (!p.isFree && !currentSetting.isFree && currentSetting.label === p.shortLabel);
+                  {/* Preset Buttons */}
+                  <div className="flex flex-wrap items-center gap-1 bg-[#0E1013] p-1 rounded-lg border border-white/5">
+                    {currentConfig.presets.map((p) => {
+                      const isCurrent =
+                        (p.isFree && currentSetting.isFree) ||
+                        (!p.isFree && !currentSetting.isFree && currentSetting.label === p.shortLabel);
 
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => handleSelectPreset(p)}
-                      className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                        isCurrent
-                          ? 'bg-primary text-on-primary font-bold shadow-sm'
-                          : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                      }`}
-                      title={p.label}
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => handleSelectPreset(p)}
+                          className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                            isCurrent
+                              ? 'bg-primary text-on-primary font-bold shadow-sm'
+                              : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                          }`}
+                          title={p.label}
+                        >
+                          {p.shortLabel}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 1-Click Interactive Lock / Unlock Button */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleToggleLock}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shadow-sm border ${
+                      currentSetting.isFree
+                        ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
+                        : 'bg-primary/20 text-primary border-primary/40 hover:bg-primary/30'
+                    }`}
+                    title={currentSetting.isFree ? 'Click to lock aspect ratio' : 'Click to unlock free crop'}
+                  >
+                    <span>{currentSetting.isFree ? '🔓 UNLOCKED (FREE CROP)' : `🔒 LOCKED (${currentSetting.label})`}</span>
+                    <span className="text-[10px] font-sans font-normal opacity-80 underline">
+                      {currentSetting.isFree ? 'Lock' : 'Unlock'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Body: Split View (Interactive Cropper on Left, Live Device Preview on Right) */}
+              <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden bg-black/95">
+                {/* Left/Center: Interactive Cropping Canvas (60-65% width) */}
+                <div className="flex-1 relative flex items-center justify-center p-3 sm:p-4 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[280px]">
+                  <div
+                    ref={containerRef}
+                    className="relative inline-block max-w-full max-h-[46vh] select-none touch-none"
+                  >
+                    <img
+                      ref={imgRef}
+                      src={imageSrc}
+                      alt="Source preview"
+                      onLoad={handleImageLoaded}
+                      style={{
+                        transform: `rotate(${rotation}deg)`,
+                        transition: 'transform 0.2s ease',
+                        maxHeight: '46vh',
+                        maxWidth: '100%',
+                        display: 'block',
+                        userSelect: 'none',
+                        pointerEvents: 'none',
+                      }}
+                      className="rounded shadow-inner object-contain"
+                    />
+
+                    {/* Darkened Mask Over Entire Image */}
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                      <div
+                        className="absolute left-0 right-0 top-0 bg-black/70 backdrop-blur-[1px]"
+                        style={{ height: `${currentCrop.y}%` }}
+                      />
+                      <div
+                        className="absolute left-0 right-0 bottom-0 bg-black/70 backdrop-blur-[1px]"
+                        style={{ height: `${100 - (currentCrop.y + currentCrop.height)}%` }}
+                      />
+                      <div
+                        className="absolute left-0 bg-black/70 backdrop-blur-[1px]"
+                        style={{
+                          top: `${currentCrop.y}%`,
+                          height: `${currentCrop.height}%`,
+                          width: `${currentCrop.x}%`,
+                        }}
+                      />
+                      <div
+                        className="absolute right-0 bg-black/70 backdrop-blur-[1px]"
+                        style={{
+                          top: `${currentCrop.y}%`,
+                          height: `${currentCrop.height}%`,
+                          width: `${100 - (currentCrop.x + currentCrop.width)}%`,
+                        }}
+                      />
+                    </div>
+
+                    {/* Active Draggable & Resizable Crop Box */}
+                    <div
+                      className="absolute border-2 border-primary shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_0_18px_rgba(200,160,93,0.35)] cursor-move touch-none"
+                      style={{
+                        left: `${currentCrop.x}%`,
+                        top: `${currentCrop.y}%`,
+                        width: `${currentCrop.width}%`,
+                        height: `${currentCrop.height}%`,
+                      }}
+                      onPointerDown={(e) => handlePointerDown(e, 'move')}
                     >
-                      {p.shortLabel}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+                      {/* Rule of Thirds Grid */}
+                      <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-45">
+                        <div className="border-r border-b border-primary/50" />
+                        <div className="border-r border-b border-primary/50" />
+                        <div className="border-b border-primary/50" />
+                        <div className="border-r border-b border-primary/50" />
+                        <div className="border-r border-b border-primary/50" />
+                        <div className="border-b border-primary/50" />
+                        <div className="border-r border-b border-primary/50" />
+                        <div className="border-r border-b border-primary/50" />
+                        <div />
+                      </div>
 
-            {/* Clickable Lock / Unlock Toggle Button */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleToggleLock}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shadow-sm border ${
-                  currentSetting.isFree
-                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
-                    : 'bg-primary/20 text-primary border-primary/40 hover:bg-primary/30'
-                }`}
-                title={currentSetting.isFree ? 'Click to lock into a fixed aspect ratio' : 'Click to unlock and crop freely'}
-              >
-                <span>{currentSetting.isFree ? '🔓 UNLOCKED (FREE CROP)' : `🔒 LOCKED (${currentSetting.label})`}</span>
-                <span className="text-[10px] font-sans font-normal opacity-80 underline ml-0.5">
-                  {currentSetting.isFree ? 'Lock' : 'Unlock'}
-                </span>
-              </button>
-            </div>
-          </div>
+                      {/* 4 Corner Drag Handles */}
+                      <div
+                        className="absolute -top-3 -left-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nwse-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                        onPointerDown={(e) => handlePointerDown(e, 'tl')}
+                        title="Resize Top-Left"
+                      >
+                        <div className="w-1.5 h-1.5 bg-black rounded-full" />
+                      </div>
+                      <div
+                        className="absolute -top-3 -right-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nesw-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                        onPointerDown={(e) => handlePointerDown(e, 'tr')}
+                        title="Resize Top-Right"
+                      >
+                        <div className="w-1.5 h-1.5 bg-black rounded-full" />
+                      </div>
+                      <div
+                        className="absolute -bottom-3 -left-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nesw-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                        onPointerDown={(e) => handlePointerDown(e, 'bl')}
+                        title="Resize Bottom-Left"
+                      >
+                        <div className="w-1.5 h-1.5 bg-black rounded-full" />
+                      </div>
+                      <div
+                        className="absolute -bottom-3 -right-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nwse-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                        onPointerDown={(e) => handlePointerDown(e, 'br')}
+                        title="Resize Bottom-Right"
+                      >
+                        <div className="w-1.5 h-1.5 bg-black rounded-full" />
+                      </div>
 
-          {/* Interactive Crop Viewport */}
-          <div className="flex-1 relative bg-black/95 flex items-center justify-center p-3 sm:p-5 overflow-hidden min-h-[320px] sm:min-h-[420px]">
-            <div
-              ref={containerRef}
-              className="relative inline-block max-w-full max-h-[50vh] select-none touch-none"
-            >
-              <img
-                ref={imgRef}
-                src={imageSrc}
-                alt="Source preview"
-                onLoad={handleImageLoaded}
-                style={{
-                  transform: `rotate(${rotation}deg)`,
-                  transition: 'transform 0.2s ease',
-                  maxHeight: '50vh',
-                  maxWidth: '100%',
-                  display: 'block',
-                  userSelect: 'none',
-                  pointerEvents: 'none',
-                }}
-                className="rounded shadow-inner object-contain"
-              />
+                      {/* 4 Edge Handles */}
+                      <div
+                        className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-3.5 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ns-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
+                        onPointerDown={(e) => handlePointerDown(e, 't')}
+                        title="Resize Top"
+                      >
+                        <div className="w-3 h-0.5 bg-black/70 rounded" />
+                      </div>
+                      <div
+                        className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-3.5 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ns-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
+                        onPointerDown={(e) => handlePointerDown(e, 'b')}
+                        title="Resize Bottom"
+                      >
+                        <div className="w-3 h-0.5 bg-black/70 rounded" />
+                      </div>
+                      <div
+                        className="absolute top-1/2 -left-2 -translate-y-1/2 w-3.5 h-8 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ew-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
+                        onPointerDown={(e) => handlePointerDown(e, 'l')}
+                        title="Resize Left"
+                      >
+                        <div className="w-0.5 h-3 bg-black/70 rounded" />
+                      </div>
+                      <div
+                        className="absolute top-1/2 -right-2 -translate-y-1/2 w-3.5 h-8 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ew-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
+                        onPointerDown={(e) => handlePointerDown(e, 'r')}
+                        title="Resize Right"
+                      >
+                        <div className="w-0.5 h-3 bg-black/70 rounded" />
+                      </div>
 
-              {/* Darkened Mask Over Entire Image */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div
-                  className="absolute left-0 right-0 top-0 bg-black/70 backdrop-blur-[1px]"
-                  style={{ height: `${currentCrop.y}%` }}
-                />
-                <div
-                  className="absolute left-0 right-0 bottom-0 bg-black/70 backdrop-blur-[1px]"
-                  style={{ height: `${100 - (currentCrop.y + currentCrop.height)}%` }}
-                />
-                <div
-                  className="absolute left-0 bg-black/70 backdrop-blur-[1px]"
-                  style={{
-                    top: `${currentCrop.y}%`,
-                    height: `${currentCrop.height}%`,
-                    width: `${currentCrop.x}%`,
-                  }}
-                />
-                <div
-                  className="absolute right-0 bg-black/70 backdrop-blur-[1px]"
-                  style={{
-                    top: `${currentCrop.y}%`,
-                    height: `${currentCrop.height}%`,
-                    width: `${100 - (currentCrop.x + currentCrop.width)}%`,
-                  }}
-                />
-              </div>
-
-              {/* Active Draggable & Resizable Crop Box */}
-              <div
-                className="absolute border-2 border-primary shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_0_18px_rgba(200,160,93,0.35)] cursor-move touch-none"
-                style={{
-                  left: `${currentCrop.x}%`,
-                  top: `${currentCrop.y}%`,
-                  width: `${currentCrop.width}%`,
-                  height: `${currentCrop.height}%`,
-                }}
-                onPointerDown={(e) => handlePointerDown(e, 'move')}
-              >
-                {/* Rule of Thirds Grid */}
-                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-45">
-                  <div className="border-r border-b border-primary/50" />
-                  <div className="border-r border-b border-primary/50" />
-                  <div className="border-b border-primary/50" />
-                  <div className="border-r border-b border-primary/50" />
-                  <div className="border-r border-b border-primary/50" />
-                  <div className="border-b border-primary/50" />
-                  <div className="border-r border-b border-primary/50" />
-                  <div className="border-r border-b border-primary/50" />
-                  <div />
+                      {/* Current Dimensions Badge */}
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/85 backdrop-blur-md text-[10px] font-mono font-bold uppercase text-primary border border-primary/40 pointer-events-none tracking-wider shadow-md">
+                        {currentConfig.label}: {currentSetting.isFree ? 'FREE CROP' : currentSetting.label} ({Math.round(currentCrop.width)}% × {Math.round(currentCrop.height)}%)
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 4 Corner Drag Handles */}
-                <div
-                  className="absolute -top-3 -left-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nwse-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                  onPointerDown={(e) => handlePointerDown(e, 'tl')}
-                  title="Resize Top-Left"
-                >
-                  <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                </div>
-                <div
-                  className="absolute -top-3 -right-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nesw-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                  onPointerDown={(e) => handlePointerDown(e, 'tr')}
-                  title="Resize Top-Right"
-                >
-                  <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                </div>
-                <div
-                  className="absolute -bottom-3 -left-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nesw-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                  onPointerDown={(e) => handlePointerDown(e, 'bl')}
-                  title="Resize Bottom-Left"
-                >
-                  <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                </div>
-                <div
-                  className="absolute -bottom-3 -right-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nwse-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                  onPointerDown={(e) => handlePointerDown(e, 'br')}
-                  title="Resize Bottom-Right"
-                >
-                  <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                </div>
+                {/* Right Side: LIVE DEVICE PREVIEW PANE (35-40% width) */}
+                <div className="w-full lg:w-[360px] xl:w-[400px] flex-shrink-0 bg-[#0E1014] p-3 sm:p-4 flex flex-col justify-between overflow-y-auto">
+                  <div>
+                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">
+                          Live {currentConfig.label} Preview
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-neutral-400 font-mono">Real-Time</span>
+                    </div>
 
-                {/* 4 Edge Handles (Pull sides freely) */}
-                <div
-                  className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-3.5 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ns-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                  onPointerDown={(e) => handlePointerDown(e, 't')}
-                  title="Resize Top"
-                >
-                  <div className="w-3 h-0.5 bg-black/70 rounded" />
-                </div>
-                <div
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-3.5 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ns-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                  onPointerDown={(e) => handlePointerDown(e, 'b')}
-                  title="Resize Bottom"
-                >
-                  <div className="w-3 h-0.5 bg-black/70 rounded" />
-                </div>
-                <div
-                  className="absolute top-1/2 -left-2 -translate-y-1/2 w-3.5 h-8 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ew-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                  onPointerDown={(e) => handlePointerDown(e, 'l')}
-                  title="Resize Left"
-                >
-                  <div className="w-0.5 h-3 bg-black/70 rounded" />
-                </div>
-                <div
-                  className="absolute top-1/2 -right-2 -translate-y-1/2 w-3.5 h-8 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ew-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                  onPointerDown={(e) => handlePointerDown(e, 'r')}
-                  title="Resize Right"
-                >
-                  <div className="w-0.5 h-3 bg-black/70 rounded" />
-                </div>
+                    {/* Active Device Large Mockup */}
+                    <div className="py-2 flex items-center justify-center min-h-[220px]">
+                      <DeviceMockup
+                        device={activeDevice}
+                        imageSrc={imageSrc}
+                        crop={currentCrop}
+                        rotation={rotation}
+                      />
+                    </div>
+                  </div>
 
-                {/* Current Badge Tag */}
-                <div className="absolute top-2 left-2 px-2.5 py-1 rounded bg-black/85 backdrop-blur-md text-[10px] font-mono font-bold uppercase text-primary border border-primary/40 pointer-events-none tracking-wider shadow-md">
-                  {currentConfig.label}: {currentSetting.isFree ? 'FREE CROP' : currentSetting.label} ({Math.round(currentCrop.width)}% × {Math.round(currentCrop.height)}%)
+                  {/* Other 2 Devices Mini Deck */}
+                  <div className="pt-3 border-t border-white/10">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 mb-2 block">
+                      Other Section Previews (Click to Fix):
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {DEVICE_CONFIGS.filter((d) => d.id !== activeDevice).map((other) => (
+                        <button
+                          key={other.id}
+                          type="button"
+                          onClick={() => handleSelectDevice(other.id)}
+                          className="bg-[#141820] hover:bg-[#1A202A] p-2 rounded-xl border border-white/5 hover:border-primary/40 text-left transition-all group cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-neutral-300 group-hover:text-primary mb-1">
+                            <span>{other.label}</span>
+                            <span className="text-[9px] text-primary">Fix →</span>
+                          </div>
+                          <div className="w-full h-14 bg-black rounded-lg overflow-hidden border border-white/10">
+                            <LiveCroppedPreview
+                              imageSrc={imageSrc}
+                              crop={crops[other.id]}
+                              rotation={rotation}
+                              aspectRatioClass={other.id === 'mobile' ? 'aspect-[9/16]' : other.id === 'foldable' ? 'aspect-[4/3]' : 'aspect-[16/9]'}
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* Quick Tools Bar */}
+              <div className="px-3 sm:px-4 py-2 bg-[#15181E] border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleRotate}
+                    className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer text-xs"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Rotate 90°</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleMaximize}
+                    className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer text-xs"
+                    title="Expand frame to maximum size"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                    <span>Fit All</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCenter}
+                    className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer text-xs"
+                    title="Center frame on image"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="3" strokeWidth={2} />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v3m0 14v3M2 12h3m14 0h3" />
+                    </svg>
+                    <span>Center</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCrops((prev) => ({ ...prev, [activeDevice]: { x: 5, y: 5, width: 90, height: 90 } }));
+                      setDeviceSettings((prev) => ({
+                        ...prev,
+                        [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop' },
+                      }));
+                    }}
+                    className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer text-xs"
+                    title="Reset to free crop"
+                  >
+                    <span>Reset</span>
+                  </button>
+                </div>
+
+                <div className="text-neutral-400 text-xs hidden sm:block">
+                  Drag any handle to crop • Preview updates in real time on the right
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Quick Tools Bar */}
-          <div className="px-4 py-2.5 bg-[#15181E] border-t border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={handleRotate}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span>Rotate 90°</span>
-              </button>
+          {/* ===================== VIEW MODE 2: ALL 3 PREVIEWS GALLERY ===================== */}
+          {viewMode === 'all-previews' && (
+            <div className="flex-1 p-4 sm:p-6 bg-[#0E1014] overflow-y-auto">
+              <div className="text-center max-w-xl mx-auto mb-6">
+                <h4 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
+                  Full 3-Device Preview Gallery
+                </h4>
+                <p className="text-xs text-neutral-400 mt-1">
+                  Review how this image appears across Desktop, Foldable/Tablet, and Mobile. Click &quot;Fix / Adjust Crop&quot; on any section to customize its framing.
+                </p>
+              </div>
 
-              <button
-                type="button"
-                onClick={handleMaximize}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer"
-                title="Expand frame to maximum size"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-                <span>Fit / Maximize</span>
-              </button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end max-w-5xl mx-auto py-2">
+                {/* 1. Desktop Mockup Card */}
+                <div className="bg-[#141820] border border-white/10 p-4 rounded-2xl flex flex-col items-center justify-between shadow-xl">
+                  <div className="w-full flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm text-primary">desktop_windows</span>
+                      Desktop View
+                    </span>
+                    <span className="text-[10px] font-mono text-neutral-400">{deviceSettings.desktop.label}</span>
+                  </div>
 
-              <button
-                type="button"
-                onClick={handleCenter}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer"
-                title="Center frame on image"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="3" strokeWidth={2} />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v3m0 14v3M2 12h3m14 0h3" />
-                </svg>
-                <span>Center Frame</span>
-              </button>
+                  <div className="w-full py-2 flex items-center justify-center">
+                    <DeviceMockup
+                      device="desktop"
+                      imageSrc={imageSrc}
+                      crop={crops.desktop}
+                      rotation={rotation}
+                    />
+                  </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setCrops((prev) => ({ ...prev, [activeDevice]: { x: 5, y: 5, width: 90, height: 90 } }));
-                  setDeviceSettings((prev) => ({
-                    ...prev,
-                    [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop' },
-                  }));
-                }}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer"
-                title="Reset to free crop"
-              >
-                <span>Reset to Free Crop</span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectDevice('desktop')}
+                    className="w-full mt-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    <span>Fix Desktop Crop</span>
+                  </button>
+                </div>
+
+                {/* 2. Foldables & iPads Mockup Card */}
+                <div className="bg-[#141820] border border-white/10 p-4 rounded-2xl flex flex-col items-center justify-between shadow-xl">
+                  <div className="w-full flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm text-primary">devices_fold</span>
+                      Foldables & iPads View
+                    </span>
+                    <span className="text-[10px] font-mono text-neutral-400">{deviceSettings.foldable.label}</span>
+                  </div>
+
+                  <div className="w-full py-2 flex items-center justify-center">
+                    <DeviceMockup
+                      device="foldable"
+                      imageSrc={imageSrc}
+                      crop={crops.foldable}
+                      rotation={rotation}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectDevice('foldable')}
+                    className="w-full mt-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    <span>Fix Foldable Crop</span>
+                  </button>
+                </div>
+
+                {/* 3. Mobile Phones Mockup Card */}
+                <div className="bg-[#141820] border border-white/10 p-4 rounded-2xl flex flex-col items-center justify-between shadow-xl">
+                  <div className="w-full flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm text-primary">smartphone</span>
+                      Mobile Phones View
+                    </span>
+                    <span className="text-[10px] font-mono text-neutral-400">{deviceSettings.mobile.label}</span>
+                  </div>
+
+                  <div className="w-full py-2 flex items-center justify-center">
+                    <DeviceMockup
+                      device="mobile"
+                      imageSrc={imageSrc}
+                      crop={crops.mobile}
+                      rotation={rotation}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectDevice('mobile')}
+                    className="w-full mt-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    <span>Fix Mobile Crop</span>
+                  </button>
+                </div>
+              </div>
             </div>
-
-            <div className="text-neutral-400 text-xs hidden sm:block">
-              {currentSetting.isFree
-                ? 'Free Mode (Unlocked): Drag any corner or side handle freely'
-                : `Locked (${currentSetting.label}): Drag corners to scale • Click Unlock to crop freely`}
-            </div>
-          </div>
+          )}
 
           {/* Footer Actions with Mandatory 3-Set Enforcement */}
-          <div className="p-4 sm:p-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 bg-[#181B21]">
+          <div className="p-3 sm:p-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 bg-[#181B21]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-neutral-400 hover:text-white text-xs sm:text-sm font-medium hover:bg-white/5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-neutral-400 hover:text-white text-xs sm:text-sm font-medium hover:bg-white/5 transition-colors cursor-pointer"
             >
               Cancel
             </button>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Stepper Next button if not on last device */}
-              {activeDevice !== 'mobile' && (
+              {activeDevice !== 'mobile' && viewMode === 'adjust' && (
                 <button
                   type="button"
                   onClick={handleNextStep}
-                  className="px-4 py-2 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs sm:text-sm font-semibold tracking-wide transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs sm:text-sm font-semibold tracking-wide transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>
                     Confirm {currentConfig.label} & Next:{' '}
@@ -962,12 +1328,12 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                 </button>
               )}
 
-              {/* Final Save 3-Device Set Button (Locked until all 3 are completed) */}
+              {/* Final Save 3-Device Set Button */}
               <button
                 type="button"
                 onClick={handleFinalizeAllThreeCrops}
                 disabled={!allThreeDone || isProcessing}
-                className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all shadow-lg flex items-center gap-2 cursor-pointer ${
+                className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all shadow-lg flex items-center gap-2 cursor-pointer ${
                   allThreeDone && !isProcessing
                     ? 'bg-primary hover:opacity-90 text-on-primary shadow-primary/30'
                     : 'bg-neutral-800 text-neutral-500 border border-neutral-700 cursor-not-allowed opacity-60'
@@ -994,7 +1360,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                     <span>
                       {allThreeDone
                         ? 'Save & Upload 3-Device Set'
-                        : `Crop for All 3 Devices (${completedCount}/3)`}
+                        : `Preview & Save (${completedCount}/3)`}
                     </span>
                   </>
                 )}
