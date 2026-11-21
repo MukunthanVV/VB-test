@@ -97,15 +97,16 @@ const ADMIN_EMAILS = [
 | Layer | Tool / Library | Version | Description |
 | :--- | :--- | :--- | :--- |
 | **Framework** | React | `^19.2.6` | Client-side UI library |
-| **Bundler & Tooling** | Vite | `^8.0.12` | Lightning-fast development & production tree-shaking |
+| **Bundler & Tooling** | Vite | `^8.0.12` | Code-splitting (`manualChunks`), lazy-loaded routes & Three.js |
 | **Language** | TypeScript | `~6.0.2` | Strict type checking across components and models |
 | **Styling** | Tailwind CSS | `^4.3.1` | Tailwind v4 with `@tailwindcss/postcss` |
 | **Routing** | React Router DOM | `^7.18.1` | Standard clean URLs (`BrowserRouter`) with SPA redirect rules |
 | **Motion & FX** | Framer Motion | `^12.40.0` | Scroll-triggered animations, page transitions, and modals |
-| **Canvas / 3D** | Three.js & Fiber | `^0.184.0` / `^9.6.1` | Topographical animated background mesh (`AnimatedTopo.tsx`) |
+| **Canvas / 3D** | Three.js & Fiber | `^0.184.0` / `^9.6.1` | Topographical animated background mesh (`AnimatedTopo.tsx`, lazy-loaded) |
 | **Icons** | Lucide React | `^1.16.0` | Minimal, high-resolution SVG icon set |
 | **Database** | Firebase Firestore | `^12.16.0` | Real-time NoSQL cloud database |
-| **Media Optimizer** | Browser Image Compression | `^2.0.2` | Automatic image downscaling and compression before upload |
+| **Media Optimizer** | Browser Image Compression / WebP | `^2.0.2` | WebP-compressed payloads (< 100KB) and preloading |
+| **SEO & Schema** | Schema.org JSON-LD | AutomotiveBusiness | Structured data for Google Knowledge Graph & AI Overview |
 
 ---
 
