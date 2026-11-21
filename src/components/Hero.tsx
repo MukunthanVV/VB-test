@@ -10,9 +10,9 @@ import type { FieldConfig } from './admin/ItemEditorModal';
 const fallbackData = {
   id: 'main',
   title: 'VB ASSOCIATES',
-  subtitle: 'ONE VISION. MANY VENTURES. Demo',
-  btn1_text: '',
-  btn2_text: '',
+  subtitle: 'THE ARCHITECTS OF DIVERSIFIED EXCELLENCE',
+  btn1_text: 'EXPLORE PORTFOLIO',
+  btn2_text: 'VIEW INVESTOR RELATIONS',
 };
 
 const heroFields: FieldConfig[] = [
@@ -27,7 +27,13 @@ const Hero: React.FC = () => {
   const [data, setData] = useState<any>(() => {
     try {
       const cached = localStorage.getItem('cache_hero');
-      return cached ? JSON.parse(cached) : fallbackData;
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.subtitle && !parsed.subtitle.toLowerCase().includes('demo')) {
+          return parsed;
+        }
+      }
+      return fallbackData;
     } catch {
       return fallbackData;
     }
@@ -38,7 +44,15 @@ const Hero: React.FC = () => {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'hero', 'main'), (docSnap) => {
       if (docSnap.exists()) {
-        const docData = { id: docSnap.id, ...docSnap.data() };
+        const raw = docSnap.data();
+        const rawSub = (raw.subtitle || '').replace(/\. ?demo$/i, '').trim();
+        const docData = { 
+          id: docSnap.id, 
+          ...raw,
+          subtitle: rawSub || 'THE ARCHITECTS OF DIVERSIFIED EXCELLENCE',
+          btn1_text: raw.btn1_text || 'EXPLORE PORTFOLIO',
+          btn2_text: raw.btn2_text || 'VIEW INVESTOR RELATIONS',
+        };
         setData(docData);
         try { localStorage.setItem('cache_hero', JSON.stringify(docData)); } catch {}
       }
@@ -76,7 +90,27 @@ const Hero: React.FC = () => {
           </span> <span className="text-primary">{data.subtitle}</span>
         </motion.h1>
 
-
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col md:flex-row justify-center gap-8 mt-12"
+        >
+          <a
+            href="#divisions"
+            className="group flex items-center justify-center gap-4 bg-primary text-on-primary px-6 md:px-12 py-5 font-label-caps text-label-caps uppercase hover:bg-primary-hover transition-colors tactical-mask w-full md:w-auto"
+          >
+            {data.btn1_text || 'EXPLORE PORTFOLIO'}
+            <span className="material-symbols-outlined vertical-drive-arrow">arrow_forward</span>
+          </a>
+          <a
+            href="#contact"
+            className="group flex items-center justify-center gap-4 border border-on-surface/20 px-6 md:px-12 py-5 font-label-caps text-label-caps uppercase hover:border-primary hover:text-primary transition-colors w-full md:w-auto"
+          >
+            {data.btn2_text || 'VIEW INVESTOR RELATIONS'}
+            <span className="material-symbols-outlined vertical-drive-arrow">north_east</span>
+          </a>
+        </motion.div>
       </div>
 
       <ItemEditorModal
