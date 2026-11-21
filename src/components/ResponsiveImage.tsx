@@ -6,9 +6,21 @@ export type ResponsiveImageSource =
   | undefined 
   | null;
 
+export const getObjectPosition = (focus?: string): string => {
+  switch (focus) {
+    case 'top': return 'center top';
+    case 'upper': return 'center 35%';
+    case 'lower': return 'center 65%';
+    case 'bottom': return 'center bottom';
+    case 'center':
+    default: return 'center 50%';
+  }
+};
+
 interface ResponsiveImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: ResponsiveImageSource;
   targetDevice?: 'desktop' | 'foldable' | 'mobile';
+  focus?: string;
 }
 
 export const getImageUrl = (
@@ -27,8 +39,10 @@ export const getImageUrl = (
 const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
   src,
   targetDevice,
+  focus,
   alt = '',
   className = '',
+  style,
   ...rest
 }) => {
   if (!src) return null;
@@ -36,7 +50,12 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
   const url = getImageUrl(src, targetDevice);
   if (!url) return null;
 
-  return <img src={url} alt={alt} className={className} {...rest} />;
+  const combinedStyle: React.CSSProperties = {
+    objectPosition: getObjectPosition(focus),
+    ...style,
+  };
+
+  return <img src={url} alt={alt} className={className} style={combinedStyle} {...rest} />;
 };
 
 export default ResponsiveImage;

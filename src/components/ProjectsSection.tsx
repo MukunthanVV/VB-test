@@ -48,6 +48,18 @@ const projectFields: FieldConfig[] = [
   { name: 'desc', label: 'Description', type: 'textarea', required: true },
   { name: 'year', label: 'Year (for Featured only)', type: 'text' },
   { name: 'images', label: 'Project Images (Upload multiple)', type: 'image-gallery' },
+  {
+    name: 'image_focus',
+    label: 'Image Framing Focus',
+    type: 'select',
+    options: [
+      { label: 'Center (Balanced / Default)', value: 'center' },
+      { label: 'Upper-Center (Upper Focus)', value: 'upper' },
+      { label: 'Top (Upper Focus)', value: 'top' },
+      { label: 'Lower-Center (Lower Focus)', value: 'lower' },
+      { label: 'Bottom', value: 'bottom' },
+    ],
+  },
 ];
 
 const divisionFields: FieldConfig[] = [
@@ -241,7 +253,7 @@ const ProjectsSection: React.FC = () => {
                     <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-2xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
                       {division.featured.images?.map((imgUrl: any, idx: number) => (
                         <div key={idx} className="w-full flex-shrink-0 snap-center relative">
-                          <ResponsiveImage src={imgUrl} alt={division.featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                          <ResponsiveImage src={imgUrl} alt={division.featured.title} focus={division.featured.image_focus} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none" />
                         </div>
                       ))}
@@ -279,7 +291,7 @@ const ProjectsSection: React.FC = () => {
                       <div className="relative overflow-hidden aspect-[2/1] mb-3 rounded-xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
                         {sec.images?.map((imgUrl: any, i: number) => (
                           <div key={i} className="w-full flex-shrink-0 snap-center relative">
-                            <ResponsiveImage src={imgUrl} alt={sec.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                            <ResponsiveImage src={imgUrl} alt={sec.title} focus={sec.image_focus} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                           </div>
                         ))}
                         {(!sec.images || sec.images.length === 0) && (

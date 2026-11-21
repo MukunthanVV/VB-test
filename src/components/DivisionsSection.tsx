@@ -59,6 +59,18 @@ const serviceFields: FieldConfig[] = [
   { name: 'title', label: 'Service Title', type: 'text', required: true },
   { name: 'description', label: 'Description', type: 'textarea' },
   { name: 'images', label: 'Gallery Images', type: 'image-gallery' },
+  {
+    name: 'image_focus',
+    label: 'Image Framing Focus',
+    type: 'select',
+    options: [
+      { label: 'Center (Balanced / Default)', value: 'center' },
+      { label: 'Upper-Center (Upper Focus)', value: 'upper' },
+      { label: 'Top (Upper Focus)', value: 'top' },
+      { label: 'Lower-Center (Lower Focus)', value: 'lower' },
+      { label: 'Bottom', value: 'bottom' },
+    ],
+  },
 ];
 
 const textVariants: Variants = {
@@ -101,7 +113,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        className={`w-full md:w-[40%] relative min-h-[260px] sm:min-h-[340px] md:min-h-[450px] lg:min-h-[550px] xl:min-h-[600px] bg-[#8F8A8B] dark:bg-neutral-800 flex flex-col justify-center items-center group/slider flex-shrink-0 ${isReversed ? 'border-l border-outline' : 'border-r border-outline'}`}
+        className={`w-full md:w-[40%] relative min-h-[340px] sm:min-h-[400px] md:min-h-[460px] lg:min-h-[560px] xl:min-h-[620px] bg-[#8F8A8B] dark:bg-neutral-800 flex flex-col justify-center items-center group/slider flex-shrink-0 ${isReversed ? 'border-l border-outline' : 'border-r border-outline'}`}
       >
         {images.length > 0 ? (
           <>
@@ -117,6 +129,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
                 <ResponsiveImage 
                   src={images[currentMotorImage]}
                   alt={item.title}
+                  focus={item.image_focus}
                   className="w-full h-full object-cover transition-all duration-700"
                 />
               </motion.div>

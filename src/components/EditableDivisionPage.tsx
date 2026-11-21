@@ -112,6 +112,18 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
     { name: 'description', label: 'Service Description', type: 'textarea', required: true },
     { name: 'icon', label: 'Material Icon Name', type: 'text' },
     { name: 'image', label: 'Override Images (Gallery)', type: 'image-gallery' },
+    {
+      name: 'image_focus',
+      label: 'Image Framing Focus',
+      type: 'select',
+      options: [
+        { label: 'Center (Balanced / Default)', value: 'center' },
+        { label: 'Upper-Center (Upper Focus)', value: 'upper' },
+        { label: 'Top (Upper Focus)', value: 'top' },
+        { label: 'Lower-Center (Lower Focus)', value: 'lower' },
+        { label: 'Bottom', value: 'bottom' },
+      ],
+    },
     { name: 'order', label: 'Display Order (Number)', type: 'text' }
   ];
 
@@ -200,12 +212,12 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                     </div>
                   )}
 
-                  <div className={`w-full md:w-[60%] relative min-h-[300px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0 overflow-hidden`}>
+                  <div className={`w-full md:w-[60%] relative min-h-[360px] sm:min-h-[420px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0 overflow-hidden`}>
                     {service.image ? (
                       <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
                         {(Array.isArray(service.image) ? service.image : [service.image]).map((img, i) => (
                           <div key={i} className="w-full h-full flex-shrink-0 snap-center relative">
-                            <ResponsiveImage src={img} alt={`${service.title} - ${i + 1}`} className="w-full h-full object-cover" />
+                            <ResponsiveImage src={img} alt={`${service.title} - ${i + 1}`} focus={(service as any).image_focus} className="w-full h-full object-cover" />
                           </div>
                         ))}
                       </div>

@@ -29,6 +29,18 @@ const disciplinesFields: FieldConfig[] = [
   { name: 'title', label: 'Main Title', type: 'text', required: true },
   { name: 'description', label: 'Main Description', type: 'textarea' },
   { name: 'image', label: 'Section Images (Gallery)', type: 'image-gallery' },
+  {
+    name: 'image_focus',
+    label: 'Image Framing Focus',
+    type: 'select',
+    options: [
+      { label: 'Center (Balanced / Default)', value: 'center' },
+      { label: 'Upper-Center (Face & Upper Focus)', value: 'upper' },
+      { label: 'Top (Upper Focus)', value: 'top' },
+      { label: 'Lower-Center (Lower Focus)', value: 'lower' },
+      { label: 'Bottom', value: 'bottom' },
+    ],
+  },
   { name: 'trait1_title', label: 'Trait 1 Title', type: 'text' },
   { name: 'trait1_desc', label: 'Trait 1 Description', type: 'textarea' },
   { name: 'trait2_title', label: 'Trait 2 Title', type: 'text' },
@@ -104,10 +116,10 @@ const DisciplinesSection: React.FC = () => {
           </p>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-24">
+        <div className="flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-24">
           
           {/* Left Side: DNA Traits */}
-          <div className="w-full lg:w-1/2 flex flex-col justify-center gap-8 lg:gap-16">
+          <div className="w-full md:w-1/2 flex flex-col justify-center gap-8 lg:gap-16">
             {[1, 2, 3].map((num) => {
               const title = data[`trait${num}_title`];
               const desc = data[`trait${num}_desc`];
@@ -144,7 +156,7 @@ const DisciplinesSection: React.FC = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="w-full lg:w-1/2 relative min-h-[280px] sm:min-h-[400px] lg:min-h-[700px] overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl group/imgslider"
+            className="w-full md:w-1/2 relative min-h-[380px] sm:min-h-[460px] md:min-h-[560px] lg:min-h-[700px] overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl group/imgslider"
           >
             <div className="absolute inset-0 bg-primary/10 mix-blend-multiply z-10 pointer-events-none" />
             
@@ -154,6 +166,7 @@ const DisciplinesSection: React.FC = () => {
                   <ResponsiveImage 
                     src={img} 
                     alt={`Company DNA ${i+1}`} 
+                    focus={data.image_focus}
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover/imgslider:scale-105" 
                   />
                 </div>
