@@ -7,36 +7,31 @@ export interface DeviceCropConfig {
   id: DeviceType;
   label: string;
   subLabel: string;
-  defaultRatio: number;
+  ratio: number;
   ratioText: string;
-  description: string;
 }
 
 export const DEVICE_CONFIGS: DeviceCropConfig[] = [
   {
     id: 'desktop',
     label: 'Desktop',
-    subLabel: 'Widescreen & Laptops (1024px+)',
-    defaultRatio: 16 / 9,
-    ratioText: '16:9 Widescreen',
-    description: 'Desktop monitors display wide landscape sections (~16:9)',
+    subLabel: 'Widescreen & Laptops (16:9)',
+    ratio: 16 / 9,
+    ratioText: '16:9',
   },
   {
     id: 'foldable',
     label: 'Foldables & iPads',
-    subLabel: 'Tablets & Folded/Unfolded (641px - 1024px)',
-    defaultRatio: 4 / 3,
-    ratioText: '4:3 Tablet',
-    description: 'iPads and tablets display balanced section frames (~4:3)',
+    subLabel: 'Tablets & Folded (4:3)',
+    ratio: 4 / 3,
+    ratioText: '4:3',
   },
   {
     id: 'mobile',
     label: 'Mobile Phones',
-    subLabel: 'Smartphones (up to 640px)',
-    // Website sections on mobile are rectangular cards (~4:3), not 9:16 full-screen
-    defaultRatio: 4 / 3,
-    ratioText: 'Mobile Section (4:3 Rectangle)',
-    description: 'On mobile phones, sections display as a clean rectangle (~4:3)',
+    subLabel: 'Smartphones (4:3 Section)',
+    ratio: 4 / 3,
+    ratioText: '4:3',
   },
 ];
 
@@ -62,23 +57,18 @@ interface ImageCropperModalProps {
   onCropComplete: (cropSet: ThreeDeviceFiles) => void;
 }
 
-interface DeviceSetting {
-  isFree: boolean;
-  ratio: number | null;
-  label: string;
-}
-
 // -------------------------------------------------------------
-// Live Output Canvas Preview (Exact Dimensions, Zero Distortion)
+// Live Pixel-Perfect Canvas Preview for a Device
 // -------------------------------------------------------------
 const LiveCanvasPreview: React.FC<{
   imageSrc: string;
   crop: CropRect;
   rotation: number;
-  className?: string;
-}> = ({ imageSrc, crop, rotation, className = '' }) => {
+  aspectRatio: number;
+  label: string;
+  subLabel: string;
+}> = ({ imageSrc, crop, rotation, aspectRatio, label, subLabel }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [aspect, setAspect] = useState<number>(4 / 3);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -112,7 +102,6 @@ const LiveCanvasPreview: React.FC<{
 
       canvas.width = pixelW;
       canvas.height = pixelH;
-      setAspect(pixelW / pixelH);
 
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
@@ -123,14 +112,21 @@ const LiveCanvasPreview: React.FC<{
   }, [imageSrc, crop, rotation]);
 
   return (
-    <div
-      style={{ aspectRatio: aspect }}
-      className={`relative overflow-hidden bg-black/60 rounded-xl flex items-center justify-center border border-white/10 shadow-2xl max-h-[46vh] max-w-full ${className}`}
-    >
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full object-contain select-none pointer-events-none"
-      />
+    <div className="bg-[#141820] border border-white/10 rounded-xl p-2.5 flex flex-col justify-between shadow-lg">
+      <div className="flex items-center justify-between mb-1.5 px-0.5">
+        <span className="text-xs font-bold text-white tracking-wide">{label}</span>
+        <span className="text-[10px] text-primary font-mono">{subLabel}</span>
+      </div>
+
+      <div
+        style={{ aspectRatio }}
+        className="w-full relative overflow-hidden bg-black/80 rounded-lg flex items-center justify-center border border-white/5"
+      >
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full object-contain select-none pointer-events-none"
+        />
+      </div>
     </div>
   );
 };
@@ -146,52 +142,15 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   onClose,
   onCropComplete,
 }) => {
-  const [activeDevice, setActiveDevice] = useState<DeviceType>('desktop');
+  // Focal Point (Main Center Part): percentages 0 - 100
+  const [focalPoint, setFocalPoint] = useState<{ x: number; y: number }>({ x: 50, y: 40 });
+  // Framing scale/coverage (how tight or wide to frame the subject): 0.4 to 1.0
+  const [framingScale, setFramingScale] = useState<number>(0.85);
   const [rotation, setRotation] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // Settings per device - Mobile defaults to Section Rectangle (~4:3) matching the mobile layout
-  const [deviceSettings, setDeviceSettings] = useState<Record<DeviceType, DeviceSetting>>({
-    desktop: { isFree: false, ratio: 16 / 9, label: '16:9 Widescreen' },
-    foldable: { isFree: false, ratio: 4 / 3, label: '4:3 Tablet' },
-    mobile: { isFree: false, ratio: 4 / 3, label: '4:3 Mobile Section' },
-  });
-
-  // Store crop coordinates for all 3 devices
-  const [crops, setCrops] = useState<Record<DeviceType, CropRect>>({
-    desktop: { x: 5, y: 15, width: 90, height: 50.6 },
-    foldable: { x: 10, y: 10, width: 80, height: 60 },
-    mobile: { x: 10, y: 10, width: 80, height: 60 },
-  });
-
-  // Track confirmation
-  const [confirmed, setConfirmed] = useState<Record<DeviceType, boolean>>({
-    desktop: true,
-    foldable: false,
-    mobile: false,
-  });
-
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
-
-  // Dragging tracker ref
-  const dragRef = useRef<{
-    isDragging: boolean;
-    dragType: 'move' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | null;
-    startX: number;
-    startY: number;
-    startCrop: CropRect;
-  }>({
-    isDragging: false,
-    dragType: null,
-    startX: 0,
-    startY: 0,
-    startCrop: { x: 0, y: 0, width: 0, height: 0 },
-  });
-
-  const currentConfig = DEVICE_CONFIGS.find((c) => c.id === activeDevice)!;
-  const currentSetting = deviceSettings[activeDevice];
-  const currentCrop = crops[activeDevice];
 
   // Helper to get image aspect ratio considering rotation
   const getImageRatio = useCallback((): number => {
@@ -203,330 +162,94 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     return w / h;
   }, [rotation]);
 
-  // Calculate centered crop for a ratio or free mode
-  const calculateDefaultCrop = useCallback(
-    (targetRatio: number | null, isFree: boolean): CropRect => {
-      if (isFree || targetRatio === null) {
-        return { x: 5, y: 5, width: 90, height: 90 };
-      }
-
+  // Compute crop rectangle for a target ratio centered around the focal point
+  const computeCropForRatio = useCallback(
+    (targetRatio: number, focal: { x: number; y: number }, scale: number): CropRect => {
       const imgRatio = getImageRatio();
-      let newW = 90;
-      let newH = 90;
 
-      if (targetRatio > imgRatio) {
-        newW = 92;
-        newH = (newW * imgRatio) / targetRatio;
+      let cropW = 90;
+      let cropH = 90;
+
+      if (targetRatio >= imgRatio) {
+        // Target is wider than image
+        cropW = Math.min(100, 100 * scale);
+        cropH = (cropW * imgRatio) / targetRatio;
+        if (cropH > 100) {
+          cropH = 100;
+          cropW = (cropH * targetRatio) / imgRatio;
+        }
       } else {
-        newH = 92;
-        newW = (newH * targetRatio) / imgRatio;
+        // Target is taller than image
+        cropH = Math.min(100, 100 * scale);
+        cropW = (cropH * targetRatio) / imgRatio;
+        if (cropW > 100) {
+          cropW = 100;
+          cropH = (cropW * imgRatio) / targetRatio;
+        }
       }
 
-      newW = Math.min(newW, 98);
-      newH = Math.min(newH, 98);
+      // Position centered at focalPoint
+      const x0 = focal.x - cropW / 2;
+      const y0 = focal.y - cropH / 2;
 
-      const newX = Math.max(0, (100 - newW) / 2);
-      const newY = Math.max(0, (100 - newH) / 2);
+      // Clamp to boundaries [0, 100]
+      const clampedX = Math.max(0, Math.min(100 - cropW, x0));
+      const clampedY = Math.max(0, Math.min(100 - cropH, y0));
 
-      return { x: newX, y: newY, width: newW, height: newH };
+      return {
+        x: clampedX,
+        y: clampedY,
+        width: cropW,
+        height: cropH,
+      };
     },
     [getImageRatio]
   );
 
-  // Initialize crops when image loads or modal opens
-  const handleImageLoaded = useCallback(() => {
-    setCrops({
-      desktop: calculateDefaultCrop(16 / 9, false),
-      foldable: calculateDefaultCrop(4 / 3, false),
-      mobile: calculateDefaultCrop(4 / 3, false),
-    });
-  }, [calculateDefaultCrop]);
+  // Current Crops for all 3 devices auto-calculated in real time
+  const desktopCrop = computeCropForRatio(16 / 9, focalPoint, framingScale);
+  const foldableCrop = computeCropForRatio(4 / 3, focalPoint, framingScale);
+  const mobileCrop = computeCropForRatio(4 / 3, focalPoint, framingScale);
 
   useEffect(() => {
     if (isOpen) {
       setRotation(0);
       setIsProcessing(false);
-      setActiveDevice('desktop');
-      setDeviceSettings({
-        desktop: { isFree: false, ratio: 16 / 9, label: '16:9 Widescreen' },
-        foldable: { isFree: false, ratio: 4 / 3, label: '4:3 Tablet' },
-        mobile: { isFree: false, ratio: 4 / 3, label: '4:3 Mobile Section' },
-      });
-      setConfirmed({
-        desktop: true,
-        foldable: false,
-        mobile: false,
-      });
-      setTimeout(() => {
-        handleImageLoaded();
-      }, 60);
+      setFocalPoint({ x: 50, y: 40 });
+      setFramingScale(0.85);
     }
-  }, [isOpen, imageSrc, handleImageLoaded]);
+  }, [isOpen, imageSrc]);
 
-  // Handle Free Crop Toggle
-  const handleToggleFreeCrop = () => {
-    setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
-    if (currentSetting.isFree) {
-      const ratio = currentConfig.defaultRatio;
-      setDeviceSettings((prev) => ({
-        ...prev,
-        [activeDevice]: { isFree: false, ratio, label: currentConfig.ratioText },
-      }));
-      const newCrop = calculateDefaultCrop(ratio, false);
-      setCrops((prev) => ({ ...prev, [activeDevice]: newCrop }));
-    } else {
-      setDeviceSettings((prev) => ({
-        ...prev,
-        [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop (Custom Rectangle)' },
-      }));
-    }
-  };
-
-  // Quick Preset ratios
-  const handleApplyRatio = (ratio: number, label: string) => {
-    setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
-    setDeviceSettings((prev) => ({
-      ...prev,
-      [activeDevice]: { isFree: false, ratio, label },
-    }));
-    const newCrop = calculateDefaultCrop(ratio, false);
-    setCrops((prev) => ({ ...prev, [activeDevice]: newCrop }));
-  };
-
-  // Maximize / Fit to Image
-  const handleMaximize = () => {
-    setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
-    if (currentSetting.isFree) {
-      setCrops((prev) => ({
-        ...prev,
-        [activeDevice]: { x: 0, y: 0, width: 100, height: 100 },
-      }));
-    } else {
-      const maximized = calculateDefaultCrop(currentSetting.ratio, false);
-      setCrops((prev) => ({
-        ...prev,
-        [activeDevice]: maximized,
-      }));
-    }
-  };
-
-  // Center current crop
-  const handleCenter = () => {
-    setCrops((prev) => {
-      const c = prev[activeDevice];
-      return {
-        ...prev,
-        [activeDevice]: {
-          ...c,
-          x: Math.max(0, (100 - c.width) / 2),
-          y: Math.max(0, (100 - c.height) / 2),
-        },
-      };
-    });
-  };
-
-  // Rotate 90deg
-  const handleRotate = () => {
-    const nextRot = (rotation + 90) % 360;
-    setRotation(nextRot);
-    setTimeout(() => {
-      setCrops({
-        desktop: calculateDefaultCrop(deviceSettings.desktop.ratio, deviceSettings.desktop.isFree),
-        foldable: calculateDefaultCrop(deviceSettings.foldable.ratio, deviceSettings.foldable.isFree),
-        mobile: calculateDefaultCrop(deviceSettings.mobile.ratio, deviceSettings.mobile.isFree),
-      });
-    }, 50);
-  };
-
-  // Window Pointer Drag Handling
-  const handlePointerDown = (
-    e: React.PointerEvent,
-    type: 'move' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r'
-  ) => {
+  // Dragging or clicking on the image to set the Main Center Part
+  const handlePointerSetFocal = (e: React.PointerEvent) => {
     e.preventDefault();
-    e.stopPropagation();
+    if (!containerRef.current) return;
 
-    setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
+    const rect = containerRef.current.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
 
-    dragRef.current = {
-      isDragging: true,
-      dragType: type,
-      startX: e.clientX,
-      startY: e.clientY,
-      startCrop: { ...crops[activeDevice] },
+    const updatePoint = (clientX: number, clientY: number) => {
+      const newX = Math.max(5, Math.min(95, ((clientX - rect.left) / rect.width) * 100));
+      const newY = Math.max(5, Math.min(95, ((clientY - rect.top) / rect.height) * 100));
+      setFocalPoint({ x: newX, y: newY });
     };
 
-    const isFree = deviceSettings[activeDevice].isFree;
-    const ratio = deviceSettings[activeDevice].ratio || 1;
-    const imgRatio = getImageRatio();
-    const aspectFactor = imgRatio / ratio;
-    const MIN_SIZE = 5;
+    updatePoint(e.clientX, e.clientY);
 
     const onPointerMove = (moveEv: PointerEvent) => {
-      if (!dragRef.current.isDragging || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return;
-
-      const deltaX = ((moveEv.clientX - dragRef.current.startX) / rect.width) * 100;
-      const deltaY = ((moveEv.clientY - dragRef.current.startY) / rect.height) * 100;
-      const { startCrop, dragType } = dragRef.current;
-      if (!dragType) return;
-
-      setCrops((prevCrops) => {
-        let next = { ...startCrop };
-
-        if (dragType === 'move') {
-          next.x = Math.max(0, Math.min(100 - startCrop.width, startCrop.x + deltaX));
-          next.y = Math.max(0, Math.min(100 - startCrop.height, startCrop.y + deltaY));
-        } else if (isFree) {
-          if (dragType === 'r') {
-            next.width = Math.max(MIN_SIZE, Math.min(100 - startCrop.x, startCrop.width + deltaX));
-          } else if (dragType === 'l') {
-            const maxDeltaX = startCrop.width - MIN_SIZE;
-            const clampedDeltaX = Math.max(-startCrop.x, Math.min(maxDeltaX, deltaX));
-            next.x = startCrop.x + clampedDeltaX;
-            next.width = startCrop.width - clampedDeltaX;
-          } else if (dragType === 'b') {
-            next.height = Math.max(MIN_SIZE, Math.min(100 - startCrop.y, startCrop.height + deltaY));
-          } else if (dragType === 't') {
-            const maxDeltaY = startCrop.height - MIN_SIZE;
-            const clampedDeltaY = Math.max(-startCrop.y, Math.min(maxDeltaY, deltaY));
-            next.y = startCrop.y + clampedDeltaY;
-            next.height = startCrop.height - clampedDeltaY;
-          } else if (dragType === 'br') {
-            next.width = Math.max(MIN_SIZE, Math.min(100 - startCrop.x, startCrop.width + deltaX));
-            next.height = Math.max(MIN_SIZE, Math.min(100 - startCrop.y, startCrop.height + deltaY));
-          } else if (dragType === 'bl') {
-            const maxDeltaX = startCrop.width - MIN_SIZE;
-            const clampedDeltaX = Math.max(-startCrop.x, Math.min(maxDeltaX, deltaX));
-            next.x = startCrop.x + clampedDeltaX;
-            next.width = startCrop.width - clampedDeltaX;
-            next.height = Math.max(MIN_SIZE, Math.min(100 - startCrop.y, startCrop.height + deltaY));
-          } else if (dragType === 'tr') {
-            next.width = Math.max(MIN_SIZE, Math.min(100 - startCrop.x, startCrop.width + deltaX));
-            const maxDeltaY = startCrop.height - MIN_SIZE;
-            const clampedDeltaY = Math.max(-startCrop.y, Math.min(maxDeltaY, deltaY));
-            next.y = startCrop.y + clampedDeltaY;
-            next.height = startCrop.height - clampedDeltaY;
-          } else if (dragType === 'tl') {
-            const maxDeltaX = startCrop.width - MIN_SIZE;
-            const clampedDeltaX = Math.max(-startCrop.x, Math.min(maxDeltaX, deltaX));
-            next.x = startCrop.x + clampedDeltaX;
-            next.width = startCrop.width - clampedDeltaX;
-
-            const maxDeltaY = startCrop.height - MIN_SIZE;
-            const clampedDeltaY = Math.max(-startCrop.y, Math.min(maxDeltaY, deltaY));
-            next.y = startCrop.y + clampedDeltaY;
-            next.height = startCrop.height - clampedDeltaY;
-          }
-        } else {
-          if (dragType === 'br' || dragType === 'r' || dragType === 'b') {
-            let newW = startCrop.width + deltaX;
-            let newH = newW * aspectFactor;
-            if (startCrop.x + newW > 100) {
-              newW = 100 - startCrop.x;
-              newH = newW * aspectFactor;
-            }
-            if (startCrop.y + newH > 100) {
-              newH = 100 - startCrop.y;
-              newW = newH / aspectFactor;
-            }
-            next.width = Math.max(MIN_SIZE, Math.min(100 - startCrop.x, newW));
-            next.height = Math.max(MIN_SIZE, Math.min(100 - startCrop.y, newH));
-          } else if (dragType === 'bl' || dragType === 'l') {
-            let newW = startCrop.width - deltaX;
-            let newH = newW * aspectFactor;
-            if (startCrop.y + newH > 100) {
-              newH = 100 - startCrop.y;
-              newW = newH / aspectFactor;
-            }
-            if (startCrop.x + (startCrop.width - newW) < 0) {
-              newW = startCrop.x + startCrop.width;
-              newH = newW * aspectFactor;
-            }
-            newW = Math.max(MIN_SIZE, newW);
-            newH = Math.max(MIN_SIZE, newH);
-            next.x = Math.max(0, startCrop.x + (startCrop.width - newW));
-            next.width = newW;
-            next.height = newH;
-          } else if (dragType === 'tr') {
-            let newW = startCrop.width + deltaX;
-            let newH = newW * aspectFactor;
-            if (startCrop.x + newW > 100) {
-              newW = 100 - startCrop.x;
-              newH = newW * aspectFactor;
-            }
-            if (startCrop.y + (startCrop.height - newH) < 0) {
-              newH = startCrop.y + startCrop.height;
-              newW = newH / aspectFactor;
-            }
-            newW = Math.max(MIN_SIZE, newW);
-            newH = Math.max(MIN_SIZE, newH);
-            next.y = Math.max(0, startCrop.y + (startCrop.height - newH));
-            next.width = newW;
-            next.height = newH;
-          } else if (dragType === 'tl' || dragType === 't') {
-            let newW = startCrop.width - deltaX;
-            let newH = newW * aspectFactor;
-            if (startCrop.x + (startCrop.width - newW) < 0) {
-              newW = startCrop.x + startCrop.width;
-              newH = newW * aspectFactor;
-            }
-            if (startCrop.y + (startCrop.height - newH) < 0) {
-              newH = startCrop.y + startCrop.height;
-              newW = newH / aspectFactor;
-            }
-            newW = Math.max(MIN_SIZE, newW);
-            newH = Math.max(MIN_SIZE, newH);
-            next.x = Math.max(0, startCrop.x + (startCrop.width - newW));
-            next.y = Math.max(0, startCrop.y + (startCrop.height - newH));
-            next.width = newW;
-            next.height = newH;
-          }
-        }
-
-        next.x = Math.max(0, Math.min(100 - next.width, next.x));
-        next.y = Math.max(0, Math.min(100 - next.height, next.y));
-
-        return {
-          ...prevCrops,
-          [activeDevice]: next,
-        };
-      });
+      updatePoint(moveEv.clientX, moveEv.clientY);
     };
 
     const onPointerUp = () => {
-      dragRef.current.isDragging = false;
-      dragRef.current.dragType = null;
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
     };
 
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
-    window.addEventListener('pointercancel', onPointerUp);
   };
 
-  const handleSelectDevice = (device: DeviceType) => {
-    setConfirmed((prev) => ({ ...prev, [device]: true }));
-    setActiveDevice(device);
-  };
-
-  const handleNextStep = () => {
-    if (activeDevice === 'desktop') {
-      setActiveDevice('foldable');
-      setConfirmed((prev) => ({ ...prev, foldable: true }));
-    } else if (activeDevice === 'foldable') {
-      setActiveDevice('mobile');
-      setConfirmed((prev) => ({ ...prev, mobile: true }));
-    }
-  };
-
-  const allThreeDone = confirmed.desktop && confirmed.foldable && confirmed.mobile;
-  const completedCount = [confirmed.desktop, confirmed.foldable, confirmed.mobile].filter(Boolean).length;
-
-  // Render crop to a File using an offscreen canvas
+  // Render crop slice to File using offscreen canvas
   const renderCropToFile = (
     cropRect: CropRect,
     deviceTag: DeviceType,
@@ -565,8 +288,8 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     });
   };
 
-  // Export all 3 crops at once
-  const handleFinalizeAllThreeCrops = async () => {
+  // Save all 3 auto-adjusted device crops
+  const handleSaveAll = async () => {
     const img = imgRef.current;
     if (!img) return;
 
@@ -591,9 +314,9 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       rotCtx.restore();
 
       const [desktopFile, foldableFile, mobileFile] = await Promise.all([
-        renderCropToFile(crops.desktop, 'desktop', rotCanvas, naturalW, naturalH),
-        renderCropToFile(crops.foldable, 'foldable', rotCanvas, naturalW, naturalH),
-        renderCropToFile(crops.mobile, 'mobile', rotCanvas, naturalW, naturalH),
+        renderCropToFile(desktopCrop, 'desktop', rotCanvas, naturalW, naturalH),
+        renderCropToFile(foldableCrop, 'foldable', rotCanvas, naturalW, naturalH),
+        renderCropToFile(mobileCrop, 'mobile', rotCanvas, naturalW, naturalH),
       ]);
 
       setIsProcessing(false);
@@ -603,7 +326,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
         mobile: mobileFile,
       });
     } catch (err) {
-      console.error('3-Device cropping error:', err);
+      console.error('Save error:', err);
       setIsProcessing(false);
     }
   };
@@ -619,21 +342,15 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
           exit={{ opacity: 0, scale: 0.96 }}
           className="bg-[#121418] text-[#E8E6E3] w-full max-w-6xl rounded-2xl shadow-2xl border border-white/10 flex flex-col max-h-[96vh] overflow-hidden"
         >
-          {/* Clean Header */}
+          {/* Header */}
           <div className="p-3 sm:p-4 border-b border-white/10 flex justify-between items-center bg-[#181B21]">
             <div>
               <div className="flex items-center gap-3">
                 <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-white">
-                  3-Device Image Cropping & Preview
+                  Smart Subject Focus & Auto-Adjust
                 </h3>
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wider ${
-                    allThreeDone
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-primary/20 text-primary border border-primary/30'
-                  }`}
-                >
-                  {allThreeDone ? 'All 3 Views Ready' : `${completedCount} of 3 Set`}
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  Auto-Fits All Devices
                 </span>
                 {queueInfo && queueInfo.total > 1 && (
                   <span className="px-2 py-0.5 rounded bg-white/10 text-neutral-300 text-xs">
@@ -642,9 +359,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                 )}
               </div>
               <p className="text-xs text-neutral-400 mt-0.5">
-                Crop for <span className="text-white font-medium">Desktop</span>,{' '}
-                <span className="text-white font-medium">Foldables</span>, and{' '}
-                <span className="text-white font-medium">Mobile Phones</span>. Right preview shows the exact output with zero distortion.
+                Click or drag the <span className="text-primary font-semibold">center focus target</span> on the main part of the image. All devices auto-adjust to frame it perfectly.
               </p>
             </div>
 
@@ -656,198 +371,19 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
             </button>
           </div>
 
-          {/* Clean Device Tabs Bar */}
-          <div className="grid grid-cols-3 bg-[#0B0D10] border-b border-white/10 p-2 gap-2">
-            {DEVICE_CONFIGS.map((device, index) => {
-              const isActive = activeDevice === device.id;
-              const isDone = confirmed[device.id];
-              const setting = deviceSettings[device.id];
-
-              return (
-                <button
-                  key={device.id}
-                  type="button"
-                  onClick={() => handleSelectDevice(device.id)}
-                  className={`relative p-2.5 rounded-xl transition-all text-left flex items-center justify-between border cursor-pointer ${
-                    isActive
-                      ? 'bg-[#1E232B] border-primary text-white shadow-lg ring-1 ring-primary/40'
-                      : isDone
-                      ? 'bg-[#14171C] border-emerald-500/30 text-neutral-200 hover:bg-[#1A1E24]'
-                      : 'bg-[#14171C]/60 border-white/5 text-neutral-400 hover:bg-[#181B22]'
-                  }`}
-                >
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold tracking-tight">
-                      <span className="text-primary font-mono mr-1">{index + 1}.</span> {device.label}
-                    </div>
-                    <div className="text-[11px] text-neutral-400 mt-0.5">
-                      {setting.isFree ? 'Free Crop (Custom Rectangle)' : setting.label}
-                    </div>
-                  </div>
-
-                  <span
-                    className={`text-[10px] uppercase font-mono px-2 py-0.5 rounded font-semibold ${
-                      isActive
-                        ? 'bg-primary/20 text-primary border border-primary/30'
-                        : isDone
-                        ? 'bg-emerald-500/20 text-emerald-400'
-                        : 'bg-white/5 text-neutral-400'
-                    }`}
-                  >
-                    {isActive ? 'Editing' : isDone ? 'Ready' : 'Pending'}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Clean Ratios & Dimensions Bar */}
-          <div className="px-3 sm:px-4 py-2 bg-[#16191F] border-b border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="font-bold text-white uppercase tracking-wider text-[11px] mr-1">
-                {currentConfig.label} Ratio:
-              </span>
-
-              {/* Presets adapted to the device */}
-              <button
-                type="button"
-                onClick={() => handleApplyRatio(currentConfig.defaultRatio, currentConfig.ratioText)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                  !currentSetting.isFree && currentSetting.ratio === currentConfig.defaultRatio
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                }`}
-              >
-                Recommended ({currentConfig.id === 'mobile' ? 'Mobile Section Rectangle 4:3' : currentConfig.ratioText})
-              </button>
-
-              {currentConfig.id === 'mobile' ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => handleApplyRatio(4 / 3, '4:3 Rectangle')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                      !currentSetting.isFree && currentSetting.ratio === 4 / 3
-                        ? 'bg-primary text-on-primary font-bold shadow-sm'
-                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                    }`}
-                  >
-                    4:3 Section Rectangle
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleApplyRatio(1, '1:1 Square')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                      !currentSetting.isFree && currentSetting.ratio === 1
-                        ? 'bg-primary text-on-primary font-bold shadow-sm'
-                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                    }`}
-                  >
-                    1:1 Square
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleApplyRatio(4 / 5, '4:5 Portrait')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                      !currentSetting.isFree && currentSetting.ratio === 4 / 5
-                        ? 'bg-primary text-on-primary font-bold shadow-sm'
-                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                    }`}
-                  >
-                    4:5 Portrait
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleApplyRatio(9 / 16, '9:16 Full Vertical')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                      !currentSetting.isFree && currentSetting.ratio === 9 / 16
-                        ? 'bg-primary text-on-primary font-bold shadow-sm'
-                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                    }`}
-                  >
-                    9:16 Full Vertical
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => handleApplyRatio(16 / 9, '16:9 Desktop')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                      !currentSetting.isFree && currentSetting.ratio === 16 / 9
-                        ? 'bg-primary text-on-primary font-bold shadow-sm'
-                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                    }`}
-                  >
-                    16:9 Widescreen
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleApplyRatio(4 / 3, '4:3 Rectangle')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                      !currentSetting.isFree && currentSetting.ratio === 4 / 3
-                        ? 'bg-primary text-on-primary font-bold shadow-sm'
-                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                    }`}
-                  >
-                    4:3 Rectangle
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleApplyRatio(1, '1:1 Square')}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                      !currentSetting.isFree && currentSetting.ratio === 1
-                        ? 'bg-primary text-on-primary font-bold shadow-sm'
-                        : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                    }`}
-                  >
-                    1:1 Square
-                  </button>
-                </>
-              )}
-
-              <button
-                type="button"
-                onClick={handleToggleFreeCrop}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                  currentSetting.isFree
-                    ? 'bg-amber-500 text-black font-bold shadow-sm'
-                    : 'bg-[#0E1013] text-neutral-300 hover:text-white border border-white/5'
-                }`}
-              >
-                Free Crop (Custom Rectangle)
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase border ${
-                currentSetting.isFree
-                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                  : 'bg-primary/10 text-primary border-primary/20'
-              }`}>
-                {currentSetting.isFree ? 'Free Crop (Custom)' : `Locked: ${currentSetting.label}`}
-              </span>
-            </div>
-          </div>
-
-          {/* Main Body: Split View (Interactive Cropper on Left, Live Output Preview on Right) */}
+          {/* Main Workspace (Left: Interactive Image with Focal Target; Right: Auto-Adjusted Device Previews) */}
           <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden bg-black/95">
-            {/* Left: Source Image + Draggable Crop Box */}
-            <div className="flex-1 relative flex items-center justify-center p-3 sm:p-5 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[300px]">
+            {/* Left: Source Image + Draggable Focal Target */}
+            <div className="flex-1 relative flex flex-col items-center justify-center p-3 sm:p-5 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 min-h-[300px]">
               <div
                 ref={containerRef}
-                className="relative inline-block max-w-full max-h-[50vh] select-none touch-none"
+                onPointerDown={handlePointerSetFocal}
+                className="relative inline-block max-w-full max-h-[50vh] select-none touch-none cursor-crosshair rounded-xl overflow-hidden shadow-2xl border border-white/10 group"
               >
                 <img
                   ref={imgRef}
                   src={imageSrc}
-                  alt="Crop Source"
-                  onLoad={handleImageLoaded}
+                  alt="Focus Target Image"
                   style={{
                     transform: `rotate(${rotation}deg)`,
                     transition: 'transform 0.2s ease',
@@ -857,179 +393,142 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                     userSelect: 'none',
                     pointerEvents: 'none',
                   }}
-                  className="rounded shadow-inner object-contain"
+                  className="object-contain"
                 />
 
-                {/* Dark Mask Over Outside Area */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                  <div
-                    className="absolute left-0 right-0 top-0 bg-black/70 backdrop-blur-[1px]"
-                    style={{ height: `${currentCrop.y}%` }}
-                  />
-                  <div
-                    className="absolute left-0 right-0 bottom-0 bg-black/70 backdrop-blur-[1px]"
-                    style={{ height: `${100 - (currentCrop.y + currentCrop.height)}%` }}
-                  />
-                  <div
-                    className="absolute left-0 bg-black/70 backdrop-blur-[1px]"
-                    style={{
-                      top: `${currentCrop.y}%`,
-                      height: `${currentCrop.height}%`,
-                      width: `${currentCrop.x}%`,
-                    }}
-                  />
-                  <div
-                    className="absolute right-0 bg-black/70 backdrop-blur-[1px]"
-                    style={{
-                      top: `${currentCrop.y}%`,
-                      height: `${currentCrop.height}%`,
-                      width: `${100 - (currentCrop.x + currentCrop.width)}%`,
-                    }}
-                  />
-                </div>
-
-                {/* Active Draggable Crop Box (CLEAN: No dark text badge covering the image) */}
+                {/* Desktop Framing Outline Guide (Subtle blue) */}
                 <div
-                  className="absolute border-2 border-primary shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_0_18px_rgba(200,160,93,0.35)] cursor-move touch-none"
+                  className="absolute border border-blue-400/50 pointer-events-none rounded transition-all duration-75"
                   style={{
-                    left: `${currentCrop.x}%`,
-                    top: `${currentCrop.y}%`,
-                    width: `${currentCrop.width}%`,
-                    height: `${currentCrop.height}%`,
+                    left: `${desktopCrop.x}%`,
+                    top: `${desktopCrop.y}%`,
+                    width: `${desktopCrop.width}%`,
+                    height: `${desktopCrop.height}%`,
                   }}
-                  onPointerDown={(e) => handlePointerDown(e, 'move')}
                 >
-                  {/* Subtle Grid */}
-                  <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-40">
-                    <div className="border-r border-b border-primary/40" />
-                    <div className="border-r border-b border-primary/40" />
-                    <div className="border-b border-primary/40" />
-                    <div className="border-r border-b border-primary/40" />
-                    <div className="border-r border-b border-primary/40" />
-                    <div className="border-b border-primary/40" />
-                    <div className="border-r border-b border-primary/40" />
-                    <div className="border-r border-b border-primary/40" />
-                    <div />
-                  </div>
-
-                  {/* 4 Corner Handles */}
-                  <div
-                    className="absolute -top-3 -left-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nwse-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                    onPointerDown={(e) => handlePointerDown(e, 'tl')}
-                  >
-                    <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                  </div>
-                  <div
-                    className="absolute -top-3 -right-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nesw-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                    onPointerDown={(e) => handlePointerDown(e, 'tr')}
-                  >
-                    <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                  </div>
-                  <div
-                    className="absolute -bottom-3 -left-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nesw-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                    onPointerDown={(e) => handlePointerDown(e, 'bl')}
-                  >
-                    <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                  </div>
-                  <div
-                    className="absolute -bottom-3 -right-3 w-6 h-6 bg-primary border-2 border-[#121418] rounded-md cursor-nwse-resize shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-                    onPointerDown={(e) => handlePointerDown(e, 'br')}
-                  >
-                    <div className="w-1.5 h-1.5 bg-black rounded-full" />
-                  </div>
-
-                  {/* 4 Edge Handles */}
-                  <div
-                    className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-3.5 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ns-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                    onPointerDown={(e) => handlePointerDown(e, 't')}
-                  >
-                    <div className="w-3 h-0.5 bg-black/70 rounded" />
-                  </div>
-                  <div
-                    className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-3.5 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ns-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                    onPointerDown={(e) => handlePointerDown(e, 'b')}
-                  >
-                    <div className="w-3 h-0.5 bg-black/70 rounded" />
-                  </div>
-                  <div
-                    className="absolute top-1/2 -left-2 -translate-y-1/2 w-3.5 h-8 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ew-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                    onPointerDown={(e) => handlePointerDown(e, 'l')}
-                  >
-                    <div className="w-0.5 h-3 bg-black/70 rounded" />
-                  </div>
-                  <div
-                    className="absolute top-1/2 -right-2 -translate-y-1/2 w-3.5 h-8 bg-primary/90 hover:bg-primary border border-[#121418] rounded-full cursor-ew-resize shadow-md flex items-center justify-center active:scale-95 transition-all"
-                    onPointerDown={(e) => handlePointerDown(e, 'r')}
-                  >
-                    <div className="w-0.5 h-3 bg-black/70 rounded" />
-                  </div>
+                  <span className="absolute top-1 left-1.5 text-[9px] font-mono font-bold uppercase text-blue-300 bg-black/75 px-1 rounded">
+                    Desktop (16:9)
+                  </span>
                 </div>
+
+                {/* Mobile & Tablet Framing Outline Guide (Primary Gold) */}
+                <div
+                  className="absolute border-2 border-primary/80 pointer-events-none rounded transition-all duration-75"
+                  style={{
+                    left: `${mobileCrop.x}%`,
+                    top: `${mobileCrop.y}%`,
+                    width: `${mobileCrop.width}%`,
+                    height: `${mobileCrop.height}%`,
+                  }}
+                >
+                  <span className="absolute bottom-1 right-1.5 text-[9px] font-mono font-bold uppercase text-primary bg-black/75 px-1 rounded">
+                    Mobile & Tablet (4:3)
+                  </span>
+                </div>
+
+                {/* Draggable Focal Center Target Reticle */}
+                <div
+                  className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex flex-col items-center transition-all duration-75"
+                  style={{
+                    left: `${focalPoint.x}%`,
+                    top: `${focalPoint.y}%`,
+                  }}
+                >
+                  {/* Glowing Reticle Rings */}
+                  <div className="relative w-12 h-12 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border-2 border-primary animate-ping opacity-35" />
+                    <div className="w-10 h-10 rounded-full border-2 border-primary bg-primary/20 backdrop-blur-sm flex items-center justify-center shadow-[0_0_15px_rgba(200,160,93,0.6)]">
+                      <div className="w-2.5 h-2.5 bg-white rounded-full shadow-md" />
+                    </div>
+                    {/* Crosshair lines */}
+                    <div className="absolute w-14 h-0.5 bg-primary/70" />
+                    <div className="absolute h-14 w-0.5 bg-primary/70" />
+                  </div>
+
+                  <span className="mt-1 px-2 py-0.5 rounded-full bg-black/85 text-[10px] font-bold font-mono tracking-wider text-white border border-primary/40 shadow-lg whitespace-nowrap">
+                    MAIN CENTER PART
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-2 text-xs text-neutral-400 text-center">
+                Click or drag anywhere on the photo to set the main subject center
               </div>
             </div>
 
-            {/* Right: EXACT SECTION PREVIEW (No Distortion, 100% Matches What Is Selected) */}
-            <div className="w-full lg:w-[400px] xl:w-[450px] flex-shrink-0 bg-[#0E1014] p-4 flex flex-col justify-between overflow-y-auto">
+            {/* Right: Live 3-Device Auto-Adjust Previews */}
+            <div className="w-full lg:w-[420px] xl:w-[460px] flex-shrink-0 bg-[#0E1014] p-3 sm:p-4 flex flex-col justify-between overflow-y-auto">
               <div>
-                <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
+                <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-white/10">
                   <div className="text-xs font-bold text-white uppercase tracking-wider">
-                    Exact {currentConfig.label} Result Preview
+                    Live Auto-Adjusted Previews
                   </div>
-                  <span className="text-[10px] text-emerald-400 font-mono">100% True Output</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">Centered on Subject</span>
                 </div>
 
-                <p className="text-[11px] text-neutral-400 mb-3">
-                  {currentConfig.description}. Shows the exact output image without any stretching or cropping.
-                </p>
-
-                {/* Pixel-Perfect Canvas Live Preview Container (Matches exact aspect of the crop) */}
-                <div className="py-2 flex items-center justify-center">
-                  <div className="w-full flex items-center justify-center">
-                    <LiveCanvasPreview
-                      imageSrc={imageSrc}
-                      crop={currentCrop}
-                      rotation={rotation}
-                      className="w-full"
-                    />
+                {/* Framing Scale / Zoom Slider */}
+                <div className="bg-[#141820] border border-white/10 rounded-xl p-3 mb-3">
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-semibold text-neutral-200">Subject Framing Size:</span>
+                    <span className="text-primary font-mono font-bold">{Math.round(framingScale * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.0"
+                    step="0.05"
+                    value={framingScale}
+                    onChange={(e) => setFramingScale(parseFloat(e.target.value))}
+                    className="w-full accent-primary cursor-pointer h-1.5 bg-neutral-700 rounded-lg"
+                  />
+                  <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
+                    <span>Closer Crop</span>
+                    <span>Wider View</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Other Section Previews with Switch Buttons */}
-              <div className="pt-3 border-t border-white/10 mt-3">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 mb-2 block">
-                  Other Device Views (Click to Switch & Crop):
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  {DEVICE_CONFIGS.filter((d) => d.id !== activeDevice).map((other) => (
-                    <button
-                      key={other.id}
-                      type="button"
-                      onClick={() => handleSelectDevice(other.id)}
-                      className="bg-[#141820] hover:bg-[#1A202A] p-2 rounded-xl border border-white/5 hover:border-primary/40 text-left transition-all cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-[11px] font-semibold text-neutral-300 mb-1">
-                        <span>{other.label}</span>
-                        <span className="text-[10px] text-primary font-bold">Edit →</span>
-                      </div>
-                      <LiveCanvasPreview
-                        imageSrc={imageSrc}
-                        crop={crops[other.id]}
-                        rotation={rotation}
-                        className="w-full h-16"
-                      />
-                    </button>
-                  ))}
+                {/* 3 Live Previews (Desktop, Tablet, Mobile) */}
+                <div className="flex flex-col gap-2.5">
+                  {/* 1. Desktop */}
+                  <LiveCanvasPreview
+                    imageSrc={imageSrc}
+                    crop={desktopCrop}
+                    rotation={rotation}
+                    aspectRatio={16 / 9}
+                    label="Desktop Monitor"
+                    subLabel="16:9 Widescreen"
+                  />
+
+                  {/* 2. Foldables & iPads */}
+                  <LiveCanvasPreview
+                    imageSrc={imageSrc}
+                    crop={foldableCrop}
+                    rotation={rotation}
+                    aspectRatio={4 / 3}
+                    label="Foldables & iPads"
+                    subLabel="4:3 Tablet"
+                  />
+
+                  {/* 3. Mobile Phones */}
+                  <LiveCanvasPreview
+                    imageSrc={imageSrc}
+                    crop={mobileCrop}
+                    rotation={rotation}
+                    aspectRatio={4 / 3}
+                    label="Mobile Phones"
+                    subLabel="4:3 Mobile Section"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Quick Tools Bar */}
-          <div className="px-3 sm:px-4 py-2 bg-[#15181E] border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex flex-wrap items-center gap-1.5">
+          <div className="px-3 sm:px-4 py-2.5 bg-[#15181E] border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={handleRotate}
+                onClick={() => setRotation((prev) => (prev + 90) % 360)}
                 className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white transition-colors border border-white/5 cursor-pointer text-xs font-medium"
               >
                 Rotate 90°
@@ -1037,42 +536,23 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
 
               <button
                 type="button"
-                onClick={handleMaximize}
+                onClick={() => setFocalPoint({ x: 50, y: 50 })}
                 className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white transition-colors border border-white/5 cursor-pointer text-xs font-medium"
               >
-                Fit Full Image
+                Reset Center (50%, 50%)
               </button>
 
               <button
                 type="button"
-                onClick={handleCenter}
+                onClick={() => setFramingScale(0.85)}
                 className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white transition-colors border border-white/5 cursor-pointer text-xs font-medium"
               >
-                Center Box
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const resetCrop = calculateDefaultCrop(currentConfig.defaultRatio, false);
-                  setCrops((prev) => ({ ...prev, [activeDevice]: resetCrop }));
-                  setDeviceSettings((prev) => ({
-                    ...prev,
-                    [activeDevice]: {
-                      isFree: false,
-                      ratio: currentConfig.defaultRatio,
-                      label: currentConfig.ratioText,
-                    },
-                  }));
-                }}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white transition-colors border border-white/5 cursor-pointer text-xs font-medium"
-              >
-                Reset Frame
+                Reset Zoom (85%)
               </button>
             </div>
 
             <div className="text-neutral-400 text-xs hidden sm:block">
-              Drag handles to frame subject • Right preview matches 100% of your selection
+              Main center part locked • All 3 screen formats auto-adjust to it
             </div>
           </div>
 
@@ -1086,35 +566,24 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
               Cancel
             </button>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              {activeDevice !== 'mobile' && (
-                <button
-                  type="button"
-                  onClick={handleNextStep}
-                  className="px-4 py-2 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs sm:text-sm font-semibold tracking-wide transition-colors cursor-pointer"
-                >
-                  Confirm {currentConfig.label} & Next:{' '}
-                  {activeDevice === 'desktop' ? 'Foldables' : 'Mobile'} →
-                </button>
+            <button
+              type="button"
+              onClick={handleSaveAll}
+              disabled={isProcessing}
+              className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all shadow-lg bg-primary hover:opacity-90 text-on-primary shadow-primary/30 cursor-pointer flex items-center gap-2"
+            >
+              {isProcessing ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  <span>Auto-Adjusting & Saving...</span>
+                </>
+              ) : (
+                <span>Save & Apply to All Devices</span>
               )}
-
-              <button
-                type="button"
-                onClick={handleFinalizeAllThreeCrops}
-                disabled={!allThreeDone || isProcessing}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all shadow-lg cursor-pointer ${
-                  allThreeDone && !isProcessing
-                    ? 'bg-primary hover:opacity-90 text-on-primary shadow-primary/30'
-                    : 'bg-neutral-800 text-neutral-500 border border-neutral-700 cursor-not-allowed opacity-60'
-                }`}
-              >
-                {isProcessing
-                  ? 'Generating 3 Crops & Uploading...'
-                  : allThreeDone
-                  ? 'Save & Upload 3-Device Set'
-                  : `Preview & Save (${completedCount}/3 Ready)`}
-              </button>
-            </div>
+            </button>
           </div>
         </motion.div>
       </div>
