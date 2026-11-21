@@ -60,12 +60,17 @@ firebase deploy --only hosting
   - `vbassociate-34c7a.web.app`
   - `vbassociate-34c7a.firebaseapp.com`
 
-### B. Cloudinary Media Storage
+### B. Cloudinary Media Storage & Cropping Pipeline
 - **Cloud Name**: `dgssrfsli`
 - **Unsigned Upload Preset**: `vbassociate`
 - **Upload Endpoint**: `https://api.cloudinary.com/v1_1/dgssrfsli/image/upload`
-- **Pre-upload Compression**: Uses `browser-image-compression` (< 1MB per image, max 1920px width) before sending to Cloudinary to save bandwidth and storage.
-- **Component**: `src/components/admin/ItemEditorModal.tsx`
+- **Interactive Image Cropper**: [`src/components/admin/ImageCropperModal.tsx`](file:///Users/a.v.tharunkarthik/Desktop/vb/VB-test/src/components/admin/ImageCropperModal.tsx) allows admins to crop, position, rotate, and frame any image with screen presets before uploading:
+  - **Desktop Widescreen**: `16:9` / `3:2 Landscape`
+  - **Foldables & Tablets**: `4:3 Foldable` / `1:1 Square`
+  - **Smartphones**: `9:16 Full Mobile` / `4:5 Mobile Feed`
+  - **Custom Freeform**: Unconstrained bounding box
+- **Pre-upload Compression**: Uses `browser-image-compression` (< 1MB per image, max 1920px width) after cropping before sending to Cloudinary to save bandwidth and storage.
+- **Component**: [`src/components/admin/ItemEditorModal.tsx`](file:///Users/a.v.tharunkarthik/Desktop/vb/VB-test/src/components/admin/ItemEditorModal.tsx)
 
 ---
 
