@@ -50,7 +50,7 @@ const prepareImageQuickly = async (file: File): Promise<Blob | File> => {
           width = maxDim;
         } else {
           width = Math.round((width * maxDim) / height);
-          maxDim;
+          height = maxDim;
         }
       }
       const canvas = document.createElement('canvas');
