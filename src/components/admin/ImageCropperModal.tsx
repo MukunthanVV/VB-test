@@ -3,62 +3,58 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export type DeviceType = 'desktop' | 'foldable' | 'mobile';
 
+export interface AspectPreset {
+  id: string;
+  label: string;
+  shortLabel: string;
+  ratio: number | null;
+  isFree?: boolean;
+}
+
 export interface DeviceCropConfig {
   id: DeviceType;
   label: string;
   subLabel: string;
-  defaultRatio: number; // width / height
-  defaultRatioText: string;
   icon: string;
   description: string;
-  presets: Array<{ label: string; ratio: number | null; isFree?: boolean }>;
+  presets: AspectPreset[];
 }
+
+// All dimensional presets (including mobile portrait dimensions on Desktop)
+export const COMMON_PRESETS: AspectPreset[] = [
+  { id: 'free', label: 'Free Crop (Any Shape)', shortLabel: 'Free Crop', ratio: null, isFree: true },
+  { id: '9-16', label: '9:16 Mobile Portrait', shortLabel: '9:16 Mobile', ratio: 9 / 16 },
+  { id: '4-5', label: '4:5 Social Portrait', shortLabel: '4:5 Social', ratio: 4 / 5 },
+  { id: '3-4', label: '3:4 Portrait', shortLabel: '3:4 Portrait', ratio: 3 / 4 },
+  { id: '1-1', label: '1:1 Square', shortLabel: '1:1 Square', ratio: 1 },
+  { id: '16-9', label: '16:9 Desktop Widescreen', shortLabel: '16:9 Widescreen', ratio: 16 / 9 },
+  { id: '21-9', label: '21:9 Ultrawide', shortLabel: '21:9 Ultrawide', ratio: 21 / 9 },
+];
 
 export const DEVICE_CONFIGS: DeviceCropConfig[] = [
   {
     id: 'desktop',
     label: 'Desktop',
     subLabel: 'Widescreen & Laptops',
-    defaultRatio: 16 / 9,
-    defaultRatioText: '16:9',
     icon: 'desktop_windows',
-    description: 'Hero banners, cards, and desktop screens (1024px+)',
-    presets: [
-      { label: '16:9 Widescreen', ratio: 16 / 9 },
-      { label: '21:9 Ultrawide', ratio: 21 / 9 },
-      { label: '16:10 Laptop', ratio: 16 / 10 },
-      { label: 'Free Crop', ratio: null, isFree: true },
-    ],
+    description: 'Banners, cards, and desktop screens (Unlocked / Free Crop by default)',
+    presets: COMMON_PRESETS,
   },
   {
     id: 'foldable',
     label: 'Foldables & iPads',
     subLabel: 'Tablets & Folded/Unfolded',
-    defaultRatio: 4 / 3,
-    defaultRatioText: '4:3',
     icon: 'devices_fold',
-    description: 'Galaxy Fold, Pixel Fold, iPads & Tablets (641px - 1024px)',
-    presets: [
-      { label: '4:3 Tablet', ratio: 4 / 3 },
-      { label: '1:1 Square', ratio: 1 },
-      { label: '16:10 Folded', ratio: 16 / 10 },
-      { label: 'Free Crop', ratio: null, isFree: true },
-    ],
+    description: 'Galaxy Fold, Pixel Fold, iPads & Tablets',
+    presets: COMMON_PRESETS,
   },
   {
     id: 'mobile',
     label: 'Mobile Phones',
     subLabel: 'Smartphones Portrait',
-    defaultRatio: 9 / 16,
-    defaultRatioText: '9:16',
     icon: 'smartphone',
-    description: 'Vertical mobile screens and reels (up to 640px)',
-    presets: [
-      { label: '9:16 Portrait', ratio: 9 / 16 },
-      { label: '4:5 Social', ratio: 4 / 5 },
-      { label: '1:1 Square', ratio: 1 },
-      { label: 'Free Crop', ratio: null, isFree: true },
-    ],
+    description: 'Vertical mobile screens, reels, and feeds',
+    presets: COMMON_PRESETS,
   },
 ];
 
@@ -86,7 +82,7 @@ interface ImageCropperModalProps {
 
 interface DeviceSetting {
   isFree: boolean;
-  ratio: number;
+  ratio: number | null;
   label: string;
 }
 
@@ -102,18 +98,18 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const [rotation, setRotation] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // Settings per device (aspect ratio or free crop)
+  // Settings per device - DEFAULT IS UNLOCKED (FREE CROP) so it never forces 16:9
   const [deviceSettings, setDeviceSettings] = useState<Record<DeviceType, DeviceSetting>>({
-    desktop: { isFree: false, ratio: 16 / 9, label: '16:9' },
-    foldable: { isFree: false, ratio: 4 / 3, label: '4:3' },
-    mobile: { isFree: false, ratio: 9 / 16, label: '9:16' },
+    desktop: { isFree: true, ratio: null, label: 'Free Crop' },
+    foldable: { isFree: true, ratio: null, label: 'Free Crop' },
+    mobile: { isFree: true, ratio: null, label: 'Free Crop' },
   });
 
   // Store crop coordinates for all 3 devices
   const [crops, setCrops] = useState<Record<DeviceType, CropRect>>({
-    desktop: { x: 5, y: 15, width: 90, height: 50.6 },
-    foldable: { x: 10, y: 10, width: 80, height: 60 },
-    mobile: { x: 25, y: 5, width: 50, height: 88.8 },
+    desktop: { x: 5, y: 5, width: 90, height: 90 },
+    foldable: { x: 5, y: 5, width: 90, height: 90 },
+    mobile: { x: 5, y: 5, width: 90, height: 90 },
   });
 
   // Track whether each device has been viewed/confirmed
@@ -126,10 +122,10 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // Dragging tracker ref (shared across pointer event listeners)
+  // Dragging tracker ref (shared across window pointer event listeners)
   const dragRef = useRef<{
     isDragging: boolean;
-    dragType: 'move' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | 'draw' | null;
+    dragType: 'move' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | null;
     startX: number;
     startY: number;
     startCrop: CropRect;
@@ -159,20 +155,21 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const calculateDefaultCrop = useCallback(
     (targetRatio: number | null, isFree: boolean): CropRect => {
       if (isFree || targetRatio === null) {
+        // Free Crop: cover 90% of image centered
         return { x: 5, y: 5, width: 90, height: 90 };
       }
 
       const imgRatio = getImageRatio();
-      let newW = 92;
-      let newH = 92;
+      let newW = 90;
+      let newH = 90;
 
       if (targetRatio > imgRatio) {
         // Target is wider than image
-        newW = 94;
+        newW = 92;
         newH = (newW * imgRatio) / targetRatio;
       } else {
         // Target is taller than image
-        newH = 94;
+        newH = 92;
         newW = (newH * targetRatio) / imgRatio;
       }
 
@@ -187,28 +184,26 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     [getImageRatio]
   );
 
-  // Initialize all 3 crops when image loads or modal opens
+  // Initialize all 3 crops when image loads or modal opens (all UNLOCKED free crop by default)
   const handleImageLoaded = useCallback(() => {
-    const desktopCrop = calculateDefaultCrop(deviceSettings.desktop.ratio, deviceSettings.desktop.isFree);
-    const foldableCrop = calculateDefaultCrop(deviceSettings.foldable.ratio, deviceSettings.foldable.isFree);
-    const mobileCrop = calculateDefaultCrop(deviceSettings.mobile.ratio, deviceSettings.mobile.isFree);
-
+    const defaultCrop = calculateDefaultCrop(null, true);
     setCrops({
-      desktop: desktopCrop,
-      foldable: foldableCrop,
-      mobile: mobileCrop,
+      desktop: defaultCrop,
+      foldable: defaultCrop,
+      mobile: defaultCrop,
     });
-  }, [calculateDefaultCrop, deviceSettings]);
+  }, [calculateDefaultCrop]);
 
   useEffect(() => {
     if (isOpen) {
       setRotation(0);
       setIsProcessing(false);
       setActiveDevice('desktop');
+      // Always start UNLOCKED with full free crop
       setDeviceSettings({
-        desktop: { isFree: false, ratio: 16 / 9, label: '16:9' },
-        foldable: { isFree: false, ratio: 4 / 3, label: '4:3' },
-        mobile: { isFree: false, ratio: 9 / 16, label: '9:16' },
+        desktop: { isFree: true, ratio: null, label: 'Free Crop' },
+        foldable: { isFree: true, ratio: null, label: 'Free Crop' },
+        mobile: { isFree: true, ratio: null, label: 'Free Crop' },
       });
       setConfirmed({
         desktop: true,
@@ -221,19 +216,48 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     }
   }, [isOpen, imageSrc, handleImageLoaded]);
 
-  // Handle Preset Switch (e.g. 16:9 vs Free Crop)
-  const handleSelectPreset = (ratio: number | null, isFree: boolean, label: string) => {
+  // Handle Preset Selection (e.g. Free Crop, 9:16 Mobile, 4:5, 16:9, etc.)
+  const handleSelectPreset = (preset: AspectPreset) => {
     setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
-    const newSetting: DeviceSetting = {
-      isFree,
-      ratio: ratio || 1,
-      label,
-    };
-    setDeviceSettings((prev) => ({ ...prev, [activeDevice]: newSetting }));
 
-    // Apply new crop frame
-    const newCrop = calculateDefaultCrop(ratio, isFree);
-    setCrops((prev) => ({ ...prev, [activeDevice]: newCrop }));
+    if (preset.isFree || preset.ratio === null) {
+      // If switching to Free Crop: KEEP current crop box, simply unlock it!
+      setDeviceSettings((prev) => ({
+        ...prev,
+        [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop' },
+      }));
+    } else {
+      // Switching to a locked ratio (e.g. 9:16 Mobile or 16:9 Desktop)
+      setDeviceSettings((prev) => ({
+        ...prev,
+        [activeDevice]: { isFree: false, ratio: preset.ratio, label: preset.shortLabel },
+      }));
+      // Apply centered crop for that specific ratio
+      const newCrop = calculateDefaultCrop(preset.ratio, false);
+      setCrops((prev) => ({ ...prev, [activeDevice]: newCrop }));
+    }
+  };
+
+  // Toggle Lock/Unlock directly with 1 click
+  const handleToggleLock = () => {
+    setConfirmed((prev) => ({ ...prev, [activeDevice]: true }));
+    if (currentSetting.isFree) {
+      // Lock to 16:9 or 9:16 depending on device
+      const defaultLockRatio = activeDevice === 'mobile' ? 9 / 16 : 16 / 9;
+      const defaultLabel = activeDevice === 'mobile' ? '9:16' : '16:9';
+      setDeviceSettings((prev) => ({
+        ...prev,
+        [activeDevice]: { isFree: false, ratio: defaultLockRatio, label: defaultLabel },
+      }));
+      const newCrop = calculateDefaultCrop(defaultLockRatio, false);
+      setCrops((prev) => ({ ...prev, [activeDevice]: newCrop }));
+    } else {
+      // Unlock: Keep current framing, just set isFree: true
+      setDeviceSettings((prev) => ({
+        ...prev,
+        [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop' },
+      }));
+    }
   };
 
   // Maximize / Fit to Image
@@ -300,10 +324,8 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     };
 
     const isFree = deviceSettings[activeDevice].isFree;
-    const ratio = deviceSettings[activeDevice].ratio;
+    const ratio = deviceSettings[activeDevice].ratio || 1;
     const imgRatio = getImageRatio();
-    // aspectFactor translates width% to height% for the target ratio:
-    // height% = width% * (imgRatio / targetRatio)
     const aspectFactor = imgRatio / ratio;
     const MIN_SIZE = 5; // minimum 5% size
 
@@ -522,7 +544,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     setIsProcessing(true);
 
     try {
-      // 1. Prepare rotated canvas
       const rotCanvas = document.createElement('canvas');
       const rotCtx = rotCanvas.getContext('2d');
       if (!rotCtx) throw new Error('Could not create rotation canvas');
@@ -540,7 +561,6 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       rotCtx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
       rotCtx.restore();
 
-      // 2. Generate all 3 cropped files in parallel
       const [desktopFile, foldableFile, mobileFile] = await Promise.all([
         renderCropToFile(crops.desktop, 'desktop', rotCanvas, naturalW, naturalH),
         renderCropToFile(crops.foldable, 'foldable', rotCanvas, naturalW, naturalH),
@@ -595,13 +615,13 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
               <p className="text-xs text-neutral-400 mt-1">
                 Crop for <span className="text-white font-medium">Desktop</span>,{' '}
                 <span className="text-white font-medium">Foldables & iPads</span>, and{' '}
-                <span className="text-white font-medium">Mobile</span>. Use presets or crop freely.
+                <span className="text-white font-medium">Mobile</span>. Select any dimensions (mobile, square, widescreen, or free).
               </p>
             </div>
 
             <button
               onClick={onClose}
-              className="text-neutral-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+              className="text-neutral-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
               title="Cancel"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -647,7 +667,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
 
                   <div className="flex items-center justify-between text-[11px] text-neutral-400">
                     <span className="font-mono text-primary/90 font-medium">
-                      {setting.isFree ? 'Free Crop' : `${setting.label} ratio`}
+                      {setting.isFree ? '🔓 Free Crop' : `🔒 ${setting.label}`}
                     </span>
                     <span className="hidden sm:inline text-[10px] text-neutral-400">{device.subLabel}</span>
                   </div>
@@ -656,46 +676,56 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
             })}
           </div>
 
-          {/* Active Device Info Bar & Presets */}
+          {/* Active Device Dimensions Toolbar (Including Mobile Dimensions on Desktop) */}
           <div className="px-4 py-2.5 bg-[#16191F] border-b border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold text-white uppercase tracking-wider">
-                {currentConfig.label} Mode:
+              <span className="font-bold text-white uppercase tracking-wider text-[11px]">
+                {currentConfig.label} Ratio:
               </span>
 
-              {/* Preset buttons including Free Crop */}
-              <div className="flex items-center gap-1.5 bg-[#0E1013] p-1 rounded-lg border border-white/5">
+              {/* Preset buttons including Mobile Portrait, Square, Widescreen, and Free Crop */}
+              <div className="flex flex-wrap items-center gap-1 bg-[#0E1013] p-1 rounded-lg border border-white/5">
                 {currentConfig.presets.map((p) => {
                   const isCurrent =
                     (p.isFree && currentSetting.isFree) ||
-                    (!p.isFree && !currentSetting.isFree && currentSetting.label === p.label);
+                    (!p.isFree && !currentSetting.isFree && currentSetting.label === p.shortLabel);
 
                   return (
                     <button
-                      key={p.label}
+                      key={p.id}
                       type="button"
-                      onClick={() => handleSelectPreset(p.ratio, !!p.isFree, p.label)}
-                      className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                      onClick={() => handleSelectPreset(p)}
+                      className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
                         isCurrent
                           ? 'bg-primary text-on-primary font-bold shadow-sm'
                           : 'text-neutral-400 hover:text-white hover:bg-white/5'
                       }`}
+                      title={p.label}
                     >
-                      {p.label}
+                      {p.shortLabel}
                     </button>
                   );
                 })}
               </div>
             </div>
 
+            {/* Clickable Lock / Unlock Toggle Button */}
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase border ${
-                currentSetting.isFree
-                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                  : 'bg-primary/10 text-primary border-primary/20'
-              }`}>
-                {currentSetting.isFree ? '🔓 Free-Form (No Limits)' : `🔒 Locked ${currentSetting.label}`}
-              </span>
+              <button
+                type="button"
+                onClick={handleToggleLock}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shadow-sm border ${
+                  currentSetting.isFree
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
+                    : 'bg-primary/20 text-primary border-primary/40 hover:bg-primary/30'
+                }`}
+                title={currentSetting.isFree ? 'Click to lock into a fixed aspect ratio' : 'Click to unlock and crop freely'}
+              >
+                <span>{currentSetting.isFree ? '🔓 UNLOCKED (FREE CROP)' : `🔒 LOCKED (${currentSetting.label})`}</span>
+                <span className="text-[10px] font-sans font-normal opacity-80 underline ml-0.5">
+                  {currentSetting.isFree ? 'Lock' : 'Unlock'}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -884,28 +914,23 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const resetCrop = calculateDefaultCrop(currentConfig.defaultRatio, false);
-                  setCrops((prev) => ({ ...prev, [activeDevice]: resetCrop }));
+                  setCrops((prev) => ({ ...prev, [activeDevice]: { x: 5, y: 5, width: 90, height: 90 } }));
                   setDeviceSettings((prev) => ({
                     ...prev,
-                    [activeDevice]: {
-                      isFree: false,
-                      ratio: currentConfig.defaultRatio,
-                      label: currentConfig.defaultRatioText,
-                    },
+                    [activeDevice]: { isFree: true, ratio: null, label: 'Free Crop' },
                   }));
                 }}
                 className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors border border-white/5 cursor-pointer"
-                title="Reset to recommended aspect ratio"
+                title="Reset to free crop"
               >
-                <span>Reset to Recommended</span>
+                <span>Reset to Free Crop</span>
               </button>
             </div>
 
             <div className="text-neutral-400 text-xs hidden sm:block">
               {currentSetting.isFree
-                ? 'Free Mode: Drag any corner or side handle to crop freely'
-                : 'Locked Mode: Drag corners to resize • Drag inside box to position'}
+                ? 'Free Mode (Unlocked): Drag any corner or side handle freely'
+                : `Locked (${currentSetting.label}): Drag corners to scale • Click Unlock to crop freely`}
             </div>
           </div>
 
