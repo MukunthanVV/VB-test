@@ -8,6 +8,7 @@ import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 import ResponsiveImage from './ResponsiveImage';
+import { SwipeDots } from './SwipeDots';
 
 
 const fallbackServices = [
@@ -156,10 +157,12 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
                     <span className="material-symbols-outlined">chevron_right</span>
                   </button>
                 </div>
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2.5 z-20">
-                  {images.map((_: any, idx: number) => (
-                    <div key={idx} className={`h-1.5 transition-all duration-300 rounded-full ${idx === currentMotorImage ? 'w-8 bg-white' : 'w-2.5 bg-white/60'}`} />
-                  ))}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+                  <SwipeDots
+                    total={images.length}
+                    activeIndex={currentMotorImage}
+                    onSelect={(idx) => setCurrentMotorImage(idx)}
+                  />
                 </div>
               </>
             )}

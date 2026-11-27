@@ -7,6 +7,78 @@ import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 import ResponsiveImage from './ResponsiveImage';
+import { SwipeDots } from './SwipeDots';
+
+interface ProjectImageSliderProps {
+  images: any[];
+  title: string;
+  focus?: string;
+  aspectClass: string;
+}
+
+const ProjectImageSlider: React.FC<ProjectImageSliderProps> = ({ images, title, focus, aspectClass }) => {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.clientWidth > 0) {
+      const idx = Math.round(el.scrollLeft / el.clientWidth);
+      if (idx !== activeIdx && idx >= 0 && idx < images.length) {
+        setActiveIdx(idx);
+      }
+    }
+  };
+
+  const scrollTo = (idx: number) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        left: idx * scrollRef.current.clientWidth,
+        behavior: 'smooth'
+      });
+      setActiveIdx(idx);
+    }
+  };
+
+  if (!images || images.length === 0) {
+    return (
+      <div className={`relative overflow-hidden ${aspectClass} mb-4 rounded-2xl bg-surface-variant flex items-center justify-center text-sm text-on-surface-variant`}>
+        No image
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative overflow-hidden ${aspectClass} mb-4 rounded-2xl group/slider`}>
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="w-full h-full flex snap-x snap-mandatory overflow-x-auto hide-scrollbar scroll-smooth"
+      >
+        {images.map((imgUrl: any, idx: number) => (
+          <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
+            <ResponsiveImage
+              src={imgUrl}
+              alt={title}
+              focus={focus}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none" />
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+          <SwipeDots
+            total={images.length}
+            activeIndex={activeIdx}
+            onSelect={scrollTo}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 import project1 from '../assets/motor-2.webp';
 import project2 from '../assets/motor-3.webp';
@@ -250,17 +322,12 @@ const ProjectsSection: React.FC = () => {
                         />
                       </div>
                     )}
-                    <div className="relative overflow-hidden aspect-[16/9] mb-4 rounded-2xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
-                      {division.featured.images?.map((imgUrl: any, idx: number) => (
-                        <div key={idx} className="w-full flex-shrink-0 snap-center relative">
-                          <ResponsiveImage src={imgUrl} alt={division.featured.title} focus={division.featured.image_focus} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none" />
-                        </div>
-                      ))}
-                      {(!division.featured.images || division.featured.images.length === 0) && (
-                         <div className="absolute inset-0 w-full h-full bg-surface-variant flex items-center justify-center">No image</div>
-                      )}
-                    </div>
+                    <ProjectImageSlider
+                      images={division.featured.images}
+                      title={division.featured.title}
+                      focus={division.featured.image_focus}
+                      aspectClass="aspect-[16/9]"
+                    />
                     <div className="flex justify-between items-start mt-2 gap-2">
                       <div>
                         <h4 className="text-lg sm:text-xl md:text-2xl font-bold uppercase mb-2 break-words">{division.featured.title}</h4>
@@ -288,16 +355,12 @@ const ProjectsSection: React.FC = () => {
                           />
                         </div>
                       )}
-                      <div className="relative overflow-hidden aspect-[2/1] mb-3 rounded-xl flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
-                        {sec.images?.map((imgUrl: any, i: number) => (
-                          <div key={i} className="w-full flex-shrink-0 snap-center relative">
-                            <ResponsiveImage src={imgUrl} alt={sec.title} focus={sec.image_focus} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                          </div>
-                        ))}
-                        {(!sec.images || sec.images.length === 0) && (
-                          <div className="absolute inset-0 w-full h-full bg-surface-variant flex items-center justify-center">No image</div>
-                        )}
-                      </div>
+                      <ProjectImageSlider
+                        images={sec.images}
+                        title={sec.title}
+                        focus={sec.image_focus}
+                        aspectClass="aspect-[2/1]"
+                      />
                       <h4 className="text-lg md:text-xl font-bold uppercase mb-1">{sec.title}</h4>
                       <p className="text-on-surface-variant text-xs whitespace-pre-wrap">{sec.desc}</p>
                     </div>

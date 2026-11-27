@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { collection, onSnapshot, doc, query, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,6 +9,7 @@ import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 import ResponsiveImage, { type ResponsiveImageSource } from './ResponsiveImage';
 import { CarStatusStamp } from './CarStatusStamp';
+import { SwipeDots } from './SwipeDots';
 
 const AnimatedTopo = React.lazy(() => import('./AnimatedTopo'));
 
@@ -34,6 +35,111 @@ interface EditableDivisionPageProps {
   fallbackHero: HeroData;
   fallbackServices: ServiceData[];
 }
+
+interface DivisionCardGalleryProps {
+  images: any;
+  title: string;
+  focus?: string;
+  imgBgClass: string;
+  fallbackIcon?: string;
+}
+
+const DivisionCardGallery: React.FC<DivisionCardGalleryProps> = ({
+  images,
+  title,
+  focus,
+  imgBgClass,
+  fallbackIcon = 'directions_car'
+}) => {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const imageList = Array.isArray(images) ? images : images ? [images] : [];
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.clientWidth > 0) {
+      const idx = Math.round(el.scrollLeft / el.clientWidth);
+      if (idx !== activeIdx && idx >= 0 && idx < imageList.length) {
+        setActiveIdx(idx);
+      }
+    }
+  };
+
+  const scrollTo = (idx: number) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        left: idx * scrollRef.current.clientWidth,
+        behavior: 'smooth'
+      });
+      setActiveIdx(idx);
+    }
+  };
+
+  const nextImage = () => {
+    const next = activeIdx >= imageList.length - 1 ? 0 : activeIdx + 1;
+    scrollTo(next);
+  };
+
+  const prevImage = () => {
+    const prev = activeIdx <= 0 ? imageList.length - 1 : activeIdx - 1;
+    scrollTo(prev);
+  };
+
+  if (imageList.length === 0) {
+    return (
+      <div className={`w-full md:w-[60%] relative min-h-[360px] sm:min-h-[420px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0`}>
+        <span className="material-symbols-outlined text-7xl text-[#1A1A1A]/40 dark:text-white/40 z-10">{fallbackIcon}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`w-full md:w-[60%] relative min-h-[360px] sm:min-h-[420px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0 overflow-hidden group/gallery`}>
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar scroll-smooth"
+      >
+        {imageList.map((img: any, i: number) => (
+          <div key={i} className="w-full h-full flex-shrink-0 snap-center relative">
+            <ResponsiveImage src={img} alt={`${title} - ${i + 1}`} focus={focus} className="w-full h-full object-cover" />
+          </div>
+        ))}
+      </div>
+
+      {imageList.length > 1 && (
+        <>
+          <div className="absolute top-1/2 left-3 right-3 flex justify-between -translate-y-1/2 z-20 opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); prevImage(); }}
+              className="w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center backdrop-blur-md hover:bg-black transition-all cursor-pointer pointer-events-auto shadow-lg hover:scale-110"
+              title="Previous Photo"
+            >
+              <span className="material-symbols-outlined text-xl">chevron_left</span>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); nextImage(); }}
+              className="w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center backdrop-blur-md hover:bg-black transition-all cursor-pointer pointer-events-auto shadow-lg hover:scale-110"
+              title="Next Photo"
+            >
+              <span className="material-symbols-outlined text-xl">chevron_right</span>
+            </button>
+          </div>
+
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+            <SwipeDots
+              total={imageList.length}
+              activeIndex={activeIdx}
+              onSelect={scrollTo}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fallbackHero, fallbackServices }) => {
   const { isAdmin } = useAuth();
@@ -156,7 +262,10 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   ];
 
   const handleEditService = (service: ServiceData) => {
-    setActiveService(service);
+    setActiveService({
+      ...service,
+      status: getEffectiveStatus(service) || 'Live'
+    });
     setServiceModalOpen(true);
   };
 
@@ -273,20 +382,14 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                     </div>
                   )}
 
-                  {/* Image Column */}
-                  <div className={`w-full md:w-[60%] relative min-h-[360px] sm:min-h-[420px] md:min-h-[480px] ${imgBgClass} flex items-center justify-center border-b md:border-b-0 border-outline flex-shrink-0 overflow-hidden`}>
-                    {service.image ? (
-                      <div className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar">
-                        {(Array.isArray(service.image) ? service.image : [service.image]).map((img, i) => (
-                          <div key={i} className="w-full h-full flex-shrink-0 snap-center relative">
-                            <ResponsiveImage src={img} alt={`${service.title} - ${i + 1}`} focus={(service as any).image_focus} className="w-full h-full object-cover" />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="material-symbols-outlined text-7xl text-[#1A1A1A]/40 dark:text-white/40 z-10">{service.icon}</span>
-                    )}
-                  </div>
+                  {/* Image Column with Swipe Dots and Navigation Controls */}
+                  <DivisionCardGallery
+                    images={service.image}
+                    title={service.title}
+                    focus={(service as any).image_focus}
+                    imgBgClass={imgBgClass}
+                    fallbackIcon={service.icon}
+                  />
 
                   {/* Content Column */}
                   <div className="w-full md:w-[40%] flex flex-col justify-between p-8 md:p-12 lg:p-16 relative">
@@ -297,9 +400,9 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                       </p>
                     </div>
 
-                    {/* Rubber Stamp positioned below the description alone, exclusively at the bottom right of each template */}
-                    <div className="mt-8 pt-4 flex justify-end items-end relative min-h-[76px]">
-                      {effectiveStatus ? (
+                    {/* Rubber Stamp & Admin Control positioned below the description alone, exclusively at bottom right of each template */}
+                    <div className="mt-8 pt-4 flex flex-wrap justify-end items-end gap-3 relative min-h-[76px]">
+                      {effectiveStatus && (
                         <div className="relative group/stamp">
                           <CarStatusStamp
                             status={effectiveStatus}
@@ -309,12 +412,30 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                             } : undefined}
                             title={isAdmin ? "Admin: Click to change car status (Live / Booked / Sold)" : undefined}
                           />
+                        </div>
+                      )}
 
-                          {/* Admin Quick Status Dropdown Menu */}
-                          {isAdmin && statusDropdownOpen === service.id && (
+                      {/* Explicit Admin Status Switcher Pill */}
+                      {isAdmin && (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setStatusDropdownOpen(statusDropdownOpen === service.id ? null : service.id);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white text-xs font-bold border border-white/20 shadow-lg cursor-pointer transition-all hover:scale-105 backdrop-blur-md"
+                            title="Admin: Change Status"
+                          >
+                            <span className="material-symbols-outlined text-[15px] text-amber-400">edit_note</span>
+                            <span>Status: <strong className="text-amber-300 font-black uppercase">{effectiveStatus || 'None'}</strong></span>
+                            <span className="material-symbols-outlined text-[15px] opacity-70">expand_more</span>
+                          </button>
+
+                          {statusDropdownOpen === service.id && (
                             <div
                               onClick={(e) => e.stopPropagation()}
-                              className="absolute bottom-full right-0 mb-3 z-50 bg-surface/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-outline/30 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 min-w-[170px]"
+                              className="absolute bottom-full right-0 mb-2 z-50 bg-surface/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-outline/30 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 min-w-[180px]"
                             >
                               <div className="text-[10px] font-bold tracking-wider uppercase text-on-surface-variant px-3 py-1.5 border-b border-outline/10">
                                 Set Status Stamp
@@ -329,8 +450,8 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                  <span>Live</span>
+                                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span>Live (Available)</span>
                                 </div>
                                 {effectiveStatus.toLowerCase() === 'live' && <span className="text-[10px]">✓</span>}
                               </button>
@@ -344,7 +465,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                                   <span>Booked</span>
                                 </div>
                                 {effectiveStatus.toLowerCase() === 'booked' && <span className="text-[10px]">✓</span>}
@@ -359,7 +480,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-red-400" />
+                                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
                                   <span>Sold</span>
                                 </div>
                                 {effectiveStatus.toLowerCase() === 'sold' && <span className="text-[10px]">✓</span>}
@@ -374,56 +495,6 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                             </div>
                           )}
                         </div>
-                      ) : (
-                        isAdmin && (
-                          <div className="relative">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setStatusDropdownOpen(statusDropdownOpen === service.id ? null : service.id);
-                              }}
-                              className="text-xs font-bold text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors border border-dashed border-neutral-400 dark:border-neutral-600 px-3 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">add_circle</span>
-                              <span>+ Add Stamp</span>
-                            </button>
-                            {statusDropdownOpen === service.id && (
-                              <div
-                                onClick={(e) => e.stopPropagation()}
-                                className="absolute bottom-full right-0 mb-3 z-50 bg-surface/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-outline/30 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 min-w-[170px]"
-                              >
-                                <div className="text-[10px] font-bold tracking-wider uppercase text-on-surface-variant px-3 py-1.5 border-b border-outline/10">
-                                  Select Stamp
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleQuickStatusChange(service.id, 'Live', e)}
-                                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-on-surface hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors"
-                                >
-                                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                                  <span>Live</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleQuickStatusChange(service.id, 'Booked', e)}
-                                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-on-surface hover:bg-amber-500/10 hover:text-amber-400 transition-colors"
-                                >
-                                  <span className="w-2 h-2 rounded-full bg-amber-400" />
-                                  <span>Booked</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleQuickStatusChange(service.id, 'Sold', e)}
-                                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-on-surface hover:bg-red-500/10 hover:text-red-400 transition-colors"
-                                >
-                                  <span className="w-2 h-2 rounded-full bg-red-400" />
-                                  <span>Sold</span>
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )
                       )}
                     </div>
                   </div>

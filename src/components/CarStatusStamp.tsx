@@ -24,7 +24,7 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
       <div
         onClick={onClick}
         title={title}
-        className={`relative inline-block select-none transform -rotate-3 sm:-rotate-6 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        className={`relative inline-block select-none transform rotate-0 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
       >
         <svg
           viewBox="0 0 170 70"
@@ -111,7 +111,7 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
       <div
         onClick={onClick}
         title={title}
-        className={`relative inline-block select-none transform -rotate-6 sm:-rotate-8 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        className={`relative inline-block select-none transform rotate-0 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
       >
         <svg
           viewBox="0 0 190 76"
@@ -202,7 +202,7 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
       <div
         onClick={onClick}
         title={title}
-        className={`relative inline-block select-none transform -rotate-8 sm:-rotate-12 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        className={`relative inline-block select-none transform rotate-0 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
       >
         <svg
           viewBox="0 0 180 78"

@@ -7,6 +7,7 @@ import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 import ResponsiveImage from './ResponsiveImage';
+import { SwipeDots } from './SwipeDots';
 
 const fallbackTestimonials = [
   {
@@ -217,10 +218,12 @@ const TestimonialsSection: React.FC = () => {
                               <span className="material-symbols-outlined">chevron_right</span>
                             </button>
                           </div>
-                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                            {images.map((_: any, idx: number) => (
-                              <div key={idx} className={`h-1.5 transition-all duration-300 rounded-full ${idx === currentImgIndex ? 'w-6 bg-[#C5A059]' : 'w-2 bg-white/40'}`} />
-                            ))}
+                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+                            <SwipeDots
+                              total={images.length}
+                              activeIndex={currentImgIndex}
+                              onSelect={(idx) => setCurrentImgIndex(idx)}
+                            />
                           </div>
                         </>
                       )}
