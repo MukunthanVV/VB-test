@@ -164,19 +164,9 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   const [heroModalOpen, setHeroModalOpen] = useState(false);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [activeService, setActiveService] = useState<ServiceData | null>(null);
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | null>(null);
 
   const [heroLoaded, setHeroLoaded] = useState(true);
   const [servicesLoaded, setServicesLoaded] = useState(true);
-
-  // Close status dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => setStatusDropdownOpen(null);
-    if (statusDropdownOpen) {
-      window.addEventListener('click', handleClickOutside);
-      return () => window.removeEventListener('click', handleClickOutside);
-    }
-  }, [statusDropdownOpen]);
 
   // Fetch Hero Data
   useEffect(() => {
@@ -291,21 +281,6 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
     setServiceModalOpen(true);
   };
 
-  // Quick 1-click status change directly from the card stamp
-  const handleQuickStatusChange = async (serviceId: string, newStatus: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setStatusDropdownOpen(null);
-    try {
-      await setDoc(
-        doc(db, `division_${pageId}_services`, serviceId), 
-        { status: newStatus }, 
-        { merge: true }
-      );
-    } catch (err) {
-      console.error("Failed to update status:", err);
-    }
-  };
-
   // Determine effective status (defaults to 'Live' for Pre-Owned car listings if unset)
   const getEffectiveStatus = (service: ServiceData) => {
     if (service.status !== undefined && service.status !== '') {
@@ -400,103 +375,12 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                       </p>
                     </div>
 
-                    {/* Rubber Stamp & Admin Control positioned below the description alone, exclusively at bottom right of each template */}
-                    <div className="mt-8 pt-4 flex flex-wrap justify-end items-end gap-3 relative min-h-[76px]">
-                      {effectiveStatus && (
-                        <div className="relative group/stamp">
-                          <CarStatusStamp
-                            status={effectiveStatus}
-                            onClick={isAdmin ? (e) => {
-                              e.stopPropagation();
-                              setStatusDropdownOpen(statusDropdownOpen === service.id ? null : service.id);
-                            } : undefined}
-                            title={isAdmin ? "Admin: Click to change car status (Live / Booked / Sold)" : undefined}
-                          />
-                        </div>
-                      )}
-
-                      {/* Explicit Admin Status Switcher Pill */}
-                      {isAdmin && (
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setStatusDropdownOpen(statusDropdownOpen === service.id ? null : service.id);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white text-xs font-bold border border-white/20 shadow-lg cursor-pointer transition-all hover:scale-105 backdrop-blur-md"
-                            title="Admin: Change Status"
-                          >
-                            <span className="material-symbols-outlined text-[15px] text-amber-400">edit_note</span>
-                            <span>Status: <strong className="text-amber-300 font-black uppercase">{effectiveStatus || 'None'}</strong></span>
-                            <span className="material-symbols-outlined text-[15px] opacity-70">expand_more</span>
-                          </button>
-
-                          {statusDropdownOpen === service.id && (
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute bottom-full right-0 mb-2 z-50 bg-surface/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-outline/30 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 min-w-[180px]"
-                            >
-                              <div className="text-[10px] font-bold tracking-wider uppercase text-on-surface-variant px-3 py-1.5 border-b border-outline/10">
-                                Set Status Stamp
-                              </div>
-                              <button
-                                type="button"
-                                onClick={(e) => handleQuickStatusChange(service.id, 'Live', e)}
-                                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-                                  effectiveStatus.toLowerCase() === 'live'
-                                    ? 'bg-emerald-500/20 text-emerald-400'
-                                    : 'text-on-surface hover:bg-emerald-500/10 hover:text-emerald-400'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                                  <span>Live (Available)</span>
-                                </div>
-                                {effectiveStatus.toLowerCase() === 'live' && <span className="text-[10px]">✓</span>}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => handleQuickStatusChange(service.id, 'Booked', e)}
-                                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-                                  effectiveStatus.toLowerCase() === 'booked'
-                                    ? 'bg-amber-500/20 text-amber-400'
-                                    : 'text-on-surface hover:bg-amber-500/10 hover:text-amber-400'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                                  <span>Booked</span>
-                                </div>
-                                {effectiveStatus.toLowerCase() === 'booked' && <span className="text-[10px]">✓</span>}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => handleQuickStatusChange(service.id, 'Sold', e)}
-                                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-                                  effectiveStatus.toLowerCase() === 'sold'
-                                    ? 'bg-red-500/20 text-red-400'
-                                    : 'text-on-surface hover:bg-red-500/10 hover:text-red-400'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                                  <span>Sold</span>
-                                </div>
-                                {effectiveStatus.toLowerCase() === 'sold' && <span className="text-[10px]">✓</span>}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => handleQuickStatusChange(service.id, 'none', e)}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-neutral-400 hover:bg-neutral-500/10 transition-colors border-t border-outline/10 mt-0.5"
-                              >
-                                <span>None (Hide Stamp)</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    {/* Rubber Stamp positioned below the description, vertically straight down to where the texts start */}
+                    {effectiveStatus && (
+                      <div className="mt-8 pt-2 flex justify-start items-start">
+                        <CarStatusStamp status={effectiveStatus} />
+                      </div>
+                    )}
                   </div>
                 </div>
               );

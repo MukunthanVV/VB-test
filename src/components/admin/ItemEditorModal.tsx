@@ -307,7 +307,40 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                     />
                   )}
 
-                  {field.type === 'select' && (
+                  {field.name === 'status' ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {[
+                        { value: 'Live', label: 'Live (Available)', color: 'border-[#25503B] bg-[#25503B]/10 text-[#25503B] dark:text-emerald-400', dot: 'bg-[#25503B] dark:bg-emerald-400' },
+                        { value: 'Booked', label: 'Booked', color: 'border-[#8C4E23] bg-[#8C4E23]/10 text-[#8C4E23] dark:text-amber-400', dot: 'bg-[#8C4E23] dark:bg-amber-400' },
+                        { value: 'Sold', label: 'Sold', color: 'border-[#78202A] bg-[#78202A]/10 text-[#78202A] dark:text-red-400', dot: 'bg-[#78202A] dark:bg-red-400' },
+                        { value: 'none', label: 'Hide Stamp', color: 'border-outline/40 bg-surface-variant text-on-surface-variant', dot: 'bg-neutral-400' },
+                      ].map((st) => {
+                        const currentVal = formData['status'] !== undefined ? formData['status'] : 'Live';
+                        const isSelected = currentVal.toLowerCase() === st.value.toLowerCase() ||
+                          (st.value === 'none' && currentVal === 'none');
+                        return (
+                          <button
+                            key={st.value}
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev: any) => ({ ...prev, status: st.value }));
+                            }}
+                            className={`flex items-center justify-between p-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer ${
+                              isSelected
+                                ? `${st.color} shadow-sm ring-2 ring-primary/40 scale-[1.02]`
+                                : 'border-outline/20 hover:border-outline/50 bg-surface-variant/40 text-on-surface/70'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className={`w-2.5 h-2.5 rounded-full ${st.dot}`} />
+                              <span>{st.label}</span>
+                            </div>
+                            {isSelected && <span className="text-xs font-black">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : field.type === 'select' ? (
                     <select
                       name={field.name}
                       value={formData[field.name] !== undefined ? formData[field.name] : ((field.options && field.options[0]?.value) || '')}
@@ -320,7 +353,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                         </option>
                       ))}
                     </select>
-                  )}
+                  ) : null}
 
                   {/* Single Image Upload */}
                   {field.type === 'image' && (
