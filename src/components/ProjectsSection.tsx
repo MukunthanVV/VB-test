@@ -53,7 +53,7 @@ const ProjectImageSlider: React.FC<ProjectImageSliderProps> = ({ images, title, 
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="w-full h-full flex snap-x snap-mandatory overflow-x-auto hide-scrollbar scroll-smooth"
+        className="w-full h-full flex snap-x snap-mandatory overflow-x-auto hide-scrollbar scroll-smooth [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
       >
         {images.map((imgUrl: any, idx: number) => (
           <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
@@ -286,7 +286,7 @@ const ProjectsSection: React.FC = () => {
         </div>
 
         {/* Swipeable Horizontal Gallery */}
-        <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory gap-6 sm:gap-8 px-4 sm:px-6 md:px-8 xl:px-margin-desktop pb-12 pt-4 hide-scrollbar">
+        <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory gap-6 sm:gap-8 px-4 sm:px-6 md:px-8 xl:px-margin-desktop pb-12 pt-4 hide-scrollbar [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
           <div className="w-[calc((100vw-min(100vw,1600px))/2)] flex-shrink-0 hidden xl:block"></div>
 
           {groupedData.map((division, index) => (

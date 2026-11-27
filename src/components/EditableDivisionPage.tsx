@@ -98,7 +98,8 @@ const DivisionCardGallery: React.FC<DivisionCardGalleryProps> = ({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar scroll-smooth"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="w-full h-full absolute inset-0 flex snap-x snap-mandatory overflow-x-auto hide-scrollbar scroll-smooth [&::-webkit-scrollbar]:hidden"
       >
         {imageList.map((img: any, i: number) => (
           <div key={i} className="w-full h-full flex-shrink-0 snap-center relative">
