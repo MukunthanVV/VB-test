@@ -310,7 +310,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                   {field.type === 'select' && (
                     <select
                       name={field.name}
-                      value={formData[field.name] || (field.options && field.options[0]?.value) || ''}
+                      value={formData[field.name] !== undefined ? formData[field.name] : ((field.options && field.options[0]?.value) || '')}
                       onChange={handleChange}
                       className="bg-surface-variant border border-outline/20 rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer"
                     >
