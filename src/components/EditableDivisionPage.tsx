@@ -346,6 +346,24 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
               const bgClass = isReverse ? 'bg-[#988E8B] dark:bg-neutral-900' : 'bg-[#D7D1C9] dark:bg-neutral-800';
               const imgBgClass = isReverse ? 'bg-[#8F8A8B] dark:bg-neutral-800' : 'bg-[#C1BAB2] dark:bg-neutral-700';
               const effectiveStatus = getEffectiveStatus(service);
+              const normalizedStatus = (effectiveStatus || '').trim().toLowerCase();
+              const isEnquireActive = normalizedStatus === 'live' || normalizedStatus === 'booked';
+              
+              const mailSubject = encodeURIComponent(`Acquisition Inquiry: ${service.title} (${normalizedStatus.toUpperCase()})`);
+              const mailBody = encodeURIComponent(
+`Dear VB Associates Team,
+
+I am interested in enquiring about the ${service.title} currently listed as ${normalizedStatus.toUpperCase()} in your collection.
+
+Please share further details regarding vehicle specifications, availability, inspection history, and acquisition terms.
+
+Name: 
+Phone: 
+Location: 
+
+Thank you.`
+              );
+              const mailtoHref = `mailto:office@vbassociates.com?subject=${mailSubject}&body=${mailBody}`;
 
               return (
                 <div key={service.id} className={`flex flex-col md:flex-row ${isReverse ? 'md:flex-row-reverse' : ''} ${bgClass} rounded-[2rem] overflow-hidden shadow-xl w-full relative group`}>
@@ -376,10 +394,21 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                       </p>
                     </div>
 
-                    {/* Rubber Stamp positioned below the description, vertically straight down to where the texts start */}
+                    {/* Status & Parallel Enquire Now CTA Row */}
                     {effectiveStatus && (
-                      <div className="mt-8 pt-2 flex justify-start items-start">
+                      <div className="mt-8 pt-2 flex flex-wrap items-center justify-between gap-4">
                         <CarStatusStamp status={effectiveStatus} />
+                        {isEnquireActive && (
+                          <a
+                            href={mailtoHref}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1A1A1A] text-white hover:bg-black/80 dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-neutral-200 transition-all duration-300 font-label-caps text-xs tracking-widest uppercase shadow-sm group/enquire hover:scale-105 flex-shrink-0 cursor-pointer"
+                          >
+                            <span>Enquire Now</span>
+                            <span className="material-symbols-outlined text-[15px] transition-transform duration-200 group-hover/enquire:translate-x-0.5 group-hover/enquire:-translate-y-0.5">
+                              north_east
+                            </span>
+                          </a>
+                        )}
                       </div>
                     )}
                   </div>
