@@ -100,7 +100,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
   const isReversed = index % 2 !== 0;
 
   const images = item.images && item.images.length > 0 ? item.images : [];
-  
+
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentMotorImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
@@ -120,7 +120,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
       )}
 
       {/* Image Slider Container (40% Width) */}
-      <motion.div 
+      <motion.div
         variants={imageVariants}
         initial="hidden"
         whileInView="visible"
@@ -130,7 +130,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         {images.length > 0 ? (
           <>
             <AnimatePresence initial={false}>
-              <motion.div 
+              <motion.div
                 key={currentMotorImage}
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -138,7 +138,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
                 transition={{ duration: 0.5 }}
                 className="absolute inset-0 w-full h-full"
               >
-                <ResponsiveImage 
+                <ResponsiveImage
                   src={images[currentMotorImage]}
                   alt={item.title}
                   focus={item.image_focus}
@@ -146,7 +146,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
                 />
               </motion.div>
             </AnimatePresence>
-            
+
             {images.length > 1 && (
               <>
                 <div className="absolute top-1/2 left-0 right-0 flex justify-between px-4 -translate-y-1/2 z-20 opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300">
@@ -175,7 +175,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
       </motion.div>
 
       {/* Text Container */}
-      <motion.div 
+      <motion.div
         variants={textVariants}
         initial="hidden"
         whileInView="visible"
@@ -183,15 +183,15 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         className="w-full md:w-[60%] flex flex-col justify-center px-6 sm:px-8 md:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-14 text-[#1A1A1A] dark:text-white min-w-0"
       >
         <div className="flex items-center gap-4 mb-4 sm:mb-6">
-          <span className="font-label-caps text-xl sm:text-2xl opacity-60 text-[#1A1A1A] dark:text-white">{item.number}. {item.category}</span>
+          <span className="font-label-caps text-base sm:text-lg opacity-60 text-[#1A1A1A] dark:text-white">{item.number}. {item.category}</span>
         </div>
         <h3 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm break-words">{item.title}</h3>
-        
+
         <p className="text-base sm:text-lg md:text-xl lg:text-[24px] xl:text-[30px] leading-relaxed md:leading-[1.4] font-medium mb-8 sm:mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white break-words">
           {item.description}
         </p>
-        
-        <Link 
+
+        <Link
           to={`/division/${item.id}`}
           className="group flex justify-between items-center w-full max-w-xs border border-[#1A1A1A] dark:border-white text-[#1A1A1A] dark:text-white py-3.5 sm:py-4 px-5 sm:px-6 text-xs sm:text-sm font-semibold tracking-widest uppercase hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-[#988E8B] dark:hover:text-neutral-900 transition-colors duration-300"
         >
@@ -222,12 +222,12 @@ const DivisionsSection: React.FC = () => {
     const q = query(collection(db, 'services'));
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
-      
+
       const activeData = data.filter(d => !d.deleted);
       const deletedIds = new Set(data.filter(d => d.deleted).map(d => d.id));
-      
+
       const activeFallbacks = fallbackServices.filter(fb => !deletedIds.has(fb.id));
-      
+
       // If we have custom items in the DB, or if fallbacks are deleted/modified
       if (activeData.some(d => !fallbackServices.some(fb => fb.id === d.id)) || data.length > 0) {
         // Merge fallbacks with DB overrides
@@ -238,10 +238,10 @@ const DivisionsSection: React.FC = () => {
         const extra = activeData.filter(d => !fallbackServices.some(fb => fb.id === d.id));
         const finalSet = [...merged, ...extra];
         setServices(finalSet);
-        try { localStorage.setItem('cache_services', JSON.stringify(finalSet)); } catch {}
+        try { localStorage.setItem('cache_services', JSON.stringify(finalSet)); } catch { }
       } else {
         setServices(activeFallbacks);
-        try { localStorage.setItem('cache_services', JSON.stringify(activeFallbacks)); } catch {}
+        try { localStorage.setItem('cache_services', JSON.stringify(activeFallbacks)); } catch { }
       }
       setIsLoaded(true);
     }, (error) => {
@@ -254,10 +254,10 @@ const DivisionsSection: React.FC = () => {
 
   const rawData = services;
   const finalDisplayData = [...rawData].sort((a, b) => {
-      const numA = parseInt(a.number, 10) || 0;
-      const numB = parseInt(b.number, 10) || 0;
-      return numA - numB;
-    });
+    const numA = parseInt(a.number, 10) || 0;
+    const numB = parseInt(b.number, 10) || 0;
+    return numA - numB;
+  });
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -278,8 +278,8 @@ const DivisionsSection: React.FC = () => {
   return (
     <section id="services" className={`relative py-16 sm:py-24 md:py-section-gap px-4 sm:px-6 md:px-8 xl:px-margin-desktop bg-transparent w-full overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative z-10 max-w-container-max mx-auto w-full">
-        
-        <motion.div 
+
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -290,7 +290,7 @@ const DivisionsSection: React.FC = () => {
             <h2 className="font-headline-lg text-3xl sm:text-4xl md:text-headline-lg-mobile lg:text-headline-lg uppercase text-on-surface text-left break-words">OUR <span className="text-primary block md:inline">SPECIALIZATIONS</span></h2>
             <p className="font-label-caps text-xs sm:text-label-caps text-on-surface-variant max-w-xs text-left mt-3 sm:mt-4">DYNAMIC SYNERGY ACROSS HIGH-STAKES INDUSTRIES</p>
           </div>
-          
+
           {isAdmin && (
             <div className="flex gap-4">
               <button onClick={handleAdd} className="text-sm bg-primary text-on-primary px-6 py-3 rounded-full hover:opacity-90 font-bold">
@@ -299,13 +299,13 @@ const DivisionsSection: React.FC = () => {
             </div>
           )}
         </motion.div>
-        
+
         <div className="flex flex-col gap-16 w-full">
           {finalDisplayData.map((item, index) => (
-            <DivisionCard 
-              key={item.id} 
-              item={item} 
-              index={index} 
+            <DivisionCard
+              key={item.id}
+              item={item}
+              index={index}
               isAdmin={isAdmin}
               onEdit={handleEdit}
               onDelete={handleDelete}
