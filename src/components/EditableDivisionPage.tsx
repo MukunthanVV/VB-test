@@ -466,7 +466,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                 className="flex items-center gap-2 px-8 py-4 bg-primary text-on-primary rounded-full hover:bg-primary/90 transition-colors shadow-lg font-label-caps uppercase tracking-widest text-sm"
               >
                 <span className="material-symbols-outlined">add</span>
-                Add New Service / Car
+                {isCarPage ? 'Add New Vehicle' : 'Add New Event'}
               </button>
             </div>
           )}
@@ -490,7 +490,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
       <ItemEditorModal
         isOpen={serviceModalOpen}
         onClose={() => { setServiceModalOpen(false); setActiveService(null); }}
-        title="Edit Vehicle / Service Details"
+        title={isCarPage ? "Edit Vehicle Details" : "Edit Event Details"}
         collectionName={`division_${pageId}_services`}
         docId={activeService?.id}
         initialData={activeService || {}}

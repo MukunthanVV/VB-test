@@ -183,11 +183,15 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         className="w-full md:w-[60%] flex flex-col justify-center px-6 sm:px-8 md:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-14 text-[#1A1A1A] dark:text-white min-w-0"
       >
         <div className="flex items-center gap-4 mb-4 sm:mb-6">
-          <span className="font-label-caps text-xs sm:text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">{item.number}. {item.category}</span>
+          <span className="font-label-caps text-sm sm:text-base md:text-lg lg:text-xl font-bold tracking-widest opacity-90 text-[#1A1A1A] dark:text-white">
+            {item.number}. {item.category}
+          </span>
         </div>
-        <h3 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm break-words">{item.title}</h3>
+        <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm break-words">
+          {item.title}
+        </h3>
         
-        <p className="text-base sm:text-lg md:text-xl lg:text-[24px] xl:text-[30px] leading-relaxed md:leading-[1.4] font-medium mb-8 sm:mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white break-words">
+        <p className="text-lg sm:text-xl md:text-2xl lg:text-[26px] xl:text-[32px] leading-relaxed md:leading-[1.4] font-medium mb-8 sm:mb-12 md:mb-16 tracking-tight text-[#1A1A1A] dark:text-white break-words">
           {item.description}
         </p>
         
