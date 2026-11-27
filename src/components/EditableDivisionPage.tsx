@@ -168,6 +168,17 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
 
   const [heroLoaded, setHeroLoaded] = useState(true);
   const [servicesLoaded, setServicesLoaded] = useState(true);
+  const [whatsappPhone, setWhatsappPhone] = useState<string>('918678910444');
+
+  // Fetch WhatsApp Number from Contact Info
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'contact', 'info'), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().whatsappPhone) {
+        setWhatsappPhone(docSnap.data().whatsappPhone);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Fetch Hero Data
   useEffect(() => {
@@ -349,21 +360,10 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
               const normalizedStatus = (effectiveStatus || '').trim().toLowerCase();
               const isEnquireActive = normalizedStatus === 'live' || normalizedStatus === 'booked';
               
-              const mailSubject = encodeURIComponent(`Acquisition Inquiry: ${service.title} (${normalizedStatus.toUpperCase()})`);
-              const mailBody = encodeURIComponent(
-`Dear VB Associates Team,
-
-I am interested in enquiring about the ${service.title} currently listed as ${normalizedStatus.toUpperCase()} in your collection.
-
-Please share further details regarding vehicle specifications, availability, inspection history, and acquisition terms.
-
-Name: 
-Phone: 
-Location: 
-
-Thank you.`
+              const whatsappMessage = encodeURIComponent(
+                `Hello VB Associates, I am interested in inquiring about the ${service.title} currently listed as ${normalizedStatus.toUpperCase()} in your Pre-Owned collection. Could you please share more details?`
               );
-              const mailtoHref = `mailto:office@vbassociates.com?subject=${mailSubject}&body=${mailBody}`;
+              const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${whatsappMessage}`;
 
               return (
                 <div key={service.id} className={`flex flex-col md:flex-row ${isReverse ? 'md:flex-row-reverse' : ''} ${bgClass} rounded-[2rem] overflow-hidden shadow-xl w-full relative group`}>
@@ -402,7 +402,9 @@ Thank you.`
                         </div>
                         {isEnquireActive && (
                           <a
-                            href={mailtoHref}
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full bg-[#1A1A1A] text-white hover:bg-black/80 dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-neutral-200 transition-all duration-300 font-label-caps text-[10px] sm:text-xs tracking-wider sm:tracking-widest uppercase shadow-sm group/enquire hover:scale-105 flex-shrink-0 cursor-pointer whitespace-nowrap"
                           >
                             <span>Enquire Now</span>
