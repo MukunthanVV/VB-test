@@ -8,6 +8,7 @@ import InlineEditControls from './admin/InlineEditControls';
 import ItemEditorModal from './admin/ItemEditorModal';
 import type { FieldConfig } from './admin/ItemEditorModal';
 import ResponsiveImage, { type ResponsiveImageSource } from './ResponsiveImage';
+import { CarStatusStamp } from './CarStatusStamp';
 
 const AnimatedTopo = React.lazy(() => import('./AnimatedTopo'));
 
@@ -92,8 +93,12 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
       if (!snapshot.empty) {
         const services = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
         
-        // Filter out services marked as deleted in Firestore
-        const activeServices = services.filter(s => !s.deleted);
+        // Filter out services marked as deleted in Firestore or empty drafts
+        const activeServices = services.filter(s => {
+          if (s.deleted) return false;
+          if (s.title === 'New Service' && s.description === 'Enter service details here.') return false;
+          return true;
+        });
         const deletedIds = new Set(services.filter(s => s.deleted).map(s => s.id));
         
         // Only include fallbacks that are not explicitly deleted
@@ -123,13 +128,13 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
     { name: 'title', label: 'Title / Vehicle Name', type: 'text', required: true },
     {
       name: 'status',
-      label: 'Vehicle Status Sticker',
+      label: 'Vehicle Status Stamp',
       type: 'select',
       options: [
         { label: 'Live (Available)', value: 'Live' },
         { label: 'Booked', value: 'Booked' },
         { label: 'Sold', value: 'Sold' },
-        { label: 'None (Hide Sticker)', value: '' },
+        { label: 'None (Hide Stamp)', value: 'none' },
       ],
     },
     { name: 'description', label: 'Description & Details', type: 'textarea', required: true },
@@ -177,7 +182,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
     setServiceModalOpen(true);
   };
 
-  // Quick 1-click status change directly from the card badge
+  // Quick 1-click status change directly from the card stamp
   const handleQuickStatusChange = async (serviceId: string, newStatus: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setStatusDropdownOpen(null);
@@ -195,6 +200,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   // Determine effective status (defaults to 'Live' for Pre-Owned car listings if unset)
   const getEffectiveStatus = (service: ServiceData) => {
     if (service.status !== undefined && service.status !== '') {
+      if (service.status.toLowerCase() === 'none') return '';
       return service.status;
     }
     if (service.status === '') {
@@ -280,61 +286,44 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                     ) : (
                       <span className="material-symbols-outlined text-7xl text-[#1A1A1A]/40 dark:text-white/40 z-10">{service.icon}</span>
                     )}
+                  </div>
 
-                    {/* Status Sticker Badge on the image */}
-                    {effectiveStatus && (
-                      <div className="absolute top-4 sm:top-5 left-4 sm:left-5 z-20">
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              if (isAdmin) {
-                                e.stopPropagation();
-                                setStatusDropdownOpen(statusDropdownOpen === service.id ? null : service.id);
-                              }
-                            }}
-                            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-md shadow-2xl text-xs font-black uppercase tracking-widest border transition-all duration-200 ${
-                              isAdmin ? 'cursor-pointer hover:scale-105 active:scale-95' : 'cursor-default'
-                            } ${
-                              effectiveStatus === 'Sold'
-                                ? 'bg-red-950/90 border-red-500/70 text-red-200'
-                                : effectiveStatus === 'Booked'
-                                ? 'bg-amber-950/90 border-amber-500/70 text-amber-300'
-                                : 'bg-neutral-950/90 border-emerald-500/60 text-emerald-400'
-                            }`}
+                  {/* Content Column */}
+                  <div className="w-full md:w-[40%] flex flex-col justify-between p-8 md:p-12 lg:p-16 relative">
+                    <div>
+                      <h3 className="text-3xl md:text-4xl font-bold mb-6 text-[#1A1A1A] dark:text-white uppercase">{service.title}</h3>
+                      <p className="text-xl text-[#1A1A1A]/80 dark:text-white/80 leading-relaxed whitespace-pre-line">
+                        {service.description}
+                      </p>
+                    </div>
+
+                    {/* Rubber Stamp positioned below the description alone, exclusively at the bottom right of each template */}
+                    <div className="mt-8 pt-4 flex justify-end items-end relative min-h-[76px]">
+                      {effectiveStatus ? (
+                        <div className="relative group/stamp">
+                          <CarStatusStamp
+                            status={effectiveStatus}
+                            onClick={isAdmin ? (e) => {
+                              e.stopPropagation();
+                              setStatusDropdownOpen(statusDropdownOpen === service.id ? null : service.id);
+                            } : undefined}
                             title={isAdmin ? "Admin: Click to change car status (Live / Booked / Sold)" : undefined}
-                          >
-                            <span
-                              className={`w-2 h-2 rounded-full ${
-                                effectiveStatus === 'Sold'
-                                  ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)]'
-                                  : effectiveStatus === 'Booked'
-                                  ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]'
-                                  : 'bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.9)]'
-                              }`}
-                            />
-                            <span>{effectiveStatus}</span>
-                            {isAdmin && (
-                              <span className="material-symbols-outlined text-[15px] opacity-70 -ml-0.5">
-                                expand_more
-                              </span>
-                            )}
-                          </button>
+                          />
 
                           {/* Admin Quick Status Dropdown Menu */}
                           {isAdmin && statusDropdownOpen === service.id && (
                             <div
                               onClick={(e) => e.stopPropagation()}
-                              className="absolute top-11 left-0 z-50 bg-surface/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-outline/30 rounded-2xl p-1.5 shadow-2xl flex flex-col gap-1 min-w-[155px]"
+                              className="absolute bottom-full right-0 mb-3 z-50 bg-surface/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-outline/30 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 min-w-[170px]"
                             >
                               <div className="text-[10px] font-bold tracking-wider uppercase text-on-surface-variant px-3 py-1.5 border-b border-outline/10">
-                                Set Status
+                                Set Status Stamp
                               </div>
                               <button
                                 type="button"
                                 onClick={(e) => handleQuickStatusChange(service.id, 'Live', e)}
                                 className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-                                  effectiveStatus === 'Live'
+                                  effectiveStatus.toLowerCase() === 'live'
                                     ? 'bg-emerald-500/20 text-emerald-400'
                                     : 'text-on-surface hover:bg-emerald-500/10 hover:text-emerald-400'
                                 }`}
@@ -343,13 +332,13 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                                   <span>Live</span>
                                 </div>
-                                {effectiveStatus === 'Live' && <span className="text-[10px]">✓</span>}
+                                {effectiveStatus.toLowerCase() === 'live' && <span className="text-[10px]">✓</span>}
                               </button>
                               <button
                                 type="button"
                                 onClick={(e) => handleQuickStatusChange(service.id, 'Booked', e)}
                                 className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-                                  effectiveStatus === 'Booked'
+                                  effectiveStatus.toLowerCase() === 'booked'
                                     ? 'bg-amber-500/20 text-amber-400'
                                     : 'text-on-surface hover:bg-amber-500/10 hover:text-amber-400'
                                 }`}
@@ -358,13 +347,13 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                                   <span className="w-2 h-2 rounded-full bg-amber-400" />
                                   <span>Booked</span>
                                 </div>
-                                {effectiveStatus === 'Booked' && <span className="text-[10px]">✓</span>}
+                                {effectiveStatus.toLowerCase() === 'booked' && <span className="text-[10px]">✓</span>}
                               </button>
                               <button
                                 type="button"
                                 onClick={(e) => handleQuickStatusChange(service.id, 'Sold', e)}
                                 className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-                                  effectiveStatus === 'Sold'
+                                  effectiveStatus.toLowerCase() === 'sold'
                                     ? 'bg-red-500/20 text-red-400'
                                     : 'text-on-surface hover:bg-red-500/10 hover:text-red-400'
                                 }`}
@@ -373,61 +362,70 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                                   <span className="w-2 h-2 rounded-full bg-red-400" />
                                   <span>Sold</span>
                                 </div>
-                                {effectiveStatus === 'Sold' && <span className="text-[10px]">✓</span>}
+                                {effectiveStatus.toLowerCase() === 'sold' && <span className="text-[10px]">✓</span>}
                               </button>
                               <button
                                 type="button"
-                                onClick={(e) => handleQuickStatusChange(service.id, '', e)}
+                                onClick={(e) => handleQuickStatusChange(service.id, 'none', e)}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-neutral-400 hover:bg-neutral-500/10 transition-colors border-t border-outline/10 mt-0.5"
                               >
-                                <span>None (Hide)</span>
+                                <span>None (Hide Stamp)</span>
                               </button>
                             </div>
                           )}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Classy "SOLD" stamp watermark overlay when Sold */}
-                    {effectiveStatus === 'Sold' && (
-                      <div className="absolute inset-0 bg-black/25 pointer-events-none flex items-center justify-center z-10">
-                        <div className="border-4 border-red-500/90 text-red-500/95 font-black text-4xl sm:text-5xl md:text-6xl tracking-widest uppercase px-6 py-2 -rotate-12 rounded-xl backdrop-blur-[2px] shadow-2xl select-none">
-                          SOLD
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content Column */}
-                  <div className="w-full md:w-[40%] flex flex-col justify-center p-8 md:p-12 lg:p-16">
-                    {effectiveStatus && (
-                      <div className="mb-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider ${
-                            effectiveStatus === 'Sold'
-                              ? 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30'
-                              : effectiveStatus === 'Booked'
-                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              effectiveStatus === 'Sold'
-                                ? 'bg-red-500'
-                                : effectiveStatus === 'Booked'
-                                ? 'bg-amber-500'
-                                : 'bg-emerald-500 animate-pulse'
-                            }`}
-                          />
-                          {effectiveStatus}
-                        </span>
-                      </div>
-                    )}
-                    <h3 className="text-3xl md:text-4xl font-bold mb-6 text-[#1A1A1A] dark:text-white uppercase">{service.title}</h3>
-                    <p className="text-xl text-[#1A1A1A]/80 dark:text-white/80 leading-relaxed whitespace-pre-line">
-                      {service.description}
-                    </p>
+                      ) : (
+                        isAdmin && (
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStatusDropdownOpen(statusDropdownOpen === service.id ? null : service.id);
+                              }}
+                              className="text-xs font-bold text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors border border-dashed border-neutral-400 dark:border-neutral-600 px-3 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                              <span>+ Add Stamp</span>
+                            </button>
+                            {statusDropdownOpen === service.id && (
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute bottom-full right-0 mb-3 z-50 bg-surface/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-outline/30 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 min-w-[170px]"
+                              >
+                                <div className="text-[10px] font-bold tracking-wider uppercase text-on-surface-variant px-3 py-1.5 border-b border-outline/10">
+                                  Select Stamp
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleQuickStatusChange(service.id, 'Live', e)}
+                                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-on-surface hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors"
+                                >
+                                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                                  <span>Live</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleQuickStatusChange(service.id, 'Booked', e)}
+                                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-on-surface hover:bg-amber-500/10 hover:text-amber-400 transition-colors"
+                                >
+                                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                                  <span>Booked</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleQuickStatusChange(service.id, 'Sold', e)}
+                                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-on-surface hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                                >
+                                  <span className="w-2 h-2 rounded-full bg-red-400" />
+                                  <span>Sold</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
               );

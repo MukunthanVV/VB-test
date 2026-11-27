@@ -163,31 +163,6 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
                 </div>
               </>
             )}
-
-            {item.status && (
-              <div className="absolute top-4 sm:top-5 left-4 sm:left-5 z-20">
-                <span
-                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-md shadow-2xl text-xs font-black uppercase tracking-widest border ${
-                    item.status === 'Sold'
-                      ? 'bg-red-950/90 border-red-500/70 text-red-200'
-                      : item.status === 'Booked'
-                      ? 'bg-amber-950/90 border-amber-500/70 text-amber-300'
-                      : 'bg-neutral-950/90 border-emerald-500/60 text-emerald-400'
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      item.status === 'Sold'
-                        ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)]'
-                        : item.status === 'Booked'
-                        ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]'
-                        : 'bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.9)]'
-                    }`}
-                  />
-                  <span>{item.status}</span>
-                </span>
-              </div>
-            )}
           </>
         ) : (
           <span className="material-symbols-outlined text-5xl text-[#1A1A1A]/40 dark:text-white/40">

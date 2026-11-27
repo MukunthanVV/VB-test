@@ -20,19 +20,6 @@ const genericServices = [
 ];
 
 const fallbackMap: Record<string, any> = {
-  'zKNi37OfWQFhk27pQXCR': {
-    hero: {
-      title: 'PRE-OWNED EXCELLENCE',
-      description: 'Discover a curated selection of premium pre-owned vehicles. Uncompromising quality, rigorous inspection, and unmatched value.',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
-    },
-    services: [
-      { id: 's2_1', order: 1, title: 'Certified Pre-Owned', description: 'Every vehicle undergoes a rigorous 150-point inspection.', icon: 'verified', status: 'Live' },
-      { id: 's2_2', order: 2, title: 'Premium Selection', description: 'Browse our exclusive inventory of luxury sedans.', icon: 'directions_car', status: 'Live' },
-      { id: 's2_3', order: 3, title: 'Trade-In & Financing', description: 'We offer competitive trade-in values.', icon: 'currency_exchange', status: 'Booked' },
-      { id: 's2_4', order: 4, title: 'Client Advisory', description: 'Our expert automotive advisors are here to guide you.', icon: 'handshake', status: 'Sold' }
-    ]
-  },
   's2': {
     hero: {
       title: 'USED CAR SALES',
