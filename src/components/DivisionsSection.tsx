@@ -183,7 +183,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
         className="w-full md:w-[60%] flex flex-col justify-center px-6 sm:px-8 md:px-10 lg:px-16 xl:px-24 py-8 sm:py-12 md:py-14 text-[#1A1A1A] dark:text-white min-w-0"
       >
         <div className="flex items-center gap-4 mb-4 sm:mb-6">
-          <span className="font-label-caps text-xs sm:text-label-caps opacity-60 text-[#1A1A1A] dark:text-white">{item.number}. {item.category}</span>
+          <span className="font-label-caps text-xl sm:text-2xl opacity-60 text-[#1A1A1A] dark:text-white">{item.number}. {item.category}</span>
         </div>
         <h3 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 md:mb-8 uppercase text-[#1A1A1A] dark:text-white drop-shadow-sm break-words">{item.title}</h3>
         
