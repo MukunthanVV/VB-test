@@ -394,10 +394,10 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                       </p>
                     </div>
 
-                    {/* Status & Parallel Enquire Now CTA Row (strictly single line, no wrapping) */}
+                    {/* Status & Parallel Enquire Now CTA Row (strictly single line, no overlapping) */}
                     {effectiveStatus && (
                       <div className="mt-8 pt-2 flex items-center justify-between gap-3 sm:gap-4 w-full flex-nowrap">
-                        <div className="flex-shrink min-w-0">
+                        <div className="flex-shrink-0">
                           <CarStatusStamp status={effectiveStatus} />
                         </div>
                         {isEnquireActive && (
