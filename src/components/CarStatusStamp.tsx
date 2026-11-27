@@ -19,75 +19,88 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
     return null;
   }
 
-  // Refined palette matching VB Associates template:
-  // LIVE: Deep heritage forest / spruce (#224835)
-  // BOOKED: Warm luxury cognac / terracotta bronze (#8C4E23)
-  // SOLD: Rich heritage wine / burgundy crimson (#78202A)
+  // Bespoke Luxury Atelier Hallmarks / Chassis Specification Plaques
+  // Designed exclusively to match the VB Associates architectural luxury template:
+  // - Clean vector hairlines with museum provenance framing
+  // - Muted jewel-toned body (Deep Atelier Evergreen, Cognac Terracotta, Noble Bordeaux)
+  // - Wide-tracked archival micro-typography in warm champagne ecru and gold
 
   if (normalized === 'live') {
     return (
       <div
         onClick={onClick}
-        title={title}
-        className={`relative inline-block select-none transform rotate-0 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        title={title || 'Status: Available for Acquisition'}
+        className={`relative inline-block select-none transform rotate-0 transition-all duration-300 hover:scale-[1.03] ${onClick ? 'cursor-pointer' : ''} ${className}`}
       >
         <svg
-          viewBox="0 0 170 70"
-          className="w-32 sm:w-40 md:w-44 h-auto drop-shadow-sm"
+          viewBox="0 0 250 74"
+          className="w-48 sm:w-56 md:w-60 h-auto drop-shadow-md"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Outer Thin Deep Forest Border */}
-          <rect x="2" y="2" width="166" height="66" rx="4" stroke="#1E3F2E" strokeWidth="2.5" />
+          {/* Outer Plaque Chassis Frame */}
+          <rect x="2" y="2" width="246" height="70" rx="4" fill="#1B3B2B" stroke="#2B5B43" strokeWidth="2" />
 
-          {/* Solid Muted Forest Green Inked Body */}
-          <rect x="5.5" y="5.5" width="159" height="59" rx="3" fill="#25503B" />
+          {/* Inset Hairline Double Frame */}
+          <rect x="6" y="6" width="238" height="62" rx="2" stroke="#E3DACB" strokeWidth="0.9" strokeOpacity="0.8" />
+          <rect x="9" y="9" width="232" height="56" rx="1.5" stroke="#C8A774" strokeWidth="0.6" strokeOpacity="0.45" />
 
-          {/* Inner Warm Linen Border Frame */}
-          <rect
-            x="8.5"
-            y="8.5"
-            width="153"
-            height="53"
-            rx="2"
-            stroke="#F5F2ED"
-            strokeWidth="1.8"
-            strokeOpacity="0.85"
-            strokeDasharray="14 1 28 2 40 1 20 2"
-          />
+          {/* Corner Provenance Diamonds */}
+          <path d="M 14 14 L 16 12 L 18 14 L 16 16 Z" fill="#C8A774" />
+          <path d="M 232 14 L 234 12 L 236 14 L 234 16 Z" fill="#C8A774" />
+          <path d="M 14 60 L 16 58 L 18 60 L 16 62 Z" fill="#C8A774" />
+          <path d="M 232 60 L 234 58 L 236 60 L 234 62 Z" fill="#C8A774" />
 
-          {/* LIVE Bold Inked Text in Warm Ivory Linen */}
+          {/* Top Archival Header */}
           <text
-            x="85"
-            y="49"
+            x="125"
+            y="21"
             textAnchor="middle"
-            fill="#F5F2ED"
-            fontSize="38"
+            fill="#D5CBBB"
+            fontSize="7"
+            fontWeight="600"
+            fontFamily="'JetBrains Mono', monospace"
+            letterSpacing="2.6"
+            className="select-none"
+          >
+            VB ARCHIVE • VERIFIED SPECIMEN
+          </text>
+
+          {/* Flanking Hairlines */}
+          <line x1="24" y1="41" x2="66" y2="41" stroke="#C8A774" strokeWidth="0.8" strokeOpacity="0.6" />
+          <circle cx="68" cy="41" r="1.5" fill="#C8A774" />
+          <line x1="184" y1="41" x2="226" y2="41" stroke="#C8A774" strokeWidth="0.8" strokeOpacity="0.6" />
+          <circle cx="182" cy="41" r="1.5" fill="#C8A774" />
+
+          {/* LIVE Bold Center Editorial Title */}
+          <text
+            x="125"
+            y="48"
+            textAnchor="middle"
+            fill="#FAF6EE"
+            fontSize="24"
             fontWeight="900"
-            fontFamily="Impact, 'Arial Black', -apple-system, sans-serif"
-            letterSpacing="6"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            letterSpacing="7"
             className="select-none"
           >
             LIVE
           </text>
 
-          {/* Subtle Weathered Specks */}
-          <g fill="#F5F2ED" opacity="0.35">
-            <circle cx="22" cy="18" r="1.2" />
-            <circle cx="55" cy="15" r="1.5" />
-            <circle cx="110" cy="14" r="1.4" />
-            <circle cx="145" cy="18" r="1.2" />
-            <circle cx="22" cy="54" r="1.4" />
-            <circle cx="120" cy="55" r="1.2" />
-            <circle cx="152" cy="50" r="1.5" />
-          </g>
-
-          {/* Weathered Inset Nick Marks */}
-          <g fill="#000000" opacity="0.18">
-            <circle cx="35" cy="28" r="1.5" />
-            <circle cx="125" cy="45" r="1.6" />
-            <circle cx="70" cy="20" r="1.2" />
-          </g>
+          {/* Bottom Acquisition Subline */}
+          <text
+            x="125"
+            y="61"
+            textAnchor="middle"
+            fill="#B8AE9E"
+            fontSize="6.5"
+            fontWeight="500"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            letterSpacing="2.2"
+            className="select-none"
+          >
+            AVAILABLE FOR ACQUISITION
+          </text>
         </svg>
       </div>
     );
@@ -97,66 +110,78 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
     return (
       <div
         onClick={onClick}
-        title={title}
-        className={`relative inline-block select-none transform rotate-0 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        title={title || 'Status: Privately Reserved'}
+        className={`relative inline-block select-none transform rotate-0 transition-all duration-300 hover:scale-[1.03] ${onClick ? 'cursor-pointer' : ''} ${className}`}
       >
         <svg
-          viewBox="0 0 190 76"
-          className="w-36 sm:w-44 md:w-48 h-auto drop-shadow-sm"
+          viewBox="0 0 250 74"
+          className="w-48 sm:w-56 md:w-60 h-auto drop-shadow-md"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Outer Thin Cognac Bronze Border */}
-          <rect
-            x="3"
-            y="3"
-            width="184"
-            height="70"
-            rx="3"
-            stroke="#8C4E23"
-            strokeWidth="2.5"
-            strokeDasharray="25 1 40 2 30 1 50 2"
-          />
+          {/* Outer Plaque Chassis Frame */}
+          <rect x="2" y="2" width="246" height="70" rx="4" fill="#5E2C14" stroke="#874320" strokeWidth="2" />
 
-          {/* Inner Thick Heavy Cognac Border */}
-          <rect
-            x="8"
-            y="8"
-            width="174"
-            height="60"
-            rx="2"
-            stroke="#8C4E23"
-            strokeWidth="5"
-            strokeDasharray="18 1.5 50 1 35 2 45 1.5"
-          />
+          {/* Inset Hairline Double Frame */}
+          <rect x="6" y="6" width="238" height="62" rx="2" stroke="#EADCCF" strokeWidth="0.9" strokeOpacity="0.8" />
+          <rect x="9" y="9" width="232" height="56" rx="1.5" stroke="#DDA874" strokeWidth="0.6" strokeOpacity="0.45" />
 
-          {/* BOOKED Bold Inked Typography in Warm Cognac Bronze */}
+          {/* Corner Provenance Diamonds */}
+          <path d="M 14 14 L 16 12 L 18 14 L 16 16 Z" fill="#DDA874" />
+          <path d="M 232 14 L 234 12 L 236 14 L 234 16 Z" fill="#DDA874" />
+          <path d="M 14 60 L 16 58 L 18 60 L 16 62 Z" fill="#DDA874" />
+          <path d="M 232 60 L 234 58 L 236 60 L 234 62 Z" fill="#DDA874" />
+
+          {/* Top Archival Header */}
           <text
-            x="95"
-            y="52"
+            x="125"
+            y="21"
             textAnchor="middle"
-            fill="#8C4E23"
-            fontSize="34"
+            fill="#DFD0C3"
+            fontSize="7"
+            fontWeight="600"
+            fontFamily="'JetBrains Mono', monospace"
+            letterSpacing="2.6"
+            className="select-none"
+          >
+            VB ARCHIVE • CLIENT ALLOCATION
+          </text>
+
+          {/* Flanking Hairlines */}
+          <line x1="24" y1="41" x2="52" y2="41" stroke="#DDA874" strokeWidth="0.8" strokeOpacity="0.6" />
+          <circle cx="54" cy="41" r="1.5" fill="#DDA874" />
+          <line x1="198" y1="41" x2="226" y2="41" stroke="#DDA874" strokeWidth="0.8" strokeOpacity="0.6" />
+          <circle cx="196" cy="41" r="1.5" fill="#DDA874" />
+
+          {/* BOOKED Bold Center Editorial Title */}
+          <text
+            x="125"
+            y="48"
+            textAnchor="middle"
+            fill="#FAF5EE"
+            fontSize="23"
             fontWeight="900"
-            fontFamily="Impact, 'Arial Black', -apple-system, sans-serif"
-            letterSpacing="5"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            letterSpacing="6.5"
             className="select-none"
           >
             BOOKED
           </text>
 
-          {/* Weathered Chipped Ink Splatter */}
-          <g fill="#8C4E23" opacity="0.8">
-            <circle cx="14" cy="14" r="1.5" />
-            <circle cx="48" cy="11" r="1.6" />
-            <circle cx="120" cy="10" r="1.5" />
-            <circle cx="160" cy="13" r="1.4" />
-            <circle cx="178" cy="55" r="1.6" />
-            <circle cx="130" cy="65" r="1.5" />
-            <circle cx="30" cy="66" r="1.6" />
-            <circle cx="12" cy="58" r="1.4" />
-            <circle cx="58" cy="42" r="1.2" />
-          </g>
+          {/* Bottom Acquisition Subline */}
+          <text
+            x="125"
+            y="61"
+            textAnchor="middle"
+            fill="#C9B4A2"
+            fontSize="6.5"
+            fontWeight="500"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            letterSpacing="2.2"
+            className="select-none"
+          >
+            RESERVATION CONFIRMED • PENDING DELIVERY
+          </text>
         </svg>
       </div>
     );
@@ -166,88 +191,78 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
     return (
       <div
         onClick={onClick}
-        title={title}
-        className={`relative inline-block select-none transform rotate-0 transition-transform duration-200 hover:scale-105 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        title={title || 'Status: Officially Delivered'}
+        className={`relative inline-block select-none transform rotate-0 transition-all duration-300 hover:scale-[1.03] ${onClick ? 'cursor-pointer' : ''} ${className}`}
       >
         <svg
-          viewBox="0 0 180 78"
-          className="w-36 sm:w-44 md:w-48 h-auto drop-shadow-sm"
+          viewBox="0 0 250 74"
+          className="w-48 sm:w-56 md:w-60 h-auto drop-shadow-md"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Heavy Rounded Rect Outer Border in Heritage Burgundy */}
-          <rect
-            x="3"
-            y="3"
-            width="174"
-            height="72"
-            rx="16"
-            stroke="#78202A"
-            strokeWidth="4.5"
-            strokeDasharray="22 1.5 45 2 30 1.5 50 2"
-          />
+          {/* Outer Plaque Chassis Frame */}
+          <rect x="2" y="2" width="246" height="70" rx="4" fill="#4E121B" stroke="#751F2D" strokeWidth="2" />
 
-          {/* Rounded Rect Inner Border */}
-          <rect
-            x="8.5"
-            y="8.5"
-            width="163"
-            height="61"
-            rx="11"
-            stroke="#78202A"
-            strokeWidth="2"
-            strokeDasharray="15 1 35 1.5 25 1 40 1.5"
-          />
+          {/* Inset Hairline Double Frame */}
+          <rect x="6" y="6" width="238" height="62" rx="2" stroke="#EADBDD" strokeWidth="0.9" strokeOpacity="0.8" />
+          <rect x="9" y="9" width="232" height="56" rx="1.5" stroke="#D397A1" strokeWidth="0.6" strokeOpacity="0.45" />
 
-          {/* Stencil Mask so the card background shines through the cuts */}
-          <defs>
-            <mask id="sold-stencil-mask">
-              <rect width="180" height="78" fill="#FFFFFF" />
-              {/* Slits through S */}
-              <rect x="42" y="36" width="16" height="3" rx="0.5" fill="#000000" />
-              {/* Slits through O */}
-              <rect x="68" y="24" width="22" height="3.5" rx="0.5" fill="#000000" />
-              <rect x="68" y="46" width="22" height="3.5" rx="0.5" fill="#000000" />
-              {/* Slit through L */}
-              <rect x="99" y="44" width="14" height="3" rx="0.5" fill="#000000" />
-              {/* Slits through D */}
-              <rect x="122" y="26" width="22" height="3.5" rx="0.5" fill="#000000" />
-              <rect x="122" y="47" width="22" height="3.5" rx="0.5" fill="#000000" />
-            </mask>
-          </defs>
+          {/* Corner Provenance Diamonds */}
+          <path d="M 14 14 L 16 12 L 18 14 L 16 16 Z" fill="#D397A1" />
+          <path d="M 232 14 L 234 12 L 236 14 L 234 16 Z" fill="#D397A1" />
+          <path d="M 14 60 L 16 58 L 18 60 L 16 62 Z" fill="#D397A1" />
+          <path d="M 232 60 L 234 58 L 236 60 L 234 62 Z" fill="#D397A1" />
 
-          {/* Stencil SOLD Inked Typography in Deep Burgundy */}
+          {/* Top Archival Header */}
           <text
-            x="90"
-            y="54"
+            x="125"
+            y="21"
             textAnchor="middle"
-            fill="#78202A"
-            fontSize="42"
+            fill="#DDC6C9"
+            fontSize="7"
+            fontWeight="600"
+            fontFamily="'JetBrains Mono', monospace"
+            letterSpacing="2.6"
+            className="select-none"
+          >
+            VB ARCHIVE • HISTORIC RECORD
+          </text>
+
+          {/* Flanking Hairlines */}
+          <line x1="24" y1="41" x2="62" y2="41" stroke="#D397A1" strokeWidth="0.8" strokeOpacity="0.6" />
+          <circle cx="64" cy="41" r="1.5" fill="#D397A1" />
+          <line x1="188" y1="41" x2="226" y2="41" stroke="#D397A1" strokeWidth="0.8" strokeOpacity="0.6" />
+          <circle cx="186" cy="41" r="1.5" fill="#D397A1" />
+
+          {/* SOLD Bold Center Editorial Title */}
+          <text
+            x="125"
+            y="48"
+            textAnchor="middle"
+            fill="#FAF3F4"
+            fontSize="24"
             fontWeight="900"
-            fontFamily="Impact, 'Arial Black', -apple-system, sans-serif"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
             letterSpacing="7"
-            mask="url(#sold-stencil-mask)"
             className="select-none"
           >
             SOLD
           </text>
 
-          {/* Distressed Weathered Speckles in Burgundy */}
-          <g fill="#78202A" opacity="0.8">
-            <circle cx="16" cy="18" r="1.5" />
-            <circle cx="34" cy="12" r="1.3" />
-            <circle cx="70" cy="10" r="1.6" />
-            <circle cx="112" cy="11" r="1.4" />
-            <circle cx="152" cy="18" r="1.5" />
-            <circle cx="166" cy="36" r="1.4" />
-            <circle cx="158" cy="58" r="1.6" />
-            <circle cx="122" cy="68" r="1.5" />
-            <circle cx="68" cy="67" r="1.4" />
-            <circle cx="28" cy="62" r="1.6" />
-            <circle cx="14" cy="44" r="1.4" />
-            <circle cx="55" cy="58" r="1.2" />
-            <circle cx="135" cy="35" r="1.3" />
-          </g>
+          {/* Bottom Acquisition Subline */}
+          <text
+            x="125"
+            y="61"
+            textAnchor="middle"
+            fill="#C39EA5"
+            fontSize="6.5"
+            fontWeight="500"
+            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            letterSpacing="2.2"
+            className="select-none"
+          >
+            CURATED SPECIMEN • OFFICIALLY DELIVERED
+          </text>
         </svg>
       </div>
     );
@@ -255,3 +270,5 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
 
   return null;
 };
+
+export default CarStatusStamp;

@@ -256,7 +256,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -310,9 +310,9 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                   {field.name === 'status' ? (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                       {[
-                        { value: 'Live', label: 'Live (Available)', color: 'border-[#25503B] bg-[#25503B]/10 text-[#25503B] dark:text-emerald-400', dot: 'bg-[#25503B] dark:bg-emerald-400' },
-                        { value: 'Booked', label: 'Booked', color: 'border-[#8C4E23] bg-[#8C4E23]/10 text-[#8C4E23] dark:text-amber-400', dot: 'bg-[#8C4E23] dark:bg-amber-400' },
-                        { value: 'Sold', label: 'Sold', color: 'border-[#78202A] bg-[#78202A]/10 text-[#78202A] dark:text-red-400', dot: 'bg-[#78202A] dark:bg-red-400' },
+                        { value: 'Live', label: 'Live (Available)', color: 'border-[#1B3B2B] bg-[#1B3B2B]/10 text-[#1B3B2B] dark:text-emerald-400', dot: 'bg-[#1B3B2B] dark:bg-emerald-400' },
+                        { value: 'Booked', label: 'Booked', color: 'border-[#5E2C14] bg-[#5E2C14]/10 text-[#5E2C14] dark:text-amber-500', dot: 'bg-[#5E2C14] dark:bg-amber-500' },
+                        { value: 'Sold', label: 'Sold', color: 'border-[#4E121B] bg-[#4E121B]/10 text-[#4E121B] dark:text-red-400', dot: 'bg-[#4E121B] dark:bg-red-400' },
                         { value: 'none', label: 'Hide Stamp', color: 'border-outline/40 bg-surface-variant text-on-surface-variant', dot: 'bg-neutral-400' },
                       ].map((st) => {
                         const currentVal = formData['status'] !== undefined ? formData['status'] : 'Live';
