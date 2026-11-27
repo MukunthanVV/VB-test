@@ -45,23 +45,23 @@ export const CarStatusStamp: React.FC<CarStatusStampProps> = ({
     <div
       onClick={onClick}
       title={title || config.title}
-      className={`inline-flex items-center gap-3 sm:gap-4 select-none transition-opacity duration-300 hover:opacity-80 ${config.colorClass} ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={`inline-flex items-center gap-2 sm:gap-3 select-none transition-opacity duration-300 hover:opacity-80 ${config.colorClass} ${onClick ? 'cursor-pointer' : ''} ${className}`}
     >
       {/* Leading horizontal line with terminal dot */}
-      <div className="flex items-center">
-        <span className="w-10 sm:w-14 md:w-20 h-[1.5px] bg-current opacity-70 block" />
+      <div className="flex items-center flex-shrink min-w-0">
+        <span className="w-5 sm:w-8 md:w-12 h-[1.5px] bg-current opacity-70 block flex-shrink" />
         <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-current block -ml-0.5 flex-shrink-0 shadow-sm" />
       </div>
 
       {/* Bold wide-tracked status text */}
-      <span className="font-sans font-black text-sm sm:text-base md:text-lg tracking-[0.38em] uppercase select-none px-1">
+      <span className="font-sans font-black text-xs sm:text-sm md:text-base tracking-[0.25em] sm:tracking-[0.32em] uppercase select-none px-1 flex-shrink-0 whitespace-nowrap">
         {config.label}
       </span>
 
       {/* Trailing terminal dot with horizontal line */}
-      <div className="flex items-center">
+      <div className="flex items-center flex-shrink min-w-0">
         <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-current block -mr-0.5 flex-shrink-0 shadow-sm" />
-        <span className="w-10 sm:w-14 md:w-20 h-[1.5px] bg-current opacity-70 block" />
+        <span className="w-5 sm:w-8 md:w-12 h-[1.5px] bg-current opacity-70 block flex-shrink" />
       </div>
     </div>
   );

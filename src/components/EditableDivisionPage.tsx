@@ -394,17 +394,19 @@ Thank you.`
                       </p>
                     </div>
 
-                    {/* Status & Parallel Enquire Now CTA Row */}
+                    {/* Status & Parallel Enquire Now CTA Row (strictly single line, no wrapping) */}
                     {effectiveStatus && (
-                      <div className="mt-8 pt-2 flex flex-wrap items-center justify-between gap-4">
-                        <CarStatusStamp status={effectiveStatus} />
+                      <div className="mt-8 pt-2 flex items-center justify-between gap-3 sm:gap-4 w-full flex-nowrap">
+                        <div className="flex-shrink min-w-0">
+                          <CarStatusStamp status={effectiveStatus} />
+                        </div>
                         {isEnquireActive && (
                           <a
                             href={mailtoHref}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1A1A1A] text-white hover:bg-black/80 dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-neutral-200 transition-all duration-300 font-label-caps text-xs tracking-widest uppercase shadow-sm group/enquire hover:scale-105 flex-shrink-0 cursor-pointer"
+                            className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full bg-[#1A1A1A] text-white hover:bg-black/80 dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-neutral-200 transition-all duration-300 font-label-caps text-[10px] sm:text-xs tracking-wider sm:tracking-widest uppercase shadow-sm group/enquire hover:scale-105 flex-shrink-0 cursor-pointer whitespace-nowrap"
                           >
                             <span>Enquire Now</span>
-                            <span className="material-symbols-outlined text-[15px] transition-transform duration-200 group-hover/enquire:translate-x-0.5 group-hover/enquire:-translate-y-0.5">
+                            <span className="material-symbols-outlined text-[13px] sm:text-[15px] transition-transform duration-200 group-hover/enquire:translate-x-0.5 group-hover/enquire:-translate-y-0.5">
                               north_east
                             </span>
                           </a>
