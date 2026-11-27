@@ -114,7 +114,7 @@ const DivisionCard = ({ item, index, isAdmin, onEdit, onDelete }: any) => {
   return (
     <div className={`flex flex-col ${isReversed ? 'md:flex-row-reverse' : 'md:flex-row'} overflow-hidden rounded-[2rem] bg-[#988E8B] dark:bg-neutral-900 shadow-xl w-full relative group`}>
       {isAdmin && (
-        <div className="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute top-4 right-4 z-30">
           <InlineEditControls onEdit={() => onEdit(item)} onDelete={() => onDelete(item.id)} />
         </div>
       )}
