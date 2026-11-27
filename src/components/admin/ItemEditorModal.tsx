@@ -9,6 +9,8 @@ export type FieldConfig = {
   label: string;
   type: 'text' | 'textarea' | 'image' | 'image-gallery' | 'select';
   options?: { label: string; value: string }[];
+  placeholder?: string;
+  helperText?: string;
   required?: boolean;
 };
 
@@ -281,9 +283,14 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
 
               {fields.map((field) => (
                 <div key={field.name} className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
-                    {field.label}
-                  </label>
+                  <div className="flex flex-col">
+                    <label className="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
+                      {field.label}
+                    </label>
+                    {field.helperText && (
+                      <p className="text-xs text-on-surface-variant/70 mt-0.5">{field.helperText}</p>
+                    )}
+                  </div>
                   
                   {field.type === 'text' && (
                     <input
@@ -291,6 +298,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                       name={field.name}
                       value={formData[field.name] || ''}
                       onChange={handleChange}
+                      placeholder={field.placeholder || ''}
                       required={field.required}
                       className={`bg-surface-variant border ${field.required && !formData[field.name] ? 'border-red-500/50' : 'border-outline/20'} rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors`}
                     />
@@ -301,6 +309,7 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                       name={field.name}
                       value={formData[field.name] || ''}
                       onChange={handleChange}
+                      placeholder={field.placeholder || ''}
                       required={field.required}
                       rows={4}
                       className={`bg-surface-variant border ${field.required && !formData[field.name] ? 'border-red-500/50' : 'border-outline/20'} rounded-lg p-3 text-on-surface focus:outline-none focus:border-primary transition-colors resize-none`}
@@ -308,16 +317,32 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                   )}
 
                   {field.name === 'status' ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                      {[
-                        { value: 'Live', label: 'Live (Available)', color: 'border-[#1B3B2B] bg-[#1B3B2B]/10 text-[#1B3B2B] dark:text-emerald-400', dot: 'bg-[#1B3B2B] dark:bg-emerald-400' },
-                        { value: 'Booked', label: 'Booked', color: 'border-[#5E2C14] bg-[#5E2C14]/10 text-[#5E2C14] dark:text-amber-500', dot: 'bg-[#5E2C14] dark:bg-amber-500' },
-                        { value: 'Sold', label: 'Sold', color: 'border-[#4E121B] bg-[#4E121B]/10 text-[#4E121B] dark:text-red-400', dot: 'bg-[#4E121B] dark:bg-red-400' },
-                        { value: 'none', label: 'Hide Stamp', color: 'border-outline/40 bg-surface-variant text-on-surface-variant', dot: 'bg-neutral-400' },
-                      ].map((st) => {
-                        const currentVal = formData['status'] !== undefined ? formData['status'] : 'Live';
+                    <div className={`grid gap-2.5 ${field.options && field.options.length === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'}`}>
+                      {(field.options || [
+                        { value: 'Live', label: 'Live (Available)' },
+                        { value: 'Booked', label: 'Booked' },
+                        { value: 'Sold', label: 'Sold' },
+                        { value: 'none', label: 'Hide Stamp' },
+                      ]).map((st) => {
+                        const valLower = st.value.toLowerCase();
+                        const color = valLower === 'live'
+                          ? 'border-[#1B3B2B] bg-[#1B3B2B]/10 text-[#1B3B2B] dark:text-emerald-400'
+                          : valLower === 'booked'
+                          ? 'border-[#5E2C14] bg-[#5E2C14]/10 text-[#5E2C14] dark:text-amber-500'
+                          : valLower === 'sold'
+                          ? 'border-[#4E121B] bg-[#4E121B]/10 text-[#4E121B] dark:text-red-400'
+                          : 'border-outline/40 bg-surface-variant text-on-surface-variant';
+                        const dot = valLower === 'live'
+                          ? 'bg-[#1B3B2B] dark:bg-emerald-400'
+                          : valLower === 'booked'
+                          ? 'bg-[#5E2C14] dark:bg-amber-500'
+                          : valLower === 'sold'
+                          ? 'bg-[#4E121B] dark:bg-red-400'
+                          : 'bg-neutral-400';
+
+                        const currentVal = formData['status'] !== undefined ? formData['status'] : (field.options?.[0]?.value || 'none');
                         const isSelected = currentVal.toLowerCase() === st.value.toLowerCase() ||
-                          (st.value === 'none' && currentVal === 'none');
+                          (st.value === 'none' && (!currentVal || currentVal === 'none'));
                         return (
                           <button
                             key={st.value}
@@ -327,12 +352,12 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({
                             }}
                             className={`flex items-center justify-between p-3 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer ${
                               isSelected
-                                ? `${st.color} shadow-sm ring-2 ring-primary/40 scale-[1.02]`
+                                ? `${color} shadow-sm ring-2 ring-primary/40 scale-[1.02]`
                                 : 'border-outline/20 hover:border-outline/50 bg-surface-variant/40 text-on-surface/70'
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              <span className={`w-2.5 h-2.5 rounded-full ${st.dot}`} />
+                              <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
                               <span>{st.label}</span>
                             </div>
                             {isSelected && <span className="text-xs font-black">✓</span>}

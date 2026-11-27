@@ -21,6 +21,7 @@ interface ServiceData {
   image?: ResponsiveImageSource | ResponsiveImageSource[];
   order: number;
   status?: string;
+  whatsapp?: string;
   image_focus?: string;
 }
 
@@ -144,6 +145,34 @@ const DivisionCardGallery: React.FC<DivisionCardGalleryProps> = ({
 
 const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fallbackHero, fallbackServices }) => {
   const { isAdmin } = useAuth();
+  const isCarPage = pageId === 'zKNi37OfWQFhk27pQXCR' || pageId === 's2';
+
+  // Determine effective status (defaults to 'Live' for Pre-Owned car listings if unset)
+  const getEffectiveStatus = (service: ServiceData) => {
+    if (service.status !== undefined && service.status !== '') {
+      if (service.status.toLowerCase() === 'none') return '';
+      return service.status;
+    }
+    if (service.status === '') {
+      return ''; // Explicitly hidden by admin
+    }
+    // Default to 'Live' for Pre-Owned Excellence listings
+    if (isCarPage) {
+      return 'Live';
+    }
+    return '';
+  };
+
+  // Sorting helper: Any service marked 'Live' automatically appears as the first section, followed by order
+  const sortServicesWithLiveFirst = (services: ServiceData[]) => {
+    return [...services].sort((a, b) => {
+      const aLive = getEffectiveStatus(a).toLowerCase() === 'live';
+      const bLive = getEffectiveStatus(b).toLowerCase() === 'live';
+      if (aLive && !bLive) return -1;
+      if (!aLive && bLive) return 1;
+      return (Number(a.order) || 0) - (Number(b.order) || 0);
+    });
+  };
   
   const [heroData, setHeroData] = useState<HeroData>(() => {
     try {
@@ -217,7 +246,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
           return realService || fb;
         });
         const extraServices = activeServices.filter(s => !fallbackServices.find(fb => fb.id === s.id));
-        finalServices = [...mergedDisplayData, ...extraServices].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+        finalServices = sortServicesWithLiveFirst([...mergedDisplayData, ...extraServices]);
       }
       setServicesData(finalServices);
       try { localStorage.setItem(`cache_div_services_${pageId}`, JSON.stringify(finalServices)); } catch {}
@@ -232,18 +261,35 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
     { name: 'videoUrl', label: 'Background Video URL (mp4)', type: 'text' }
   ];
 
-  const serviceFields: FieldConfig[] = [
-    { name: 'title', label: 'Title / Vehicle Name', type: 'text', required: true },
-    {
-      name: 'status',
-      label: 'Vehicle Status Stamp',
-      type: 'select',
-      options: [
+  const statusOptions = isCarPage
+    ? [
         { label: 'Live (Available)', value: 'Live' },
         { label: 'Booked', value: 'Booked' },
         { label: 'Sold', value: 'Sold' },
         { label: 'None (Hide Stamp)', value: 'none' },
-      ],
+      ]
+    : [
+        { label: 'Live (Active Booking)', value: 'Live' },
+        { label: 'None (Regular Template)', value: 'none' },
+      ];
+
+  const serviceFields: FieldConfig[] = [
+    { name: 'title', label: isCarPage ? 'Vehicle Title / Name' : 'Section / Service Title', type: 'text', required: true },
+    {
+      name: 'status',
+      label: isCarPage ? 'Vehicle Status Stamp' : 'Status Option (Live or None)',
+      type: 'select',
+      options: statusOptions,
+      helperText: isCarPage
+        ? 'Sets the archive hallmark and enables Enquire Now.'
+        : 'Selecting Live displays the Live badge & Book Now CTA and automatically moves this section to the top as the first section.',
+    },
+    {
+      name: 'whatsapp',
+      label: 'WhatsApp Mobile Number for Booking',
+      type: 'text',
+      placeholder: 'e.g. 918678910444 (Leave blank for default +91 86789 10444)',
+      helperText: 'Mobile number to which the Book Now WhatsApp chat will navigate.',
     },
     { name: 'description', label: 'Description & Details', type: 'textarea', required: true },
     { name: 'icon', label: 'Material Icon Name', type: 'text' },
@@ -266,7 +312,8 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   const handleEditService = (service: ServiceData) => {
     setActiveService({
       ...service,
-      status: getEffectiveStatus(service) || 'Live'
+      status: getEffectiveStatus(service) || (isCarPage ? 'Live' : 'none'),
+      whatsapp: (service as any).whatsapp || ''
     });
     setServiceModalOpen(true);
   };
@@ -284,29 +331,14 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
   const handleAddService = () => {
     setActiveService({
       id: '',
-      title: 'New Vehicle',
-      description: 'Enter vehicle specifications, mileage, and price.',
-      icon: 'directions_car',
-      status: (pageId === 'zKNi37OfWQFhk27pQXCR' || pageId === 's2') ? 'Live' : '',
+      title: isCarPage ? 'New Vehicle' : 'New Service / Event',
+      description: isCarPage ? 'Enter vehicle specifications, mileage, and price.' : 'Enter event details, guest count, decor, and pricing.',
+      icon: isCarPage ? 'directions_car' : 'celebration',
+      status: isCarPage ? 'Live' : 'none',
+      whatsapp: '',
       order: servicesData.length > 0 ? Math.max(...servicesData.map(s => Number(s.order) || 0)) + 1 : 1
     });
     setServiceModalOpen(true);
-  };
-
-  // Determine effective status (defaults to 'Live' for Pre-Owned car listings if unset)
-  const getEffectiveStatus = (service: ServiceData) => {
-    if (service.status !== undefined && service.status !== '') {
-      if (service.status.toLowerCase() === 'none') return '';
-      return service.status;
-    }
-    if (service.status === '') {
-      return ''; // Explicitly hidden by admin
-    }
-    // Default to 'Live' for Pre-Owned Excellence listings
-    if (pageId === 'zKNi37OfWQFhk27pQXCR' || pageId === 's2') {
-      return 'Live';
-    }
-    return '';
   };
 
   return (
@@ -352,18 +384,24 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
           </div>
           
           <div className="flex flex-col gap-12">
-            {servicesData.map((service, index) => {
+            {sortServicesWithLiveFirst(servicesData).map((service, index) => {
               const isReverse = index % 2 !== 0;
               const bgClass = isReverse ? 'bg-[#988E8B] dark:bg-neutral-900' : 'bg-[#D7D1C9] dark:bg-neutral-800';
               const imgBgClass = isReverse ? 'bg-[#8F8A8B] dark:bg-neutral-800' : 'bg-[#C1BAB2] dark:bg-neutral-700';
               const effectiveStatus = getEffectiveStatus(service);
               const normalizedStatus = (effectiveStatus || '').trim().toLowerCase();
               const isEnquireActive = normalizedStatus === 'live' || normalizedStatus === 'booked';
+              const ctaLabel = isCarPage ? 'Enquire Now' : 'Book Now';
               
+              const customPhone = (service as any).whatsapp?.trim() ? (service as any).whatsapp.trim().replace(/[^0-9]/g, '') : '';
+              const targetPhone = customPhone || whatsappPhone;
+
               const whatsappMessage = encodeURIComponent(
-                `Hello VB Associates, I am interested in inquiring about the ${service.title} currently listed as ${normalizedStatus.toUpperCase()} in your Pre-Owned collection. Could you please share more details?`
+                isCarPage
+                  ? `Hello VB Associates, I am interested in inquiring about the ${service.title} currently listed as ${normalizedStatus.toUpperCase()} in your Pre-Owned collection. Could you please share more details?`
+                  : `Hello VB Associates, I would like to book "${service.title}" from ${heroData?.title || 'VB Events'}. Could you please share details, availability, and pricing?`
               );
-              const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${whatsappMessage}`;
+              const whatsappUrl = `https://wa.me/${targetPhone}?text=${whatsappMessage}`;
 
               return (
                 <div key={service.id} className={`flex flex-col md:flex-row ${isReverse ? 'md:flex-row-reverse' : ''} ${bgClass} rounded-[2rem] overflow-hidden shadow-xl w-full relative group`}>
@@ -407,7 +445,7 @@ const EditableDivisionPage: React.FC<EditableDivisionPageProps> = ({ pageId, fal
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full bg-[#1A1A1A] text-white hover:bg-black/80 dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-neutral-200 transition-all duration-300 font-label-caps text-[10px] sm:text-xs tracking-wider sm:tracking-widest uppercase shadow-sm group/enquire hover:scale-105 flex-shrink-0 cursor-pointer whitespace-nowrap"
                           >
-                            <span>Enquire Now</span>
+                            <span>{ctaLabel}</span>
                             <span className="material-symbols-outlined text-[13px] sm:text-[15px] transition-transform duration-200 group-hover/enquire:translate-x-0.5 group-hover/enquire:-translate-y-0.5">
                               north_east
                             </span>
